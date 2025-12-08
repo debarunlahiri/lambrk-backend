@@ -38,10 +38,6 @@ const gatewaySlowDown = slowDown({
   },
 });
 
-// Apply rate limiting and slow down before other middleware
-app.use(gatewayRateLimiter);
-app.use(gatewaySlowDown);
-
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:3100',
   credentials: true,
@@ -49,6 +45,21 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Apply rate limiting and slow down - but skip for health checks
+app.use((req, res, next) => {
+  if (req.path === '/health') {
+    return next();
+  }
+  gatewayRateLimiter(req, res, next);
+});
+
+app.use((req, res, next) => {
+  if (req.path === '/health') {
+    return next();
+  }
+  gatewaySlowDown(req, res, next);
+});
 
 app.use(
   '/api/auth',
@@ -58,14 +69,25 @@ app.use(
     pathRewrite: {
       '^/api/auth': '/api/auth',
     },
+    timeout: 30000,
+    proxyTimeout: 30000,
+    onProxyReq: (proxyReq, req, res) => {
+      console.log(`[Gateway] Proxying ${req.method} ${req.url} to ${AUTH_SERVICE_URL}${req.url}`);
+    },
+    onProxyRes: (proxyRes, req, res) => {
+      console.log(`[Gateway] Response ${proxyRes.statusCode} for ${req.url}`);
+    },
     onError: (err, req, res) => {
-      console.error('Auth service proxy error:', err);
-      res.status(503).json({
-        success: false,
-        error: {
-          message: 'Auth service unavailable',
-        },
-      });
+      console.error('[Gateway] Auth service proxy error:', err);
+      if (!res.headersSent) {
+        res.status(503).json({
+          success: false,
+          error: {
+            message: 'Auth service unavailable',
+            details: err.message,
+          },
+        });
+      }
     },
   })
 );
