@@ -1,0 +1,45 @@
+{
+  "name": "lambrk-backend",
+  "version": "1.0.0",
+  "description": "Lambrk Video Platform - Microservices Backend",
+  "main": "index.js",
+  "scripts": {
+    "dev:auth": "cd services/auth-service && npm run dev",
+    "dev:video": "cd services/video-service && npm run dev",
+    "dev:gateway": "cd gateway && npm run dev",
+    "dev:all": "concurrently \"npm run dev:auth\" \"npm run dev:video\" \"npm run dev:gateway\"",
+    "install:all": "npm install && cd services/auth-service && npm install && cd ../video-service && npm install && cd ../../gateway && npm install && cd ../shared && npm install",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "migrate": "cd shared && npm run build && cd ../services/auth-service && npm run build && cd ../../ && ts-node -P migrations/tsconfig.json migrations/run_all_migrations.ts",
+    "migrate:auth": "cd services/auth-service && npm run build && npm run migrate",
+    "migrate:video": "cd services/video-service && npm run build && npm run migrate",
+    "check-tables": "node scripts/check-tables.js",
+    "check-lambrk": "node scripts/check-lambrk-db.js",
+    "setup-db": "./scripts/setup-lambrk-db.sh",
+    "start": "./run.sh",
+    "run": "./run.sh",
+    "stop": "./stop.sh"
+  },
+  "keywords": [
+    "video-platform",
+    "microservices",
+    "nodejs"
+  ],
+  "author": "",
+  "license": "ISC",
+  "workspaces": [
+    "services/*",
+    "gateway",
+    "shared"
+  ],
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
