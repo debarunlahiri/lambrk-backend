@@ -5,6 +5,10 @@ node_modules/
 # Keep .env.example in version control
 !.env.example
 dist/
+# Firebase service account files
+*-firebase-adminsdk-*.json
+firebase-adminsdk-*.json
+serviceAccountKey.json
 build/
 *.log
 .DS_Store

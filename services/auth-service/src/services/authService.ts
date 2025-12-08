@@ -195,5 +195,64 @@ export class AuthService {
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
+
+  async firebaseAuth(idToken: string): Promise<{ user: Omit<User, 'password'>; accessToken: string; refreshToken: string }> {
+    const { firebaseAdmin } = require('../config/firebase');
+    
+    const decodedToken = await firebaseAdmin.auth().verifyIdToken(idToken);
+    const firebaseUid = decodedToken.uid;
+    const email = decodedToken.email;
+    const name = decodedToken.name || '';
+    const picture = decodedToken.picture;
+
+    if (!email) {
+      throw new ValidationError('Email not provided by Firebase');
+    }
+
+    let user = await this.userModel.findByEmail(email);
+
+    if (!user) {
+      const username = email.split('@')[0] + '_' + Date.now();
+      const nameParts = name.split(' ');
+      const userData: CreateUserData = {
+        username,
+        email,
+        googleId: firebaseUid,
+        firstName: nameParts[0] || undefined,
+        lastName: nameParts.slice(1).join(' ') || undefined,
+        avatar: picture,
+      };
+      user = await this.userModel.create(userData);
+    } else {
+      if (!user.googleId) {
+        user = await this.userModel.update(user.id, {
+          googleId: firebaseUid,
+          firstName: name.split(' ')[0] || user.firstName,
+          lastName: name.split(' ').slice(1).join(' ') || user.lastName,
+          avatar: picture || user.avatar,
+        });
+      }
+    }
+
+    const accessToken = generateAccessToken({
+      userId: user.id,
+      email: user.email,
+      username: user.username,
+    });
+
+    const refreshToken = generateRefreshToken({
+      userId: user.id,
+      email: user.email,
+      username: user.username,
+    });
+
+    const { password, ...userWithoutPassword } = user;
+
+    return {
+      user: userWithoutPassword,
+      accessToken,
+      refreshToken,
+    };
+  }
 }
 

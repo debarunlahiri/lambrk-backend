@@ -157,3 +157,33 @@ export const signinValidation = [
   }),
 ];
 
+export const firebaseAuth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({
+        success: false,
+        error: {
+          message: 'Validation failed',
+          errors: errors.array(),
+        },
+      });
+      return;
+    }
+
+    const { idToken } = req.body;
+    const result = await authService.firebaseAuth(idToken);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const firebaseAuthValidation = [
+  body('idToken').notEmpty().withMessage('Firebase ID token is required'),
+];
+

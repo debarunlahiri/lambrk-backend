@@ -80,6 +80,17 @@ Register a new user account with username and password.
 }
 ```
 
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3100/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "johndoe",
+    "email": "john@example.com",
+    "password": "SecurePass123"
+  }'
+```
+
 **Validation Rules:**
 - `username`: 
   - Required
@@ -174,6 +185,26 @@ Authenticate user with email/username and password.
 }
 ```
 
+**cURL Example (Email):**
+```bash
+curl -X POST http://localhost:3100/api/auth/signin \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john@example.com",
+    "password": "SecurePass123"
+  }'
+```
+
+**cURL Example (Username):**
+```bash
+curl -X POST http://localhost:3100/api/auth/signin \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "johndoe",
+    "password": "SecurePass123"
+  }'
+```
+
 **Validation Rules:**
 - Either `email` OR `username` is required
 - `password`: Required
@@ -246,6 +277,15 @@ Obtain a new access token using a valid refresh token.
 }
 ```
 
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3100/api/auth/refresh-token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }'
+```
+
 **Success Response (200):**
 ```json
 {
@@ -295,6 +335,12 @@ Get the authenticated user's profile information.
 Authorization: Bearer <access_token>
 ```
 
+**cURL Example:**
+```bash
+curl -X GET http://localhost:3100/api/auth/profile \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
 **Success Response (200):**
 ```json
 {
@@ -338,6 +384,13 @@ Start the Google OAuth authentication flow.
 **Authentication:** Not required
 
 **Description:** Redirects user to Google OAuth consent screen.
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:3100/api/auth/google \
+  -L -v
+```
+> Note: Use `-L` to follow redirects and `-v` for verbose output
 
 **Success Response:** HTTP 302 Redirect to Google OAuth
 
@@ -421,6 +474,11 @@ Retrieve a paginated list of all videos.
 GET /api/videos?limit=10&offset=0&status=published
 ```
 
+**cURL Example:**
+```bash
+curl -X GET "http://localhost:3100/api/videos?limit=10&offset=0&status=published"
+```
+
 **Success Response (200):**
 ```json
 {
@@ -471,6 +529,12 @@ Authorization: Bearer <access_token>
 **Example Request:**
 ```
 GET /api/videos/my-videos?limit=10&offset=0
+```
+
+**cURL Example:**
+```bash
+curl -X GET "http://localhost:3100/api/videos/my-videos?limit=10&offset=0" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
 **Success Response (200):**
@@ -530,6 +594,20 @@ Retrieve a specific video by its unique identifier.
 **Example Request:**
 ```
 GET /api/videos/550e8400-e29b-41d4-a716-446655440000
+```
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000
+```
+
+**cURL Example (with quality):**
+```bash
+# Get video with specific quality
+curl -X GET "http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000?quality=720p"
+
+# Get video with all available qualities
+curl -X GET "http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000?includeQualities=true"
 ```
 
 **Success Response (200):**
@@ -593,6 +671,21 @@ Authorization: Bearer <access_token>
   "duration": 3600,
   "status": "draft"
 }
+```
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3100/api/videos \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -d '{
+    "title": "My New Video",
+    "description": "This is a description of my video",
+    "url": "https://example.com/videos/video.mp4",
+    "thumbnailUrl": "https://example.com/thumbnails/thumb.jpg",
+    "duration": 3600,
+    "status": "draft"
+  }'
 ```
 
 **Validation Rules:**
@@ -689,6 +782,19 @@ Authorization: Bearer <access_token>
   "thumbnailUrl": "https://example.com/thumbnails/new-thumb.jpg",
   "status": "published"
 }
+```
+
+**cURL Example:**
+```bash
+curl -X PUT http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -d '{
+    "title": "Updated Video Title",
+    "description": "Updated description",
+    "thumbnailUrl": "https://example.com/thumbnails/new-thumb.jpg",
+    "status": "published"
+  }'
 ```
 
 **Validation Rules:**
@@ -797,6 +903,12 @@ Authorization: Bearer <access_token>
 DELETE /api/videos/550e8400-e29b-41d4-a716-446655440000
 ```
 
+**cURL Example:**
+```bash
+curl -X DELETE http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
 **Success Response (200):**
 ```json
 {
@@ -861,6 +973,11 @@ Increment the view count for a video.
 POST /api/videos/550e8400-e29b-41d4-a716-446655440000/views
 ```
 
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/views
+```
+
 **Success Response (200):**
 ```json
 {
@@ -903,6 +1020,11 @@ Increment the like count for a video.
 POST /api/videos/550e8400-e29b-41d4-a716-446655440000/likes
 ```
 
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/likes
+```
+
 **Success Response (200):**
 ```json
 {
@@ -923,6 +1045,116 @@ POST /api/videos/550e8400-e29b-41d4-a716-446655440000/likes
   }
 }
 ```
+
+---
+
+### 9. Video Quality Management
+
+The video service supports multiple quality versions for each video (like YouTube). The following endpoints allow you to manage video qualities.
+
+#### 9.1. Add Video Quality
+
+Add a new quality version to a video.
+
+**Endpoint:** `POST /api/videos/:videoId/qualities`
+
+**Authentication:** Required
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/qualities \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -d '{
+    "quality": "720p",
+    "url": "https://example.com/videos/video-720p.mp4",
+    "fileSize": 104857600,
+    "bitrate": 5000,
+    "resolutionWidth": 1280,
+    "resolutionHeight": 720,
+    "codec": "h264",
+    "container": "mp4",
+    "duration": 3600,
+    "isDefault": true,
+    "status": "ready"
+  }'
+```
+
+#### 9.2. Get All Video Qualities
+
+Get all quality versions for a video.
+
+**Endpoint:** `GET /api/videos/:videoId/qualities`
+
+**Authentication:** Not required
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/qualities
+```
+
+#### 9.3. Get Specific Video Quality
+
+Get a specific quality version by quality type.
+
+**Endpoint:** `GET /api/videos/:videoId/qualities/:quality`
+
+**Authentication:** Not required
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/qualities/720p
+```
+
+#### 9.4. Update Video Quality
+
+Update a video quality version.
+
+**Endpoint:** `PUT /api/videos/:videoId/qualities/:qualityId`
+
+**Authentication:** Required
+
+**cURL Example:**
+```bash
+curl -X PUT http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/qualities/660e8400-e29b-41d4-a716-446655440001 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -d '{
+    "status": "ready",
+    "bitrate": 6000
+  }'
+```
+
+#### 9.5. Delete Video Quality
+
+Delete a video quality version.
+
+**Endpoint:** `DELETE /api/videos/:videoId/qualities/:qualityId`
+
+**Authentication:** Required
+
+**cURL Example:**
+```bash
+curl -X DELETE http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/qualities/660e8400-e29b-41d4-a716-446655440001 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+#### 9.6. Set Default Quality
+
+Set a quality version as the default for a video.
+
+**Endpoint:** `POST /api/videos/:videoId/qualities/:qualityId/set-default`
+
+**Authentication:** Required
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/qualities/660e8400-e29b-41d4-a716-446655440001/set-default \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+**Available Quality Types:**
+- `144p`, `240p`, `360p`, `480p`, `720p`, `1080p`, `1440p`, `2160p`, `original`
 
 ---
 
@@ -968,7 +1200,15 @@ POST /api/videos/550e8400-e29b-41d4-a716-446655440000/likes
 
 ## Rate Limiting
 
-Currently, there are no rate limits implemented. Consider implementing rate limiting in production.
+Rate limiting is implemented to protect the API from abuse:
+
+- **Gateway**: 300 requests per 15 minutes per IP
+- **Auth Service**: 100 requests per 15 minutes per IP
+- **Auth Endpoints** (signup/signin): 5 requests per 15 minutes per IP
+- **Video Service**: 200 requests per 15 minutes per IP
+- **Video Operations** (create/update/delete): 10 operations per hour per IP
+
+When rate limits are exceeded, you'll receive a `429 Too Many Requests` response.
 
 ## Versioning
 

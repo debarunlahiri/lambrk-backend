@@ -6,8 +6,10 @@ import {
   refreshToken,
   getProfile,
   googleCallback,
+  firebaseAuth,
   signupValidation,
   signinValidation,
+  firebaseAuthValidation,
 } from '../controllers/authController';
 import { authenticate, createAuthRateLimiter } from '@lambrk/shared';
 
@@ -22,6 +24,7 @@ const authLimiter = createAuthRateLimiter({
 router.post('/signup', authLimiter, signupValidation, signup);
 router.post('/signin', authLimiter, signinValidation, signin);
 router.post('/refresh-token', authLimiter, refreshToken);
+router.post('/firebase', authLimiter, firebaseAuthValidation, firebaseAuth);
 router.get('/profile', authenticate as any, getProfile as any);
 
 // Google OAuth routes - only available if credentials are configured
