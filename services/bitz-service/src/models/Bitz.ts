@@ -1,7 +1,7 @@
 import { getPool } from '@lambrk/shared';
-import { VideoQueries } from '../queries/videoQueries';
+import { BitzQueries } from '../queries/bitzQueries';
 
-export interface Video {
+export interface Bitz {
   id: string;
   title: string;
   description?: string;
@@ -10,14 +10,12 @@ export interface Video {
   duration?: number;
   userId: string;
   views: number;
-  likes: number;
-  dislikes: number;
   status: 'draft' | 'published' | 'processing';
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface CreateVideoData {
+export interface CreateBitzData {
   title: string;
   description?: string;
   url: string;
@@ -27,40 +25,40 @@ export interface CreateVideoData {
   status?: 'draft' | 'published' | 'processing';
 }
 
-export interface UpdateVideoData {
+export interface UpdateBitzData {
   title?: string;
   description?: string;
   thumbnailUrl?: string;
   status?: 'draft' | 'published' | 'processing';
 }
 
-export class VideoModel {
-  private queries: VideoQueries | null = null;
+export class BitzModel {
+  private queries: BitzQueries | null = null;
 
-  private getQueries(): VideoQueries {
+  private getQueries(): BitzQueries {
     if (!this.queries) {
-      this.queries = new VideoQueries(getPool());
+      this.queries = new BitzQueries(getPool());
     }
     return this.queries;
   }
 
-  async create(data: CreateVideoData): Promise<Video> {
+  async create(data: CreateBitzData): Promise<Bitz> {
     return this.getQueries().create(data);
   }
 
-  async findById(id: string): Promise<Video | null> {
+  async findById(id: string): Promise<Bitz | null> {
     return this.getQueries().findById(id);
   }
 
-  async findByUserId(userId: string, limit: number = 20, offset: number = 0): Promise<Video[]> {
+  async findByUserId(userId: string, limit: number = 20, offset: number = 0): Promise<Bitz[]> {
     return this.getQueries().findByUserId(userId, limit, offset);
   }
 
-  async findAll(limit: number = 20, offset: number = 0, status?: string): Promise<Video[]> {
+  async findAll(limit: number = 20, offset: number = 0, status?: string): Promise<Bitz[]> {
     return this.getQueries().findAll(limit, offset, status);
   }
 
-  async update(id: string, userId: string, data: UpdateVideoData): Promise<Video> {
+  async update(id: string, userId: string, data: UpdateBitzData): Promise<Bitz> {
     return this.getQueries().update(id, userId, data);
   }
 
@@ -71,9 +69,4 @@ export class VideoModel {
   async incrementViews(id: string): Promise<void> {
     return this.getQueries().incrementViews(id);
   }
-
-  async incrementLikes(id: string): Promise<void> {
-    return this.getQueries().incrementLikes(id);
-  }
 }
-

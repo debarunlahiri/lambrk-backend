@@ -1,6 +1,19 @@
-# Lambrk Backend API Documentation
+# Lambrk Backend API Documentation - Consolidated Reference
 
-Complete API reference for Lambrk video platform backend services.
+> **📚 Primary Documentation**: This is a consolidated single-file reference. For better navigation and the most up-to-date documentation, please use the **[organized documentation by service](./docs/README.md)**.
+>
+> **Quick Links**:
+> - [Auth Service](./docs/auth-service.md)
+> - [Video Service](./docs/video-service.md)
+> - [Bitz Service](./docs/bitz-service.md)
+> - [Posts Service](./docs/posts-service.md)
+> - [Interaction Service](./docs/interaction-service.md)
+
+---
+
+This file provides a complete API reference in a single document for offline reading or searching. For better organization and navigation, use the individual service documentation files in the `docs/` directory.
+
+Complete API reference for Lambrk video streaming platform backend services.
 
 ## Table of Contents
 
@@ -9,12 +22,24 @@ Complete API reference for Lambrk video platform backend services.
 - [Error Handling](#error-handling)
 - [Auth Service API](#auth-service-api)
 - [Video Service API](#video-service-api)
+- [Bitz Service API](#bitz-service-api)
+- [Posts Service API](#posts-service-api)
+- [Interaction Service API](#interaction-service-api)
+  - [Likes/Dislikes](#likesdislikes-api)
+  - [Comments](#comments-api)
+  - [Playlists](#playlists-api)
+  - [Subscriptions](#subscriptions-api)
+  - [Downloads](#downloads-api)
+  - [Trending](#trending-api)
 
 ## Base URLs
 
 - **API Gateway**: `http://localhost:3100`
 - **Auth Service (Direct)**: `http://localhost:3101`
 - **Video Service (Direct)**: `http://localhost:3102`
+- **Bitz Service (Direct)**: `http://localhost:3103`
+- **Posts Service (Direct)**: `http://localhost:3104`
+- **Interaction Service (Direct)**: `http://localhost:3105`
 
 > **Note**: All requests should go through the API Gateway unless accessing services directly for development.
 
@@ -45,1154 +70,697 @@ All error responses follow this format:
 }
 ```
 
-### HTTP Status Codes
-
-| Code | Description |
-|------|-------------|
-| 200 | Success |
-| 201 | Created |
-| 400 | Bad Request - Validation error |
-| 401 | Unauthorized - Missing or invalid token |
-| 403 | Forbidden - Insufficient permissions |
-| 404 | Not Found - Resource doesn't exist |
-| 409 | Conflict - Resource already exists |
-| 500 | Internal Server Error |
-| 503 | Service Unavailable |
-
 ---
 
-## Auth Service API
+## Bitz Service API
 
-### 1. User Registration
+Bitz are short vertical videos similar to TikTok/Instagram Reels.
 
-Register a new user account with username and password.
+### 1. Create Bitz
 
-**Endpoint:** `POST /api/auth/signup`
+**Endpoint:** `POST /api/bitz`
 
-**Authentication:** Not required
+**Authentication:** Required
 
 **Request Body:**
 ```json
 {
-  "username": "johndoe",
-  "email": "john@example.com",
-  "password": "SecurePass123"
-}
-```
-
-**cURL Example:**
-```bash
-curl -X POST http://localhost:3100/api/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "johndoe",
-    "email": "john@example.com",
-    "password": "SecurePass123"
-  }'
-```
-
-**Validation Rules:**
-- `username`: 
-  - Required
-  - 3-30 characters
-  - Alphanumeric and underscores only
-  - Must be unique
-- `email`: 
-  - Required
-  - Valid email format
-  - Must be unique
-- `password`: 
-  - Required
-  - Minimum 8 characters
-  - Must contain at least one uppercase letter
-  - Must contain at least one lowercase letter
-  - Must contain at least one number
-
-**Success Response (201):**
-```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "username": "johndoe",
-      "email": "john@example.com",
-      "firstName": null,
-      "lastName": null,
-      "avatar": null,
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z"
-    },
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }
-}
-```
-
-**Error Responses:**
-
-**400 - Validation Error:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Validation failed",
-    "errors": [
-      {
-        "msg": "Username must be between 3 and 30 characters",
-        "param": "username",
-        "location": "body"
-      }
-    ]
-  }
-}
-```
-
-**409 - Conflict:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Email already registered",
-    "statusCode": 409
-  }
-}
-```
-
----
-
-### 2. User Login
-
-Authenticate user with email/username and password.
-
-**Endpoint:** `POST /api/auth/signin`
-
-**Authentication:** Not required
-
-**Request Body (Email):**
-```json
-{
-  "email": "john@example.com",
-  "password": "SecurePass123"
-}
-```
-
-**Request Body (Username):**
-```json
-{
-  "username": "johndoe",
-  "password": "SecurePass123"
-}
-```
-
-**cURL Example (Email):**
-```bash
-curl -X POST http://localhost:3100/api/auth/signin \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "john@example.com",
-    "password": "SecurePass123"
-  }'
-```
-
-**cURL Example (Username):**
-```bash
-curl -X POST http://localhost:3100/api/auth/signin \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "johndoe",
-    "password": "SecurePass123"
-  }'
-```
-
-**Validation Rules:**
-- Either `email` OR `username` is required
-- `password`: Required
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "username": "johndoe",
-      "email": "john@example.com",
-      "firstName": "John",
-      "lastName": "Doe",
-      "avatar": "https://example.com/avatar.jpg",
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z"
-    },
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }
-}
-```
-
-**Error Responses:**
-
-**400 - Validation Error:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Validation failed",
-    "errors": [
-      {
-        "msg": "Either email or username is required",
-        "param": "body",
-        "location": "body"
-      }
-    ]
-  }
-}
-```
-
-**401 - Unauthorized:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Invalid credentials",
-    "statusCode": 401
-  }
-}
-```
-
----
-
-### 3. Refresh Access Token
-
-Obtain a new access token using a valid refresh token.
-
-**Endpoint:** `POST /api/auth/refresh-token`
-
-**Authentication:** Not required
-
-**Request Body:**
-```json
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-**cURL Example:**
-```bash
-curl -X POST http://localhost:3100/api/auth/refresh-token \
-  -H "Content-Type: application/json" \
-  -d '{
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }'
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }
-}
-```
-
-**Error Responses:**
-
-**400 - Bad Request:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Refresh token is required",
-    "statusCode": 400
-  }
-}
-```
-
-**401 - Unauthorized:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Invalid or expired token",
-    "statusCode": 401
-  }
-}
-```
-
----
-
-### 4. Get User Profile
-
-Get the authenticated user's profile information.
-
-**Endpoint:** `GET /api/auth/profile`
-
-**Authentication:** Required
-
-**Headers:**
-```
-Authorization: Bearer <access_token>
-```
-
-**cURL Example:**
-```bash
-curl -X GET http://localhost:3100/api/auth/profile \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "username": "johndoe",
-      "email": "john@example.com",
-      "firstName": "John",
-      "lastName": "Doe",
-      "avatar": "https://example.com/avatar.jpg",
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z"
-    }
-  }
-}
-```
-
-**Error Responses:**
-
-**401 - Unauthorized:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Unauthorized",
-    "statusCode": 401
-  }
-}
-```
-
----
-
-### 5. Google OAuth Login - Initiate
-
-Start the Google OAuth authentication flow.
-
-**Endpoint:** `GET /api/auth/google`
-
-**Authentication:** Not required
-
-**Description:** Redirects user to Google OAuth consent screen.
-
-**cURL Example:**
-```bash
-curl -X GET http://localhost:3100/api/auth/google \
-  -L -v
-```
-> Note: Use `-L` to follow redirects and `-v` for verbose output
-
-**Success Response:** HTTP 302 Redirect to Google OAuth
-
-**Query Parameters:** None
-
----
-
-### 6. Google OAuth Callback
-
-Handle Google OAuth callback and redirect to frontend with tokens.
-
-**Endpoint:** `GET /api/auth/google/callback`
-
-**Authentication:** Not required (handled by Google OAuth)
-
-**Description:** This endpoint is called by Google after user authentication. It processes the OAuth response and redirects to the frontend with tokens.
-
-**Success Response:** HTTP 302 Redirect to frontend
-
-**Redirect URL Format:**
-```
-http://localhost:3100/auth/callback?accessToken=<token>&refreshToken=<token>
-```
-
-**Error Responses:**
-
-**401 - Authentication Failed:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Google authentication failed",
-    "statusCode": 401
-  }
-}
-```
-
----
-
-### 7. Google OAuth Failure
-
-Endpoint for handling Google OAuth failures.
-
-**Endpoint:** `GET /api/auth/google/failure`
-
-**Authentication:** Not required
-
-**Error Response (401):**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Google authentication failed",
-    "statusCode": 401
-  }
-}
-```
-
----
-
-## Video Service API
-
-### 1. Get All Videos
-
-Retrieve a paginated list of all videos.
-
-**Endpoint:** `GET /api/videos`
-
-**Authentication:** Not required
-
-**Query Parameters:**
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `limit` | integer | No | 20 | Number of videos per page |
-| `offset` | integer | No | 0 | Pagination offset |
-| `status` | string | No | - | Filter by status: 'draft', 'published', 'processing' |
-
-**Example Request:**
-```
-GET /api/videos?limit=10&offset=0&status=published
-```
-
-**cURL Example:**
-```bash
-curl -X GET "http://localhost:3100/api/videos?limit=10&offset=0&status=published"
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "videos": [
-      {
-        "id": "550e8400-e29b-41d4-a716-446655440000",
-        "title": "My Awesome Video",
-        "description": "This is a great video about technology",
-        "url": "https://example.com/videos/video.mp4",
-        "thumbnailUrl": "https://example.com/thumbnails/thumb.jpg",
-        "duration": 3600,
-        "userId": "660e8400-e29b-41d4-a716-446655440000",
-        "views": 1250,
-        "likes": 89,
-        "status": "published",
-        "createdAt": "2024-01-01T00:00:00.000Z",
-        "updatedAt": "2024-01-01T00:00:00.000Z"
-      }
-    ]
-  }
-}
-```
-
----
-
-### 2. Get User's Videos
-
-Get all videos created by the authenticated user.
-
-**Endpoint:** `GET /api/videos/my-videos`
-
-**Authentication:** Required
-
-**Headers:**
-```
-Authorization: Bearer <access_token>
-```
-
-**Query Parameters:**
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `limit` | integer | No | 20 | Number of videos per page |
-| `offset` | integer | No | 0 | Pagination offset |
-
-**Example Request:**
-```
-GET /api/videos/my-videos?limit=10&offset=0
-```
-
-**cURL Example:**
-```bash
-curl -X GET "http://localhost:3100/api/videos/my-videos?limit=10&offset=0" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "videos": [
-      {
-        "id": "550e8400-e29b-41d4-a716-446655440000",
-        "title": "My Video",
-        "description": "My video description",
-        "url": "https://example.com/videos/video.mp4",
-        "thumbnailUrl": "https://example.com/thumbnails/thumb.jpg",
-        "duration": 1800,
-        "userId": "660e8400-e29b-41d4-a716-446655440000",
-        "views": 50,
-        "likes": 5,
-        "status": "draft",
-        "createdAt": "2024-01-01T00:00:00.000Z",
-        "updatedAt": "2024-01-01T00:00:00.000Z"
-      }
-    ]
-  }
-}
-```
-
-**Error Responses:**
-
-**401 - Unauthorized:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Unauthorized",
-    "statusCode": 401
-  }
-}
-```
-
----
-
-### 3. Get Video by ID
-
-Retrieve a specific video by its unique identifier.
-
-**Endpoint:** `GET /api/videos/:id`
-
-**Authentication:** Not required
-
-**Path Parameters:**
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | UUID | Yes | Video unique identifier |
-
-**Example Request:**
-```
-GET /api/videos/550e8400-e29b-41d4-a716-446655440000
-```
-
-**cURL Example:**
-```bash
-curl -X GET http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000
-```
-
-**cURL Example (with quality):**
-```bash
-# Get video with specific quality
-curl -X GET "http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000?quality=720p"
-
-# Get video with all available qualities
-curl -X GET "http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000?includeQualities=true"
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "video": {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "title": "My Awesome Video",
-      "description": "This is a great video about technology",
-      "url": "https://example.com/videos/video.mp4",
-      "thumbnailUrl": "https://example.com/thumbnails/thumb.jpg",
-      "duration": 3600,
-      "userId": "660e8400-e29b-41d4-a716-446655440000",
-      "views": 1250,
-      "likes": 89,
-      "status": "published",
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z"
-    }
-  }
-}
-```
-
-**Error Responses:**
-
-**404 - Not Found:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Video not found",
-    "statusCode": 404
-  }
-}
-```
-
----
-
-### 4. Create Video
-
-Create a new video entry.
-
-**Endpoint:** `POST /api/videos`
-
-**Authentication:** Required
-
-**Headers:**
-```
-Authorization: Bearer <access_token>
-```
-
-**Request Body:**
-```json
-{
-  "title": "My New Video",
-  "description": "This is a description of my video",
-  "url": "https://example.com/videos/video.mp4",
+  "title": "My Awesome Bitz",
+  "description": "Short video description",
+  "url": "https://example.com/bitz/video.mp4",
   "thumbnailUrl": "https://example.com/thumbnails/thumb.jpg",
-  "duration": 3600,
-  "status": "draft"
-}
-```
-
-**cURL Example:**
-```bash
-curl -X POST http://localhost:3100/api/videos \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
-  -d '{
-    "title": "My New Video",
-    "description": "This is a description of my video",
-    "url": "https://example.com/videos/video.mp4",
-    "thumbnailUrl": "https://example.com/thumbnails/thumb.jpg",
-    "duration": 3600,
-    "status": "draft"
-  }'
-```
-
-**Validation Rules:**
-- `title`: 
-  - Required
-  - Non-empty string
-- `url`: 
-  - Required
-  - Valid URL format
-- `description`: Optional string
-- `thumbnailUrl`: Optional, valid URL format
-- `duration`: Optional integer (in seconds)
-- `status`: Optional, must be one of: 'draft', 'published', 'processing' (default: 'draft')
-
-**Success Response (201):**
-```json
-{
-  "success": true,
-  "data": {
-    "video": {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "title": "My New Video",
-      "description": "This is a description of my video",
-      "url": "https://example.com/videos/video.mp4",
-      "thumbnailUrl": "https://example.com/thumbnails/thumb.jpg",
-      "duration": 3600,
-      "userId": "660e8400-e29b-41d4-a716-446655440000",
-      "views": 0,
-      "likes": 0,
-      "status": "draft",
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z"
-    }
-  }
-}
-```
-
-**Error Responses:**
-
-**400 - Validation Error:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Validation failed",
-    "errors": [
-      {
-        "msg": "Title is required",
-        "param": "title",
-        "location": "body"
-      }
-    ]
-  }
-}
-```
-
-**401 - Unauthorized:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Unauthorized",
-    "statusCode": 401
-  }
-}
-```
-
----
-
-### 5. Update Video
-
-Update an existing video. Users can only update their own videos.
-
-**Endpoint:** `PUT /api/videos/:id`
-
-**Authentication:** Required
-
-**Headers:**
-```
-Authorization: Bearer <access_token>
-```
-
-**Path Parameters:**
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | UUID | Yes | Video unique identifier |
-
-**Request Body:**
-```json
-{
-  "title": "Updated Video Title",
-  "description": "Updated description",
-  "thumbnailUrl": "https://example.com/thumbnails/new-thumb.jpg",
+  "duration": 30,
   "status": "published"
 }
 ```
 
-**cURL Example:**
-```bash
-curl -X PUT http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000 \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
-  -d '{
-    "title": "Updated Video Title",
-    "description": "Updated description",
-    "thumbnailUrl": "https://example.com/thumbnails/new-thumb.jpg",
-    "status": "published"
-  }'
+### 2. Get All Bitz
+
+**Endpoint:** `GET /api/bitz`
+
+**Query Parameters:**
+- `limit`: Number of items (default: 20)
+- `offset`: Pagination offset (default: 0)
+- `status`: Filter by status (draft/published/processing)
+
+### 3. Get User's Bitz
+
+**Endpoint:** `GET /api/bitz/my-bitz`
+
+**Authentication:** Required
+
+### 4. Get Bitz by ID
+
+**Endpoint:** `GET /api/bitz/:id`
+
+### 5. Update Bitz
+
+**Endpoint:** `PUT /api/bitz/:id`
+
+**Authentication:** Required
+
+### 6. Delete Bitz
+
+**Endpoint:** `DELETE /api/bitz/:id`
+
+**Authentication:** Required
+
+### 7. Increment Bitz Views
+
+**Endpoint:** `POST /api/bitz/:id/views`
+
+---
+
+## Posts Service API
+
+### 1. Create Post
+
+**Endpoint:** `POST /api/posts`
+
+**Authentication:** Required
+
+**Request Body:**
+```json
+{
+  "title": "My Post Title",
+  "content": "Post content here...",
+  "imageUrl": "https://example.com/images/post.jpg",
+  "status": "published"
+}
 ```
 
-**Validation Rules:**
-- All fields are optional
-- `title`: If provided, must be non-empty string
-- `status`: If provided, must be one of: 'draft', 'published', 'processing'
+### 2. Get All Posts
 
-**Success Response (200):**
+**Endpoint:** `GET /api/posts`
+
+**Query Parameters:**
+- `limit`: Number of items (default: 20)
+- `offset`: Pagination offset (default: 0)
+- `status`: Filter by status (draft/published)
+
+### 3. Get User's Posts
+
+**Endpoint:** `GET /api/posts/my-posts`
+
+**Authentication:** Required
+
+### 4. Get Post by ID
+
+**Endpoint:** `GET /api/posts/:id`
+
+### 5. Update Post
+
+**Endpoint:** `PUT /api/posts/:id`
+
+**Authentication:** Required
+
+### 6. Delete Post
+
+**Endpoint:** `DELETE /api/posts/:id`
+
+**Authentication:** Required
+
+### 7. Increment Post Views
+
+**Endpoint:** `POST /api/posts/:id/views`
+
+---
+
+## Interaction Service API
+
+### Likes/Dislikes API
+
+#### 1. Toggle Like/Dislike
+
+**Endpoint:** `POST /api/likes`
+
+**Authentication:** Required
+
+**Request Body:**
+```json
+{
+  "contentType": "video",
+  "contentId": "550e8400-e29b-41d4-a716-446655440000",
+  "likeType": "like"
+}
+```
+
+**Content Types:** `video`, `bitz`, `post`
+
+**Like Types:** `like`, `dislike`
+
+**Response:**
 ```json
 {
   "success": true,
   "data": {
-    "video": {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "title": "Updated Video Title",
-      "description": "Updated description",
-      "url": "https://example.com/videos/video.mp4",
-      "thumbnailUrl": "https://example.com/thumbnails/new-thumb.jpg",
-      "duration": 3600,
-      "userId": "660e8400-e29b-41d4-a716-446655440000",
-      "views": 1250,
-      "likes": 89,
-      "status": "published",
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-02T00:00:00.000Z"
+    "action": "added",
+    "stats": {
+      "likes": 10,
+      "dislikes": 2,
+      "userLikeType": "like"
     }
   }
 }
 ```
 
-**Error Responses:**
+**Actions:** `added`, `updated`, `removed`
 
-**400 - Validation Error:**
+#### 2. Get Like Stats
+
+**Endpoint:** `GET /api/likes/:contentType/:contentId`
+
+**Response:**
 ```json
 {
-  "success": false,
-  "error": {
-    "message": "Validation failed",
-    "errors": [
+  "success": true,
+  "data": {
+    "stats": {
+      "likes": 10,
+      "dislikes": 2,
+      "userLikeType": "like"
+    }
+  }
+}
+```
+
+#### 3. Get User's Liked Content
+
+**Endpoint:** `GET /api/likes/user/:contentType`
+
+**Authentication:** Required
+
+**Query Parameters:**
+- `likeType`: Filter by like/dislike (default: like)
+- `limit`: Number of items (default: 20)
+- `offset`: Pagination offset (default: 0)
+
+---
+
+### Comments API
+
+#### 1. Create Comment
+
+**Endpoint:** `POST /api/comments`
+
+**Authentication:** Required
+
+**Request Body:**
+```json
+{
+  "contentType": "video",
+  "contentId": "550e8400-e29b-41d4-a716-446655440000",
+  "commentText": "Great video!",
+  "parentCommentId": null
+}
+```
+
+#### 2. Get Content Comments
+
+**Endpoint:** `GET /api/comments/:contentType/:contentId`
+
+**Query Parameters:**
+- `limit`: Number of items (default: 20)
+- `offset`: Pagination offset (default: 0)
+
+#### 3. Get Comment Replies
+
+**Endpoint:** `GET /api/comments/:commentId/replies`
+
+**Query Parameters:**
+- `limit`: Number of items (default: 20)
+- `offset`: Pagination offset (default: 0)
+
+#### 4. Update Comment
+
+**Endpoint:** `PUT /api/comments/:id`
+
+**Authentication:** Required
+
+**Request Body:**
+```json
+{
+  "commentText": "Updated comment text"
+}
+```
+
+#### 5. Delete Comment
+
+**Endpoint:** `DELETE /api/comments/:id`
+
+**Authentication:** Required
+
+#### 6. Get Comment Count
+
+**Endpoint:** `GET /api/comments/:contentType/:contentId/count`
+
+---
+
+### Playlists API
+
+#### 1. Create Playlist
+
+**Endpoint:** `POST /api/playlists`
+
+**Authentication:** Required
+
+**Request Body:**
+```json
+{
+  "name": "My Playlist",
+  "description": "My favorite videos",
+  "isPublic": true
+}
+```
+
+#### 2. Get User's Playlists
+
+**Endpoint:** `GET /api/playlists/my-playlists`
+
+**Authentication:** Required
+
+#### 3. Get Watch Later Playlist
+
+**Endpoint:** `GET /api/playlists/watch-later`
+
+**Authentication:** Required
+
+**Note:** Auto-creates if doesn't exist
+
+#### 4. Get Playlist by ID
+
+**Endpoint:** `GET /api/playlists/:id`
+
+#### 5. Update Playlist
+
+**Endpoint:** `PUT /api/playlists/:id`
+
+**Authentication:** Required
+
+**Note:** Cannot update Watch Later playlist
+
+#### 6. Delete Playlist
+
+**Endpoint:** `DELETE /api/playlists/:id`
+
+**Authentication:** Required
+
+**Note:** Cannot delete Watch Later playlist
+
+#### 7. Add Item to Playlist
+
+**Endpoint:** `POST /api/playlists/:id/items`
+
+**Authentication:** Required
+
+**Request Body:**
+```json
+{
+  "contentType": "video",
+  "contentId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+#### 8. Remove Item from Playlist
+
+**Endpoint:** `DELETE /api/playlists/:id/items/:contentType/:contentId`
+
+**Authentication:** Required
+
+#### 9. Get Playlist Items
+
+**Endpoint:** `GET /api/playlists/:id/items`
+
+**Query Parameters:**
+- `limit`: Number of items (default: 50)
+- `offset`: Pagination offset (default: 0)
+
+#### 10. Check Item in Playlist
+
+**Endpoint:** `GET /api/playlists/:id/items/:contentType/:contentId/check`
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "exists": true
+  }
+}
+```
+
+---
+
+### Subscriptions API
+
+#### 1. Subscribe to Channel
+
+**Endpoint:** `POST /api/subscriptions`
+
+**Authentication:** Required
+
+**Request Body:**
+```json
+{
+  "channelId": "660e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "subscribed": true,
+    "subscriberCount": 1250
+  }
+}
+```
+
+#### 2. Unsubscribe from Channel
+
+**Endpoint:** `DELETE /api/subscriptions/:channelId`
+
+**Authentication:** Required
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "unsubscribed": true,
+    "subscriberCount": 1249
+  }
+}
+```
+
+#### 3. Check Subscription Status
+
+**Endpoint:** `GET /api/subscriptions/check/:channelId`
+
+**Authentication:** Required
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "subscribed": true
+  }
+}
+```
+
+#### 4. Get User's Subscriptions
+
+**Endpoint:** `GET /api/subscriptions/my-subscriptions`
+
+**Authentication:** Required
+
+**Query Parameters:**
+- `limit`: Number of items (default: 50)
+- `offset`: Pagination offset (default: 0)
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "channelIds": ["uuid1", "uuid2", "uuid3"]
+  }
+}
+```
+
+#### 5. Get Channel Subscribers
+
+**Endpoint:** `GET /api/subscriptions/channel/:channelId/subscribers`
+
+**Query Parameters:**
+- `limit`: Number of items (default: 50)
+- `offset`: Pagination offset (default: 0)
+
+#### 6. Get Subscriber Count
+
+**Endpoint:** `GET /api/subscriptions/channel/:channelId/count`
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "count": 1250
+  }
+}
+```
+
+---
+
+### Downloads API
+
+#### 1. Create Download
+
+**Endpoint:** `POST /api/downloads`
+
+**Authentication:** Required
+
+**Request Body:**
+```json
+{
+  "contentType": "video",
+  "contentId": "550e8400-e29b-41d4-a716-446655440000",
+  "downloadUrl": "https://example.com/downloads/video.mp4",
+  "fileSize": 104857600,
+  "status": "completed"
+}
+```
+
+**Status:** `pending`, `completed`, `failed`
+
+#### 2. Get User's Downloads
+
+**Endpoint:** `GET /api/downloads/my-downloads`
+
+**Authentication:** Required
+
+**Query Parameters:**
+- `limit`: Number of items (default: 20)
+- `offset`: Pagination offset (default: 0)
+
+#### 3. Get Download by ID
+
+**Endpoint:** `GET /api/downloads/:id`
+
+#### 4. Update Download
+
+**Endpoint:** `PUT /api/downloads/:id`
+
+**Authentication:** Required
+
+**Request Body:**
+```json
+{
+  "status": "completed",
+  "fileSize": 104857600
+}
+```
+
+#### 5. Delete Download
+
+**Endpoint:** `DELETE /api/downloads/:id`
+
+**Authentication:** Required
+
+---
+
+### Trending API
+
+#### 1. Get Trending Videos
+
+**Endpoint:** `GET /api/trending/videos`
+
+**Query Parameters:**
+- `limit`: Number of items (default: 20)
+- `offset`: Pagination offset (default: 0)
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "videos": [
       {
-        "msg": "Title cannot be empty",
-        "param": "title",
-        "location": "body"
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "title": "Trending Video",
+        "views": 50000,
+        "likes": 2500,
+        "dislikes": 100,
+        "trendingScore": 125000.5,
+        "isTrending": true,
+        ...
       }
     ]
   }
 }
 ```
 
-**401 - Unauthorized:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Unauthorized",
-    "statusCode": 401
-  }
-}
-```
+#### 2. Get Trending Bitz
 
-**403 - Forbidden:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "You can only update your own videos",
-    "statusCode": 403
-  }
-}
-```
+**Endpoint:** `GET /api/trending/bitz`
 
-**404 - Not Found:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Video not found",
-    "statusCode": 404
-  }
-}
-```
+**Query Parameters:**
+- `limit`: Number of items (default: 20)
+- `offset`: Pagination offset (default: 0)
 
----
+#### 3. Get Trending Posts
 
-### 6. Delete Video
+**Endpoint:** `GET /api/trending/posts`
 
-Delete a video. Users can only delete their own videos.
+**Query Parameters:**
+- `limit`: Number of items (default: 20)
+- `offset`: Pagination offset (default: 0)
 
-**Endpoint:** `DELETE /api/videos/:id`
+#### 4. Refresh Trending Data
 
-**Authentication:** Required
+**Endpoint:** `POST /api/trending/refresh`
 
-**Headers:**
-```
-Authorization: Bearer <access_token>
-```
-
-**Path Parameters:**
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | UUID | Yes | Video unique identifier |
-
-**Example Request:**
-```
-DELETE /api/videos/550e8400-e29b-41d4-a716-446655440000
-```
-
-**cURL Example:**
-```bash
-curl -X DELETE http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000 \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "message": "Video deleted successfully"
-}
-```
-
-**Error Responses:**
-
-**401 - Unauthorized:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Unauthorized",
-    "statusCode": 401
-  }
-}
-```
-
-**403 - Forbidden:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "You can only delete your own videos",
-    "statusCode": 403
-  }
-}
-```
-
-**404 - Not Found:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Video not found",
-    "statusCode": 404
-  }
-}
-```
-
----
-
-### 7. Increment Views
-
-Increment the view count for a video.
-
-**Endpoint:** `POST /api/videos/:id/views`
-
-**Authentication:** Not required
-
-**Path Parameters:**
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | UUID | Yes | Video unique identifier |
-
-**Example Request:**
-```
-POST /api/videos/550e8400-e29b-41d4-a716-446655440000/views
-```
-
-**cURL Example:**
-```bash
-curl -X POST http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/views
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "message": "Views incremented"
-}
-```
-
-**Error Responses:**
-
-**404 - Not Found:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Video not found",
-    "statusCode": 404
-  }
-}
-```
-
----
-
-### 8. Increment Likes
-
-Increment the like count for a video.
-
-**Endpoint:** `POST /api/videos/:id/likes`
-
-**Authentication:** Not required
-
-**Path Parameters:**
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | UUID | Yes | Video unique identifier |
-
-**Example Request:**
-```
-POST /api/videos/550e8400-e29b-41d4-a716-446655440000/likes
-```
-
-**cURL Example:**
-```bash
-curl -X POST http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/likes
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "message": "Likes incremented"
-}
-```
-
-**Error Responses:**
-
-**404 - Not Found:**
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Video not found",
-    "statusCode": 404
-  }
-}
-```
-
----
-
-### 9. Video Quality Management
-
-The video service supports multiple quality versions for each video (like YouTube). The following endpoints allow you to manage video qualities.
-
-#### 9.1. Add Video Quality
-
-Add a new quality version to a video.
-
-**Endpoint:** `POST /api/videos/:videoId/qualities`
-
-**Authentication:** Required
-
-**cURL Example:**
-```bash
-curl -X POST http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/qualities \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
-  -d '{
-    "quality": "720p",
-    "url": "https://example.com/videos/video-720p.mp4",
-    "fileSize": 104857600,
-    "bitrate": 5000,
-    "resolutionWidth": 1280,
-    "resolutionHeight": 720,
-    "codec": "h264",
-    "container": "mp4",
-    "duration": 3600,
-    "isDefault": true,
-    "status": "ready"
-  }'
-```
-
-#### 9.2. Get All Video Qualities
-
-Get all quality versions for a video.
-
-**Endpoint:** `GET /api/videos/:videoId/qualities`
-
-**Authentication:** Not required
-
-**cURL Example:**
-```bash
-curl -X GET http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/qualities
-```
-
-#### 9.3. Get Specific Video Quality
-
-Get a specific quality version by quality type.
-
-**Endpoint:** `GET /api/videos/:videoId/qualities/:quality`
-
-**Authentication:** Not required
-
-**cURL Example:**
-```bash
-curl -X GET http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/qualities/720p
-```
-
-#### 9.4. Update Video Quality
-
-Update a video quality version.
-
-**Endpoint:** `PUT /api/videos/:videoId/qualities/:qualityId`
-
-**Authentication:** Required
-
-**cURL Example:**
-```bash
-curl -X PUT http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/qualities/660e8400-e29b-41d4-a716-446655440001 \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
-  -d '{
-    "status": "ready",
-    "bitrate": 6000
-  }'
-```
-
-#### 9.5. Delete Video Quality
-
-Delete a video quality version.
-
-**Endpoint:** `DELETE /api/videos/:videoId/qualities/:qualityId`
-
-**Authentication:** Required
-
-**cURL Example:**
-```bash
-curl -X DELETE http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/qualities/660e8400-e29b-41d4-a716-446655440001 \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-```
-
-#### 9.6. Set Default Quality
-
-Set a quality version as the default for a video.
-
-**Endpoint:** `POST /api/videos/:videoId/qualities/:qualityId/set-default`
-
-**Authentication:** Required
-
-**cURL Example:**
-```bash
-curl -X POST http://localhost:3100/api/videos/550e8400-e29b-41d4-a716-446655440000/qualities/660e8400-e29b-41d4-a716-446655440001/set-default \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-```
-
-**Available Quality Types:**
-- `144p`, `240p`, `360p`, `480p`, `720p`, `1080p`, `1440p`, `2160p`, `original`
+**Note:** This endpoint refreshes the materialized views for trending content. Should be called periodically (e.g., every hour) via a cron job.
 
 ---
 
 ## Data Models
 
-### User Model
+### ContentType Enum
 
 ```typescript
-{
-  id: string;              // UUID
-  username: string;         // Unique, 3-30 chars
-  email: string;            // Unique, valid email
-  password?: string;         // Hashed (never returned in responses)
-  googleId?: string;        // Google OAuth ID
-  firstName?: string;        // Optional
-  lastName?: string;         // Optional
-  avatar?: string;           // URL to avatar image
-  createdAt: Date;          // ISO 8601 timestamp
-  updatedAt: Date;          // ISO 8601 timestamp
-}
+type ContentType = 'video' | 'bitz' | 'post';
+```
+
+### LikeType Enum
+
+```typescript
+type LikeType = 'like' | 'dislike';
 ```
 
 ### Video Model
 
 ```typescript
 {
-  id: string;               // UUID
-  title: string;            // Required
-  description?: string;     // Optional
-  url: string;              // Required, video URL
-  thumbnailUrl?: string;    // Optional, thumbnail URL
-  duration?: number;        // Optional, in seconds
-  userId: string;           // UUID, foreign key to users
-  views: number;            // Integer, default: 0
-  likes: number;            // Integer, default: 0
-  status: 'draft' | 'published' | 'processing';  // Video status
-  createdAt: Date;         // ISO 8601 timestamp
-  updatedAt: Date;          // ISO 8601 timestamp
+  id: string;
+  title: string;
+  description?: string;
+  url: string;
+  thumbnailUrl?: string;
+  duration?: number;
+  userId: string;
+  views: number;
+  likes: number;
+  dislikes: number;
+  status: 'draft' | 'published' | 'processing';
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### Bitz Model
+
+```typescript
+{
+  id: string;
+  title: string;
+  description?: string;
+  url: string;
+  thumbnailUrl?: string;
+  duration?: number;
+  userId: string;
+  views: number;
+  status: 'draft' | 'published' | 'processing';
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### Post Model
+
+```typescript
+{
+  id: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  userId: string;
+  views: number;
+  status: 'draft' | 'published';
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### Comment Model
+
+```typescript
+{
+  id: string;
+  userId: string;
+  contentType: ContentType;
+  contentId: string;
+  parentCommentId?: string;
+  commentText: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### Playlist Model
+
+```typescript
+{
+  id: string;
+  userId: string;
+  name: string;
+  description?: string;
+  isPublic: boolean;
+  isWatchLater: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### PlaylistItem Model
+
+```typescript
+{
+  id: string;
+  playlistId: string;
+  contentType: ContentType;
+  contentId: string;
+  position: number;
+  createdAt: Date;
+}
+```
+
+### Subscription Model
+
+```typescript
+{
+  id: string;
+  subscriberId: string;
+  channelId: string;
+  createdAt: Date;
+}
+```
+
+### Download Model
+
+```typescript
+{
+  id: string;
+  userId: string;
+  contentType: ContentType;
+  contentId: string;
+  downloadUrl: string;
+  fileSize?: number;
+  status: 'pending' | 'completed' | 'failed';
+  createdAt: Date;
+  updatedAt: Date;
 }
 ```
 
@@ -1205,16 +773,132 @@ Rate limiting is implemented to protect the API from abuse:
 - **Gateway**: 300 requests per 15 minutes per IP
 - **Auth Service**: 100 requests per 15 minutes per IP
 - **Auth Endpoints** (signup/signin): 5 requests per 15 minutes per IP
-- **Video Service**: 200 requests per 15 minutes per IP
-- **Video Operations** (create/update/delete): 10 operations per hour per IP
+- **All Services** (read operations): 100 requests per 15 minutes
+- **All Services** (write operations): 50 requests per 15 minutes
+- **Video/Bitz Operations** (create/update/delete): 10-20 operations per hour
 
 When rate limits are exceeded, you'll receive a `429 Too Many Requests` response.
 
-## Versioning
+---
 
-API versioning is not currently implemented. All endpoints are under `/api/` prefix.
+## Integration Examples
+
+### Like/Dislike a Video
+
+```javascript
+// Toggle like
+const response = await fetch('http://localhost:3100/api/likes', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer YOUR_ACCESS_TOKEN'
+  },
+  body: JSON.stringify({
+    contentType: 'video',
+    contentId: 'video-uuid',
+    likeType: 'like'
+  })
+});
+
+const data = await response.json();
+// data.data.action will be 'added', 'updated', or 'removed'
+// data.data.stats will contain current like/dislike counts
+```
+
+### Add to Playlist
+
+```javascript
+// Get or create Watch Later playlist
+const watchLaterResponse = await fetch('http://localhost:3100/api/playlists/watch-later', {
+  headers: {
+    'Authorization': 'Bearer YOUR_ACCESS_TOKEN'
+  }
+});
+
+const { playlist } = (await watchLaterResponse.json()).data;
+
+// Add video to Watch Later
+const addResponse = await fetch(`http://localhost:3100/api/playlists/${playlist.id}/items`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer YOUR_ACCESS_TOKEN'
+  },
+  body: JSON.stringify({
+    contentType: 'video',
+    contentId: 'video-uuid'
+  })
+});
+```
+
+### Subscribe to Channel
+
+```javascript
+const response = await fetch('http://localhost:3100/api/subscriptions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer YOUR_ACCESS_TOKEN'
+  },
+  body: JSON.stringify({
+    channelId: 'channel-user-uuid'
+  })
+});
+
+const data = await response.json();
+// data.data.subscribed will be true
+// data.data.subscriberCount will contain current subscriber count
+```
+
+### Add Comment
+
+```javascript
+const response = await fetch('http://localhost:3100/api/comments', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer YOUR_ACCESS_TOKEN'
+  },
+  body: JSON.stringify({
+    contentType: 'video',
+    contentId: 'video-uuid',
+    commentText: 'Great video!',
+    parentCommentId: null // or comment-uuid for replies
+  })
+});
+```
+
+---
+
+## Database Schema
+
+### Key Features
+
+- **Universal Likes System**: Single `likes` table handles likes/dislikes for all content types
+- **Comments System**: Supports nested comments (replies) with `parent_comment_id`
+- **Flexible Playlists**: Can contain any content type (videos, bitz, posts)
+- **Materialized Views**: Trending content is pre-computed for performance
+- **Automatic Timestamps**: All tables have `created_at` and `updated_at` with triggers
+
+### Trending Algorithm
+
+Trending score is calculated as:
+```
+score = (views * 0.5) + (likes * 2) - (dislikes * 1.5)
+```
+
+Content is considered trending if:
+- Created within the last 7 days
+- Status is 'published'
+- Has significant engagement
+
+Trending views should be refreshed periodically (hourly recommended) using:
+```sql
+SELECT refresh_trending_views();
+```
+
+---
 
 ## Support
 
 For issues or questions, please refer to the main README.md file or contact the development team.
-

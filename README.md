@@ -1,53 +1,108 @@
-# Lambrk Backend - Video Platform
+# Lambrk Backend - Video Streaming Platform
 
-A microservices-based Node.js backend for Lambrk video platform built with TypeScript, Express, and PostgreSQL.
+A modern microservices-based backend for Lambrk video streaming platform built with TypeScript, Express, and PostgreSQL.
+
+## 📚 Documentation
+
+- **[Quick Start Guide](./QUICK_START.md)** - Get up and running in 5 minutes
+- **[API Documentation](./docs/README.md)** - Complete API reference organized by service
+  - [Auth Service](./docs/auth-service.md)
+  - [Video Service](./docs/video-service.md)
+  - [Bitz Service](./docs/bitz-service.md)
+  - [Posts Service](./docs/posts-service.md)
+  - [Interaction Service](./docs/interaction-service.md)
+- **[Architecture & Setup](./UPDATE_SUMMARY.md)** - Detailed architecture and deployment guide
+- **[Consolidated API Reference](./API_DOCUMENTATION.md)** - Single-file documentation
 
 ## Table of Contents
 
 - [Architecture](#architecture)
 - [Features](#features)
+- [Services](#services)
 - [Prerequisites](#prerequisites)
-- [Setup](#setup)
+- [Quick Setup](#quick-setup)
 - [Environment Variables](#environment-variables)
 - [Database Setup](#database-setup)
 - [Running the Services](#running-the-services)
-- [API Documentation](#api-documentation)
 - [Docker Setup](#docker-setup)
 - [Project Structure](#project-structure)
 
-> **📖 For complete API reference, see [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)**
-
 ## Architecture
 
-The project follows a microservices architecture with the following components:
+The project follows a microservices architecture with 6 specialized services:
 
-- **API Gateway** (Port 3100): Single entry point that routes requests to appropriate services
-- **Auth Service** (Port 3101): Handles user authentication and authorization
-- **Video Service** (Port 3102): Manages video operations and metadata
-- **Shared Package**: Common utilities, types, and middleware used across services
-- **PostgreSQL Database**: Shared database for all services
+- **API Gateway** (Port 3100): Routes requests and provides rate limiting
+- **Auth Service** (Port 3101): Authentication, user management, OAuth
+- **Video Service** (Port 3102): Full-length videos with quality management
+- **Bitz Service** (Port 3103): Short vertical videos (TikTok/Reels style)
+- **Posts Service** (Port 3104): Social media posts with images
+- **Interaction Service** (Port 3105): Likes, comments, playlists, subscriptions, downloads, trending
+- **Shared Package**: Common utilities and middleware
+- **PostgreSQL Database**: Shared database with materialized views
 
 ## Features
 
-- User authentication with username/password
+### Content Types
+- **Videos**: Full-length videos with multiple quality support (4K, 2K, HD, 720p, 480p, 360p)
+- **Bitz**: Short vertical videos for mobile (TikTok/Reels style)
+- **Posts**: Social media posts with text and images
+
+### User Interactions
+- **Universal Likes/Dislikes**: Toggle-based system for all content types
+- **Nested Comments**: Comments with replies on all content
+- **Playlists**: Custom playlists + auto Watch Later
+- **Subscriptions**: Channel subscriptions with subscriber counts
+- **Downloads**: Download tracking and management
+- **Trending**: Algorithmic trending content
+
+### Authentication
+- Email/password authentication
 - Google OAuth integration
-- JWT-based authentication with access and refresh tokens
-- Video CRUD operations
-- User-specific video management
-- Video views and likes tracking
-- Microservices architecture
+- Firebase authentication support
+- JWT with access and refresh tokens
+
+### Technical Features
+- Microservices architecture for scalability
 - TypeScript for type safety
-- PostgreSQL database
-- Docker support
+- PostgreSQL with materialized views
+- Rate limiting and DDoS protection
+- Docker support for easy deployment
+- Comprehensive API documentation
+
+## Services
+
+1. **API Gateway** (Port 3100) - Request routing and rate limiting
+2. **Auth Service** (Port 3101) - User authentication and management
+3. **Video Service** (Port 3102) - Full-length video operations
+4. **Bitz Service** (Port 3103) - Short vertical videos
+5. **Posts Service** (Port 3104) - Social media posts
+6. **Interaction Service** (Port 3105) - All user interactions
 
 ## Prerequisites
 
 - Node.js 18+ and npm
 - PostgreSQL 15+
-- Docker and Docker Compose (optional, for containerized setup)
-- Google OAuth credentials (for Google login)
+- Docker and Docker Compose (recommended)
+- Google OAuth credentials (optional, for Google login)
+- Firebase credentials (optional, for mobile auth)
 
-## Setup
+## Quick Setup
+
+For detailed setup instructions, see [QUICK_START.md](./QUICK_START.md).
+
+```bash
+# 1. Start all services with Docker
+docker-compose up -d
+
+# 2. Run migrations
+docker cp migrations/003_create_comprehensive_platform_schema.sql lambrk-postgres:/tmp/
+docker exec -it lambrk-postgres psql -U lambrk_user -d lambrk -f /tmp/003_create_comprehensive_platform_schema.sql
+
+# 3. Access API Gateway
+curl http://localhost:3100/health
+```
+
+## Detailed Setup
 
 ### 1. Clone and Install Dependencies
 

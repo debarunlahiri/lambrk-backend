@@ -1,18 +1,18 @@
 import { Pool } from 'pg';
-import { CreateVideoData, UpdateVideoData, Video } from '../models/Video';
+import { CreateBitzData, UpdateBitzData, Bitz } from '../models/Bitz';
 
-export class VideoQueries {
+export class BitzQueries {
   private pool: Pool;
 
   constructor(pool: Pool) {
     this.pool = pool;
   }
 
-  async create(data: CreateVideoData): Promise<Video> {
+  async create(data: CreateBitzData): Promise<Bitz> {
     const query = `
-      INSERT INTO videos (title, description, url, thumbnail_url, duration, user_id, status)
+      INSERT INTO bitz (title, description, url, thumbnail_url, duration, user_id, status)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
-      RETURNING id, title, description, url, thumbnail_url, duration, user_id, views, likes, dislikes, status, created_at, updated_at
+      RETURNING id, title, description, url, thumbnail_url, duration, user_id, views, status, created_at, updated_at
     `;
 
     const values = [
@@ -26,13 +26,13 @@ export class VideoQueries {
     ];
 
     const result = await this.pool.query(query, values);
-    return this.mapRowToVideo(result.rows[0]);
+    return this.mapRowToBitz(result.rows[0]);
   }
 
-  async findById(id: string): Promise<Video | null> {
+  async findById(id: string): Promise<Bitz | null> {
     const query = `
-      SELECT id, title, description, url, thumbnail_url, duration, user_id, views, likes, dislikes, status, created_at, updated_at
-      FROM videos
+      SELECT id, title, description, url, thumbnail_url, duration, user_id, views, status, created_at, updated_at
+      FROM bitz
       WHERE id = $1
     `;
 
@@ -40,26 +40,26 @@ export class VideoQueries {
     if (result.rows.length === 0) {
       return null;
     }
-    return this.mapRowToVideo(result.rows[0]);
+    return this.mapRowToBitz(result.rows[0]);
   }
 
-  async findByUserId(userId: string, limit: number = 20, offset: number = 0): Promise<Video[]> {
+  async findByUserId(userId: string, limit: number = 20, offset: number = 0): Promise<Bitz[]> {
     const query = `
-      SELECT id, title, description, url, thumbnail_url, duration, user_id, views, likes, dislikes, status, created_at, updated_at
-      FROM videos
+      SELECT id, title, description, url, thumbnail_url, duration, user_id, views, status, created_at, updated_at
+      FROM bitz
       WHERE user_id = $1
       ORDER BY created_at DESC
       LIMIT $2 OFFSET $3
     `;
 
     const result = await this.pool.query(query, [userId, limit, offset]);
-    return result.rows.map((row: any) => this.mapRowToVideo(row));
+    return result.rows.map((row: any) => this.mapRowToBitz(row));
   }
 
-  async findAll(limit: number = 20, offset: number = 0, status?: string): Promise<Video[]> {
+  async findAll(limit: number = 20, offset: number = 0, status?: string): Promise<Bitz[]> {
     let query = `
-      SELECT id, title, description, url, thumbnail_url, duration, user_id, views, likes, dislikes, status, created_at, updated_at
-      FROM videos
+      SELECT id, title, description, url, thumbnail_url, duration, user_id, views, status, created_at, updated_at
+      FROM bitz
     `;
 
     const values: any[] = [];
@@ -74,10 +74,10 @@ export class VideoQueries {
     }
 
     const result = await this.pool.query(query, values);
-    return result.rows.map((row: any) => this.mapRowToVideo(row));
+    return result.rows.map((row: any) => this.mapRowToBitz(row));
   }
 
-  async update(id: string, userId: string, data: UpdateVideoData): Promise<Video> {
+  async update(id: string, userId: string, data: UpdateBitzData): Promise<Bitz> {
     const updates: string[] = [];
     const values: any[] = [];
     let paramCount = 1;
@@ -103,22 +103,22 @@ export class VideoQueries {
     values.push(id, userId);
 
     const query = `
-      UPDATE videos
+      UPDATE bitz
       SET ${updates.join(', ')}
       WHERE id = $${paramCount} AND user_id = $${paramCount + 1}
-      RETURNING id, title, description, url, thumbnail_url, duration, user_id, views, likes, dislikes, status, created_at, updated_at
+      RETURNING id, title, description, url, thumbnail_url, duration, user_id, views, status, created_at, updated_at
     `;
 
     const result = await this.pool.query(query, values);
     if (result.rows.length === 0) {
-      throw new Error('Video not found or unauthorized');
+      throw new Error('Bitz not found or unauthorized');
     }
-    return this.mapRowToVideo(result.rows[0]);
+    return this.mapRowToBitz(result.rows[0]);
   }
 
   async delete(id: string, userId: string): Promise<boolean> {
     const query = `
-      DELETE FROM videos
+      DELETE FROM bitz
       WHERE id = $1 AND user_id = $2
     `;
 
@@ -128,7 +128,7 @@ export class VideoQueries {
 
   async incrementViews(id: string): Promise<void> {
     const query = `
-      UPDATE videos
+      UPDATE bitz
       SET views = views + 1
       WHERE id = $1
     `;
@@ -136,17 +136,7 @@ export class VideoQueries {
     await this.pool.query(query, [id]);
   }
 
-  async incrementLikes(id: string): Promise<void> {
-    const query = `
-      UPDATE videos
-      SET likes = likes + 1
-      WHERE id = $1
-    `;
-
-    await this.pool.query(query, [id]);
-  }
-
-  private mapRowToVideo(row: any): Video {
+  private mapRowToBitz(row: any): Bitz {
     return {
       id: row.id,
       title: row.title,
@@ -156,12 +146,9 @@ export class VideoQueries {
       duration: row.duration,
       userId: row.user_id,
       views: row.views,
-      likes: row.likes,
-      dislikes: row.dislikes || 0,
       status: row.status,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
   }
 }
-
