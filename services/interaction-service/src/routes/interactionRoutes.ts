@@ -101,6 +101,14 @@ import {
   refreshTrending,
 } from '../controllers/trendingController';
 
+// Recommendation Controller
+import {
+  getRecommendedVideos,
+  getRecommendedPosts,
+  getRecommendedBitz,
+  getRecommendedTrending,
+} from '../controllers/recommendationController';
+
 const router = Router();
 
 // Rate limiters
@@ -200,5 +208,13 @@ router.get('/trending/videos', readLimiter, getTrendingVideos);
 router.get('/trending/bitz', readLimiter, getTrendingBitz);
 router.get('/trending/posts', readLimiter, getTrendingPosts);
 router.post('/trending/refresh', writeLimiter, refreshTrending);
+
+// ============================================
+// RECOMMENDATION ROUTES
+// ============================================
+router.get('/recommendations/videos', readLimiter, authenticate as any, getRecommendedVideos as any);
+router.get('/recommendations/posts', readLimiter, authenticate as any, getRecommendedPosts as any);
+router.get('/recommendations/bitz', readLimiter, authenticate as any, getRecommendedBitz as any);
+router.get('/recommendations/trending/:contentType', readLimiter, getRecommendedTrending);
 
 export default router;
