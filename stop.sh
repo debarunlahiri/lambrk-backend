@@ -89,9 +89,9 @@ stop_all_services() {
     echo ""
     
     # Stop services by port (more reliable)
-    kill_process_on_port 3100 "API Gateway"
-    kill_process_on_port 3101 "Auth Service"
-    kill_process_on_port 3102 "Video Service"
+    kill_process_on_port 4400 "API Gateway"
+    kill_process_on_port 4401 "Auth Service"
+    kill_process_on_port 4402 "Video Service"
     
     echo ""
     

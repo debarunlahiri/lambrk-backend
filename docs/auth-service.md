@@ -2,7 +2,7 @@
 
 Authentication and user management service for the Lambrk platform.
 
-**Base URL**: `http://localhost:3101` (Direct) or `http://localhost:3100/api/auth` (Gateway)
+**Base URL**: `http://localhost:4401` (Direct) or `http://localhost:4400/api/auth` (Gateway)
 
 ## Table of Contents
 
@@ -273,7 +273,7 @@ Handle Google OAuth callback and redirect to frontend with tokens.
 
 **Redirect URL Format:**
 ```
-http://localhost:3100/auth/callback?accessToken=<token>&refreshToken=<token>
+http://localhost:4400/auth/callback?accessToken=<token>&refreshToken=<token>
 ```
 
 ---
@@ -350,7 +350,7 @@ interface TokenResponse {
 
 ```javascript
 // 1. Register
-const signupResponse = await fetch('http://localhost:3100/api/auth/signup', {
+const signupResponse = await fetch('http://localhost:4400/api/auth/signup', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -364,14 +364,14 @@ const { data: signupData } = await signupResponse.json();
 const { accessToken, refreshToken } = signupData;
 
 // 2. Use access token for authenticated requests
-const profileResponse = await fetch('http://localhost:3100/api/auth/profile', {
+const profileResponse = await fetch('http://localhost:4400/api/auth/profile', {
   headers: {
     'Authorization': `Bearer ${accessToken}`
   }
 });
 
 // 3. Refresh token when access token expires
-const refreshResponse = await fetch('http://localhost:3100/api/auth/refresh-token', {
+const refreshResponse = await fetch('http://localhost:4400/api/auth/refresh-token', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ refreshToken })
@@ -385,7 +385,7 @@ const newAccessToken = refreshData.accessToken;
 
 ```javascript
 // 1. Redirect user to Google OAuth
-window.location.href = 'http://localhost:3100/api/auth/google';
+window.location.href = 'http://localhost:4400/api/auth/google';
 
 // 2. Handle callback (on your callback page)
 const urlParams = new URLSearchParams(window.location.search);

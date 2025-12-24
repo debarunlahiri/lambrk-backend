@@ -5,7 +5,7 @@ import { errorHandler } from '@lambrk/shared';
 import postRoutes from './routes/postRoutes';
 
 const app: Application = express();
-const PORT = process.env.PORT || 3104;
+const PORT = process.env.PORT || 4404;
 
 // Middleware
 app.use(cors());

@@ -220,7 +220,7 @@ start_services() {
 check_ports() {
     echo -e "${YELLOW}Checking for processes on service ports...${NC}"
     
-    local ports=(3100 3101 3102)
+    local ports=(4400 4401 4402)
     local ports_in_use=0
     
     for port in "${ports[@]}"; do

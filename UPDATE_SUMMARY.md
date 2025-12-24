@@ -10,32 +10,32 @@ The backend follows a microservices architecture with the following services:
 
 ### Services
 
-1. **API Gateway** (Port 3100)
+1. **API Gateway** (Port 4400)
    - Routes requests to appropriate microservices
    - Handles CORS, rate limiting, and request proxying
 
-2. **Auth Service** (Port 3101)
+2. **Auth Service** (Port 4401)
    - User authentication (email/password, Google OAuth, Firebase)
    - JWT token generation and validation
    - User profile management
 
-3. **Video Service** (Port 3102)
+3. **Video Service** (Port 4402)
    - Video CRUD operations
    - Video quality management (4K, 2K, HD, 720p, 480p, 360p, Auto)
    - View counting
    - Dislikes support integrated
 
-4. **Bitz Service** (Port 3103)
+4. **Bitz Service** (Port 4403)
    - Short vertical video CRUD operations
    - Similar to TikTok/Instagram Reels
    - View counting
 
-5. **Posts Service** (Port 3104)
+5. **Posts Service** (Port 4404)
    - Social media-style post CRUD operations
    - Image support
    - View counting
 
-6. **Interaction Service** (Port 3105)
+6. **Interaction Service** (Port 4405)
    - **Likes/Dislikes**: Universal like/dislike system for all content types
    - **Comments**: Nested comments with replies for all content
    - **Playlists**: User playlists with Watch Later functionality
@@ -218,12 +218,12 @@ docker exec -it lambrk-postgres psql -U lambrk_user -d lambrk -f /tmp/003_create
 ```
 
 3. **Access the services:**
-- API Gateway: http://localhost:3100
-- Auth Service: http://localhost:3101
-- Video Service: http://localhost:3102
-- Bitz Service: http://localhost:3103
-- Posts Service: http://localhost:3104
-- Interaction Service: http://localhost:3105
+- API Gateway: http://localhost:4400
+- Auth Service: http://localhost:4401
+- Video Service: http://localhost:4402
+- Bitz Service: http://localhost:4403
+- Posts Service: http://localhost:4404
+- Interaction Service: http://localhost:4405
 
 ### Running Locally (Development)
 
@@ -261,11 +261,11 @@ JWT_SECRET=your-secret-key-change-in-production
 JWT_EXPIRES_IN=7d
 
 # Services
-AUTH_SERVICE_URL=http://localhost:3101
-VIDEO_SERVICE_URL=http://localhost:3102
-BITZ_SERVICE_URL=http://localhost:3103
-POSTS_SERVICE_URL=http://localhost:3104
-INTERACTION_SERVICE_URL=http://localhost:3105
+AUTH_SERVICE_URL=http://localhost:4401
+VIDEO_SERVICE_URL=http://localhost:4402
+BITZ_SERVICE_URL=http://localhost:4403
+POSTS_SERVICE_URL=http://localhost:4404
+INTERACTION_SERVICE_URL=http://localhost:4405
 
 # Google OAuth (optional)
 GOOGLE_CLIENT_ID=your-google-client-id
@@ -277,7 +277,7 @@ FIREBASE_PRIVATE_KEY=your-firebase-private-key
 FIREBASE_CLIENT_EMAIL=your-firebase-client-email
 
 # CORS
-CORS_ORIGIN=http://localhost:3100
+CORS_ORIGIN=http://localhost:4400
 ```
 
 3. **Run database migrations:**
@@ -315,14 +315,14 @@ cd services/interaction-service && npm run dev
 Trending data should be refreshed periodically (recommended: hourly) to keep it up-to-date:
 
 ```bash
-curl -X POST http://localhost:3100/api/trending/refresh \
+curl -X POST http://localhost:4400/api/trending/refresh \
   -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
 ```
 
 You can set up a cron job for this:
 ```bash
 # Add to crontab
-0 * * * * curl -X POST http://localhost:3100/api/trending/refresh
+0 * * * * curl -X POST http://localhost:4400/api/trending/refresh
 ```
 
 ## Testing
@@ -330,7 +330,7 @@ You can set up a cron job for this:
 ### Test Authentication
 ```bash
 # Register a user
-curl -X POST http://localhost:3100/api/auth/signup \
+curl -X POST http://localhost:4400/api/auth/signup \
   -H "Content-Type: application/json" \
   -d '{
     "username": "testuser",
@@ -339,7 +339,7 @@ curl -X POST http://localhost:3100/api/auth/signup \
   }'
 
 # Login
-curl -X POST http://localhost:3100/api/auth/signin \
+curl -X POST http://localhost:4400/api/auth/signin \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
@@ -349,7 +349,7 @@ curl -X POST http://localhost:3100/api/auth/signin \
 
 ### Test Video Creation
 ```bash
-curl -X POST http://localhost:3100/api/videos \
+curl -X POST http://localhost:4400/api/videos \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -d '{
@@ -362,7 +362,7 @@ curl -X POST http://localhost:3100/api/videos \
 ### Test Like System
 ```bash
 # Like a video
-curl -X POST http://localhost:3100/api/likes \
+curl -X POST http://localhost:4400/api/likes \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -d '{
@@ -372,13 +372,13 @@ curl -X POST http://localhost:3100/api/likes \
   }'
 
 # Get like stats
-curl http://localhost:3100/api/likes/video/VIDEO_UUID
+curl http://localhost:4400/api/likes/video/VIDEO_UUID
 ```
 
 ### Test Comments
 ```bash
 # Add a comment
-curl -X POST http://localhost:3100/api/comments \
+curl -X POST http://localhost:4400/api/comments \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -d '{
@@ -388,7 +388,7 @@ curl -X POST http://localhost:3100/api/comments \
   }'
 
 # Get comments
-curl http://localhost:3100/api/comments/video/VIDEO_UUID
+curl http://localhost:4400/api/comments/video/VIDEO_UUID
 ```
 
 ## Documentation

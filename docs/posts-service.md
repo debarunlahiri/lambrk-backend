@@ -2,7 +2,7 @@
 
 Social media-style posts management service for the Lambrk platform.
 
-**Base URL**: `http://localhost:3104` (Direct) or `http://localhost:3100/api/posts` (Gateway)
+**Base URL**: `http://localhost:4404` (Direct) or `http://localhost:4400/api/posts` (Gateway)
 
 ## Table of Contents
 
@@ -306,7 +306,7 @@ interface Post {
 
 ```javascript
 // 1. Create post
-const createResponse = await fetch('http://localhost:3100/api/posts', {
+const createResponse = await fetch('http://localhost:4400/api/posts', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${accessToken}`,
@@ -323,11 +323,11 @@ const createResponse = await fetch('http://localhost:3100/api/posts', {
 const { data: { post } } = await createResponse.json();
 
 // 2. Get post feed
-const feedResponse = await fetch('http://localhost:3100/api/posts?limit=20&status=published');
+const feedResponse = await fetch('http://localhost:4400/api/posts?limit=20&status=published');
 const { data: { posts } } = await feedResponse.json();
 
 // 3. Track view when user reads
-await fetch(`http://localhost:3100/api/posts/${post.id}/views`, {
+await fetch(`http://localhost:4400/api/posts/${post.id}/views`, {
   method: 'POST'
 });
 ```
@@ -341,7 +341,7 @@ const limit = 20;
 
 async function loadMorePosts() {
   const response = await fetch(
-    `http://localhost:3100/api/posts?limit=${limit}&offset=${offset}&status=published`
+    `http://localhost:4400/api/posts?limit=${limit}&offset=${offset}&status=published`
   );
   const { data: { posts } } = await response.json();
   
@@ -369,20 +369,20 @@ window.addEventListener('scroll', () => {
 const postId = '550e8400-e29b-41d4-a716-446655440000';
 
 // Get post data
-const postResponse = await fetch(`http://localhost:3100/api/posts/${postId}`);
+const postResponse = await fetch(`http://localhost:4400/api/posts/${postId}`);
 const { data: { post } } = await postResponse.json();
 
 // Get like stats
-const likeResponse = await fetch(`http://localhost:3100/api/likes/post/${postId}`);
+const likeResponse = await fetch(`http://localhost:4400/api/likes/post/${postId}`);
 const { data: { stats } } = await likeResponse.json();
 // stats: { likes: 100, dislikes: 5, userLikeType: 'like' }
 
 // Get comment count
-const commentResponse = await fetch(`http://localhost:3100/api/comments/post/${postId}/count`);
+const commentResponse = await fetch(`http://localhost:4400/api/comments/post/${postId}/count`);
 const { data: { count } } = await commentResponse.json();
 
 // Like the post
-await fetch('http://localhost:3100/api/likes', {
+await fetch('http://localhost:4400/api/likes', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${accessToken}`,
@@ -396,7 +396,7 @@ await fetch('http://localhost:3100/api/likes', {
 });
 
 // Add comment
-await fetch('http://localhost:3100/api/comments', {
+await fetch('http://localhost:4400/api/comments', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${accessToken}`,

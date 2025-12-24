@@ -43,9 +43,9 @@ app.use('/api/trending', createInteractionProxy());
 // Start server
 app.listen(PORT, () => {
   console.log(`API Gateway running on port ${PORT}`);
-  console.log(`Proxying auth service: ${process.env.AUTH_SERVICE_URL || 'http://localhost:3101'}`);
-  console.log(`Proxying video service: ${process.env.VIDEO_SERVICE_URL || 'http://localhost:3102'}`);
-  console.log(`Proxying bitz service: ${process.env.BITZ_SERVICE_URL || 'http://localhost:3103'}`);
-  console.log(`Proxying posts service: ${process.env.POSTS_SERVICE_URL || 'http://localhost:3104'}`);
-  console.log(`Proxying interaction service: ${process.env.INTERACTION_SERVICE_URL || 'http://localhost:3105'}`);
+  console.log(`Proxying auth service: ${process.env.AUTH_SERVICE_URL || 'http://localhost:4401'}`);
+  console.log(`Proxying video service: ${process.env.VIDEO_SERVICE_URL || 'http://localhost:4402'}`);
+  console.log(`Proxying bitz service: ${process.env.BITZ_SERVICE_URL || 'http://localhost:4403'}`);
+  console.log(`Proxying posts service: ${process.env.POSTS_SERVICE_URL || 'http://localhost:4404'}`);
+  console.log(`Proxying interaction service: ${process.env.INTERACTION_SERVICE_URL || 'http://localhost:4405'}`);
 });

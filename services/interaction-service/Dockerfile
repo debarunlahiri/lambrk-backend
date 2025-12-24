@@ -21,6 +21,6 @@ RUN npm install && npm run build
 WORKDIR /app/services/interaction-service
 RUN npm install && npm run build
 
-EXPOSE 3105
+EXPOSE 4405
 
 CMD ["npm", "start"]

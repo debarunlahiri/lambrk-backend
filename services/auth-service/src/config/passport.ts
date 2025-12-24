@@ -11,7 +11,7 @@ if (googleClientID && googleClientSecret) {
       {
         clientID: googleClientID,
         clientSecret: googleClientSecret,
-        callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3101/api/auth/google/callback',
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:4401/api/auth/google/callback',
       },
       async (accessToken, refreshToken, profile, done) => {
         try {

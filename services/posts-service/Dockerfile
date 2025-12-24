@@ -21,6 +21,6 @@ RUN npm install && npm run build
 WORKDIR /app/services/posts-service
 RUN npm install && npm run build
 
-EXPOSE 3104
+EXPOSE 4404
 
 CMD ["npm", "start"]

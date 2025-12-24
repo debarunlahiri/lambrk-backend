@@ -21,6 +21,6 @@ RUN npm install && npm run build
 WORKDIR /app/services/bitz-service
 RUN npm install && npm run build
 
-EXPOSE 3103
+EXPOSE 4403
 
 CMD ["npm", "start"]

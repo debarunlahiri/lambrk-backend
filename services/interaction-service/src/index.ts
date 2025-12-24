@@ -5,7 +5,7 @@ import { errorHandler } from '@lambrk/shared';
 import interactionRoutes from './routes/interactionRoutes';
 
 const app: Application = express();
-const PORT = process.env.PORT || 3105;
+const PORT = process.env.PORT || 4405;
 
 // Middleware
 app.use(cors());

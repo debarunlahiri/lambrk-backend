@@ -32,9 +32,9 @@ services:
       POSTGRES_DB: lambrk
       JWT_SECRET: ${JWT_SECRET:-default-secret-change-in-production}
       JWT_EXPIRES_IN: 7d
-      PORT: 3101
+      PORT: 4401
     ports:
-      - "3101:3101"
+      - "4401:4401"
     depends_on:
       postgres:
         condition: service_healthy
@@ -54,10 +54,10 @@ services:
       POSTGRES_USER: lambrk_user
       POSTGRES_PASSWORD: lambrk_password
       POSTGRES_DB: lambrk
-      PORT: 3102
-      AUTH_SERVICE_URL: http://auth-service:3101
+      PORT: 4402
+      AUTH_SERVICE_URL: http://auth-service:4401
     ports:
-      - "3102:3102"
+      - "4402:4402"
     depends_on:
       postgres:
         condition: service_healthy
@@ -80,10 +80,10 @@ services:
       POSTGRES_USER: lambrk_user
       POSTGRES_PASSWORD: lambrk_password
       POSTGRES_DB: lambrk
-      PORT: 3103
-      AUTH_SERVICE_URL: http://auth-service:3101
+      PORT: 4403
+      AUTH_SERVICE_URL: http://auth-service:4401
     ports:
-      - "3103:3103"
+      - "4403:4403"
     depends_on:
       postgres:
         condition: service_healthy
@@ -106,10 +106,10 @@ services:
       POSTGRES_USER: lambrk_user
       POSTGRES_PASSWORD: lambrk_password
       POSTGRES_DB: lambrk
-      PORT: 3104
-      AUTH_SERVICE_URL: http://auth-service:3101
+      PORT: 4404
+      AUTH_SERVICE_URL: http://auth-service:4401
     ports:
-      - "3104:3104"
+      - "4404:4404"
     depends_on:
       postgres:
         condition: service_healthy
@@ -131,10 +131,10 @@ services:
       POSTGRES_USER: lambrk_user
       POSTGRES_PASSWORD: lambrk_password
       POSTGRES_DB: lambrk
-      PORT: 3105
-      AUTH_SERVICE_URL: http://auth-service:3101
+      PORT: 4405
+      AUTH_SERVICE_URL: http://auth-service:4401
     ports:
-      - "3105:3105"
+      - "4405:4405"
     depends_on:
       postgres:
         condition: service_healthy
@@ -151,15 +151,15 @@ services:
     container_name: lambrk-gateway
     environment:
       NODE_ENV: development
-      PORT: 3100
-      AUTH_SERVICE_URL: http://auth-service:3101
-      VIDEO_SERVICE_URL: http://video-service:3102
-      BITZ_SERVICE_URL: http://bitz-service:3103
-      POSTS_SERVICE_URL: http://posts-service:3104
-      INTERACTION_SERVICE_URL: http://interaction-service:3105
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3100}
+      PORT: 4400
+      AUTH_SERVICE_URL: http://auth-service:4401
+      VIDEO_SERVICE_URL: http://video-service:4402
+      BITZ_SERVICE_URL: http://bitz-service:4403
+      POSTS_SERVICE_URL: http://posts-service:4404
+      INTERACTION_SERVICE_URL: http://interaction-service:4405
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4400}
     ports:
-      - "3100:3100"
+      - "4400:4400"
     depends_on:
       - auth-service
       - video-service

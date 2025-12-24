@@ -31,12 +31,12 @@ A modern microservices-based backend for Lambrk video streaming platform built w
 
 The project follows a microservices architecture with 6 specialized services:
 
-- **API Gateway** (Port 3100): Routes requests and provides rate limiting
-- **Auth Service** (Port 3101): Authentication, user management, OAuth
-- **Video Service** (Port 3102): Full-length videos with quality management
-- **Bitz Service** (Port 3103): Short vertical videos (TikTok/Reels style)
-- **Posts Service** (Port 3104): Social media posts with images
-- **Interaction Service** (Port 3105): Likes, comments, playlists, subscriptions, downloads, trending
+- **API Gateway** (Port 4400): Routes requests and provides rate limiting
+- **Auth Service** (Port 4401): Authentication, user management, OAuth
+- **Video Service** (Port 4402): Full-length videos with quality management
+- **Bitz Service** (Port 4403): Short vertical videos (TikTok/Reels style)
+- **Posts Service** (Port 4404): Social media posts with images
+- **Interaction Service** (Port 4405): Likes, comments, playlists, subscriptions, downloads, trending
 - **Shared Package**: Common utilities and middleware
 - **PostgreSQL Database**: Shared database with materialized views
 
@@ -71,12 +71,12 @@ The project follows a microservices architecture with 6 specialized services:
 
 ## Services
 
-1. **API Gateway** (Port 3100) - Request routing and rate limiting
-2. **Auth Service** (Port 3101) - User authentication and management
-3. **Video Service** (Port 3102) - Full-length video operations
-4. **Bitz Service** (Port 3103) - Short vertical videos
-5. **Posts Service** (Port 3104) - Social media posts
-6. **Interaction Service** (Port 3105) - All user interactions
+1. **API Gateway** (Port 4400) - Request routing and rate limiting
+2. **Auth Service** (Port 4401) - User authentication and management
+3. **Video Service** (Port 4402) - Full-length video operations
+4. **Bitz Service** (Port 4403) - Short vertical videos
+5. **Posts Service** (Port 4404) - Social media posts
+6. **Interaction Service** (Port 4405) - All user interactions
 
 ## Prerequisites
 
@@ -99,7 +99,7 @@ docker cp migrations/003_create_comprehensive_platform_schema.sql lambrk-postgre
 docker exec -it lambrk-postgres psql -U lambrk_user -d lambrk -f /tmp/003_create_comprehensive_platform_schema.sql
 
 # 3. Access API Gateway
-curl http://localhost:3100/health
+curl http://localhost:4400/health
 ```
 
 ## Detailed Setup
@@ -165,9 +165,9 @@ npm run migrate
 npm run dev:all
 
 # Or start individually:
-npm run dev:auth      # Auth service on port 3101
-npm run dev:video     # Video service on port 3102
-npm run dev:gateway   # API Gateway on port 3100
+npm run dev:auth      # Auth service on port 4401
+npm run dev:video     # Video service on port 4402
+npm run dev:gateway   # API Gateway on port 4400
 ```
 
 ## Environment Variables
@@ -188,16 +188,16 @@ JWT_REFRESH_EXPIRES_IN=30d
 
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
-GOOGLE_CALLBACK_URL=http://localhost:3101/api/auth/google/callback
+GOOGLE_CALLBACK_URL=http://localhost:4401/api/auth/google/callback
 
-AUTH_SERVICE_PORT=3101
-VIDEO_SERVICE_PORT=3102
-GATEWAY_PORT=3100
+AUTH_SERVICE_PORT=4401
+VIDEO_SERVICE_PORT=4402
+GATEWAY_PORT=4400
 
-AUTH_SERVICE_URL=http://localhost:3101
-VIDEO_SERVICE_URL=http://localhost:3102
+AUTH_SERVICE_URL=http://localhost:4401
+VIDEO_SERVICE_URL=http://localhost:4402
 
-CORS_ORIGIN=http://localhost:3100
+CORS_ORIGIN=http://localhost:4400
 ```
 
 ## Database Setup
@@ -258,9 +258,9 @@ For complete API documentation with detailed request/response examples, error co
 ### Quick Reference
 
 **Base URLs:**
-- API Gateway: `http://localhost:3100`
-- Auth Service: `http://localhost:3101`
-- Video Service: `http://localhost:3102`
+- API Gateway: `http://localhost:4400`
+- Auth Service: `http://localhost:4401`
+- Video Service: `http://localhost:4402`
 
 **Authentication:**
 Include JWT token in Authorization header:
@@ -314,17 +314,17 @@ Build and run individual services:
 # Auth service
 cd services/auth-service
 docker build -t lambrk-auth-service .
-docker run -p 3101:3101 lambrk-auth-service
+docker run -p 4401:4401 lambrk-auth-service
 
 # Video service
 cd services/video-service
 docker build -t lambrk-video-service .
-docker run -p 3102:3102 lambrk-video-service
+docker run -p 4402:4402 lambrk-video-service
 
 # Gateway
 cd gateway
 docker build -t lambrk-gateway .
-docker run -p 3100:3100 lambrk-gateway
+docker run -p 4400:4400 lambrk-gateway
 ```
 
 ## Project Structure

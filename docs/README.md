@@ -13,12 +13,12 @@ Welcome to the Lambrk Backend API documentation. This directory contains compreh
 
 ### Base URLs
 
-- **API Gateway**: `http://localhost:3100` (recommended for all requests)
-- **Auth Service**: `http://localhost:3101`
-- **Video Service**: `http://localhost:3102`
-- **Bitz Service**: `http://localhost:3103`
-- **Posts Service**: `http://localhost:3104`
-- **Interaction Service**: `http://localhost:3105`
+- **API Gateway**: `http://localhost:4400` (recommended for all requests)
+- **Auth Service**: `http://localhost:4401`
+- **Video Service**: `http://localhost:4402`
+- **Bitz Service**: `http://localhost:4403`
+- **Posts Service**: `http://localhost:4404`
+- **Interaction Service**: `http://localhost:4405`
 
 ### Authentication
 
@@ -148,12 +148,12 @@ When rate limits are exceeded, you'll receive a `429 Too Many Requests` response
 
 ```bash
 # 1. Register
-curl -X POST http://localhost:3100/api/auth/signup \
+curl -X POST http://localhost:4400/api/auth/signup \
   -H "Content-Type: application/json" \
   -d '{"username": "user", "email": "user@example.com", "password": "Pass123"}'
 
 # 2. Login
-curl -X POST http://localhost:3100/api/auth/signin \
+curl -X POST http://localhost:4400/api/auth/signin \
   -H "Content-Type: application/json" \
   -d '{"email": "user@example.com", "password": "Pass123"}'
 ```
@@ -162,7 +162,7 @@ curl -X POST http://localhost:3100/api/auth/signin \
 
 ```bash
 # Create a video
-curl -X POST http://localhost:3100/api/videos \
+curl -X POST http://localhost:4400/api/videos \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"title": "My Video", "url": "https://example.com/video.mp4"}'
@@ -172,13 +172,13 @@ curl -X POST http://localhost:3100/api/videos \
 
 ```bash
 # Like a video
-curl -X POST http://localhost:3100/api/likes \
+curl -X POST http://localhost:4400/api/likes \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"contentType": "video", "contentId": "UUID", "likeType": "like"}'
 
 # Add a comment
-curl -X POST http://localhost:3100/api/comments \
+curl -X POST http://localhost:4400/api/comments \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"contentType": "video", "contentId": "UUID", "commentText": "Great!"}'

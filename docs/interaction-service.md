@@ -2,7 +2,7 @@
 
 User interaction management service for the Lambrk platform.
 
-**Base URL**: `http://localhost:3105` (Direct) or `http://localhost:3100/api` (Gateway)
+**Base URL**: `http://localhost:4405` (Direct) or `http://localhost:4400/api` (Gateway)
 
 ## Table of Contents
 
@@ -1113,7 +1113,7 @@ Manually refresh trending materialized views.
 
 **Note:** Set up a cron job to call this endpoint hourly:
 ```bash
-0 * * * * curl -X POST http://localhost:3100/api/trending/refresh
+0 * * * * curl -X POST http://localhost:4400/api/trending/refresh
 ```
 
 ---

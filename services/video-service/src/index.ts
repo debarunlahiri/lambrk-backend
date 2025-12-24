@@ -13,7 +13,7 @@ initializeDatabase();
 import videoRoutes from './routes/videoRoutes';
 
 const app = express();
-const PORT = process.env.PORT || 3102;
+const PORT = process.env.PORT || 4402;
 
 // Rate limiting and DDoS protection
 app.use(createGeneralRateLimiter({
@@ -29,7 +29,7 @@ app.use(createSlowDown({
 }));
 
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3100',
+  origin: process.env.CORS_ORIGIN || 'http://localhost:4400',
   credentials: true,
 }));
 

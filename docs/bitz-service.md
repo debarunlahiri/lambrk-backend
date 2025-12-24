@@ -2,7 +2,7 @@
 
 Short vertical video (TikTok/Reels style) management service for the Lambrk platform.
 
-**Base URL**: `http://localhost:3103` (Direct) or `http://localhost:3100/api/bitz` (Gateway)
+**Base URL**: `http://localhost:4403` (Direct) or `http://localhost:4400/api/bitz` (Gateway)
 
 ## Table of Contents
 
@@ -323,7 +323,7 @@ interface Bitz {
 
 ```javascript
 // 1. Create bitz
-const createResponse = await fetch('http://localhost:3100/api/bitz', {
+const createResponse = await fetch('http://localhost:4400/api/bitz', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${accessToken}`,
@@ -342,11 +342,11 @@ const createResponse = await fetch('http://localhost:3100/api/bitz', {
 const { data: { bitz } } = await createResponse.json();
 
 // 2. Get bitz feed for users
-const feedResponse = await fetch('http://localhost:3100/api/bitz?limit=20&status=published');
+const feedResponse = await fetch('http://localhost:4400/api/bitz?limit=20&status=published');
 const { data: { bitz: bitzFeed } } = await feedResponse.json();
 
 // 3. Track view when user watches
-await fetch(`http://localhost:3100/api/bitz/${bitz.id}/views`, {
+await fetch(`http://localhost:4400/api/bitz/${bitz.id}/views`, {
   method: 'POST'
 });
 ```
@@ -360,7 +360,7 @@ const limit = 20;
 
 async function loadMoreBitz() {
   const response = await fetch(
-    `http://localhost:3100/api/bitz?limit=${limit}&offset=${offset}&status=published`
+    `http://localhost:4400/api/bitz?limit=${limit}&offset=${offset}&status=published`
   );
   const { data: { bitz } } = await response.json();
   
@@ -385,7 +385,7 @@ window.addEventListener('scroll', () => {
 
 ```javascript
 // Like a bitz (using Interaction Service)
-await fetch('http://localhost:3100/api/likes', {
+await fetch('http://localhost:4400/api/likes', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${accessToken}`,
@@ -399,7 +399,7 @@ await fetch('http://localhost:3100/api/likes', {
 });
 
 // Add comment (using Interaction Service)
-await fetch('http://localhost:3100/api/comments', {
+await fetch('http://localhost:4400/api/comments', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${accessToken}`,
@@ -413,12 +413,12 @@ await fetch('http://localhost:3100/api/comments', {
 });
 
 // Save to favorites (using Interaction Service)
-const watchLaterResponse = await fetch('http://localhost:3100/api/playlists/watch-later', {
+const watchLaterResponse = await fetch('http://localhost:4400/api/playlists/watch-later', {
   headers: { 'Authorization': `Bearer ${accessToken}` }
 });
 const { data: { playlist } } = await watchLaterResponse.json();
 
-await fetch(`http://localhost:3100/api/playlists/${playlist.id}/items`, {
+await fetch(`http://localhost:4400/api/playlists/${playlist.id}/items`, {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${accessToken}`,

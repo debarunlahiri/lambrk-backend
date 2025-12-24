@@ -23,7 +23,7 @@ docker exec -it lambrk-postgres psql -U lambrk_user -d lambrk -f /tmp/003_create
 
 ```bash
 # Register a user
-curl -X POST http://localhost:3100/api/auth/signup \
+curl -X POST http://localhost:4400/api/auth/signup \
   -H "Content-Type: application/json" \
   -d '{
     "username": "testuser",
@@ -38,7 +38,7 @@ curl -X POST http://localhost:3100/api/auth/signup \
 
 ```bash
 # Create a video (replace YOUR_ACCESS_TOKEN)
-curl -X POST http://localhost:3100/api/videos \
+curl -X POST http://localhost:4400/api/videos \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -d '{
@@ -55,7 +55,7 @@ curl -X POST http://localhost:3100/api/videos \
 
 ```bash
 # Like the video (replace VIDEO_ID and YOUR_ACCESS_TOKEN)
-curl -X POST http://localhost:3100/api/likes \
+curl -X POST http://localhost:4400/api/likes \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -d '{
@@ -65,7 +65,7 @@ curl -X POST http://localhost:3100/api/likes \
   }'
 
 # Add a comment
-curl -X POST http://localhost:3100/api/comments \
+curl -X POST http://localhost:4400/api/comments \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -d '{
@@ -75,7 +75,7 @@ curl -X POST http://localhost:3100/api/comments \
   }'
 
 # Subscribe to the channel (use user ID from video response)
-curl -X POST http://localhost:3100/api/subscriptions \
+curl -X POST http://localhost:4400/api/subscriptions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -d '{
@@ -85,12 +85,12 @@ curl -X POST http://localhost:3100/api/subscriptions \
 
 ## Service URLs
 
-- **API Gateway**: http://localhost:3100 (use this for all requests)
-- **Auth Service**: http://localhost:3101 (direct access)
-- **Video Service**: http://localhost:3102 (direct access)
-- **Bitz Service**: http://localhost:3103 (direct access)
-- **Posts Service**: http://localhost:3104 (direct access)
-- **Interaction Service**: http://localhost:3105 (direct access)
+- **API Gateway**: http://localhost:4400 (use this for all requests)
+- **Auth Service**: http://localhost:4401 (direct access)
+- **Video Service**: http://localhost:4402 (direct access)
+- **Bitz Service**: http://localhost:4403 (direct access)
+- **Posts Service**: http://localhost:4404 (direct access)
+- **Interaction Service**: http://localhost:4405 (direct access)
 
 ## Common Operations
 
@@ -219,12 +219,12 @@ POST /api/trending/refresh
 
 ```bash
 # Check all services
-curl http://localhost:3100/health  # Gateway
-curl http://localhost:3101/health  # Auth
-curl http://localhost:3102/health  # Video
-curl http://localhost:3103/health  # Bitz
-curl http://localhost:3104/health  # Posts
-curl http://localhost:3105/health  # Interaction
+curl http://localhost:4400/health  # Gateway
+curl http://localhost:4401/health  # Auth
+curl http://localhost:4402/health  # Video
+curl http://localhost:4403/health  # Bitz
+curl http://localhost:4404/health  # Posts
+curl http://localhost:4405/health  # Interaction
 ```
 
 ### View Logs
@@ -279,7 +279,7 @@ docker-compose down -v
 
 ```bash
 # Check what's using the port
-lsof -i :3100  # or other port numbers
+lsof -i :4400  # or other port numbers
 
 # Kill the process
 kill -9 PID

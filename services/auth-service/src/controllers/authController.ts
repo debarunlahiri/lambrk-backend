@@ -120,7 +120,7 @@ export const googleCallback = async (req: Request, res: Response, next: NextFunc
 
     const result = await authService.googleAuth(user);
 
-    const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:3100';
+    const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:4400';
     const tokenParams = new URLSearchParams({
       accessToken: result.accessToken,
       refreshToken: result.refreshToken,

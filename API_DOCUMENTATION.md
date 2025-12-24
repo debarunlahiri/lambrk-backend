@@ -34,12 +34,12 @@ Complete API reference for Lambrk video streaming platform backend services.
 
 ## Base URLs
 
-- **API Gateway**: `http://localhost:3100`
-- **Auth Service (Direct)**: `http://localhost:3101`
-- **Video Service (Direct)**: `http://localhost:3102`
-- **Bitz Service (Direct)**: `http://localhost:3103`
-- **Posts Service (Direct)**: `http://localhost:3104`
-- **Interaction Service (Direct)**: `http://localhost:3105`
+- **API Gateway**: `http://localhost:4400`
+- **Auth Service (Direct)**: `http://localhost:4401`
+- **Video Service (Direct)**: `http://localhost:4402`
+- **Bitz Service (Direct)**: `http://localhost:4403`
+- **Posts Service (Direct)**: `http://localhost:4404`
+- **Interaction Service (Direct)**: `http://localhost:4405`
 
 > **Note**: All requests should go through the API Gateway unless accessing services directly for development.
 
@@ -787,7 +787,7 @@ When rate limits are exceeded, you'll receive a `429 Too Many Requests` response
 
 ```javascript
 // Toggle like
-const response = await fetch('http://localhost:3100/api/likes', {
+const response = await fetch('http://localhost:4400/api/likes', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -809,7 +809,7 @@ const data = await response.json();
 
 ```javascript
 // Get or create Watch Later playlist
-const watchLaterResponse = await fetch('http://localhost:3100/api/playlists/watch-later', {
+const watchLaterResponse = await fetch('http://localhost:4400/api/playlists/watch-later', {
   headers: {
     'Authorization': 'Bearer YOUR_ACCESS_TOKEN'
   }
@@ -818,7 +818,7 @@ const watchLaterResponse = await fetch('http://localhost:3100/api/playlists/watc
 const { playlist } = (await watchLaterResponse.json()).data;
 
 // Add video to Watch Later
-const addResponse = await fetch(`http://localhost:3100/api/playlists/${playlist.id}/items`, {
+const addResponse = await fetch(`http://localhost:4400/api/playlists/${playlist.id}/items`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -834,7 +834,7 @@ const addResponse = await fetch(`http://localhost:3100/api/playlists/${playlist.
 ### Subscribe to Channel
 
 ```javascript
-const response = await fetch('http://localhost:3100/api/subscriptions', {
+const response = await fetch('http://localhost:4400/api/subscriptions', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -853,7 +853,7 @@ const data = await response.json();
 ### Add Comment
 
 ```javascript
-const response = await fetch('http://localhost:3100/api/comments', {
+const response = await fetch('http://localhost:4400/api/comments', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',

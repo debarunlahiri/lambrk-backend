@@ -2,7 +2,7 @@
 
 Full-length video management service for the Lambrk platform.
 
-**Base URL**: `http://localhost:3102` (Direct) or `http://localhost:3100/api/videos` (Gateway)
+**Base URL**: `http://localhost:4402` (Direct) or `http://localhost:4400/api/videos` (Gateway)
 
 ## Table of Contents
 
@@ -716,7 +716,7 @@ interface VideoQuality {
 
 ```javascript
 // 1. Create video (initially draft with pending processing)
-const createResponse = await fetch('http://localhost:3100/api/videos', {
+const createResponse = await fetch('http://localhost:4400/api/videos', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${accessToken}`,
@@ -740,7 +740,7 @@ const createResponse = await fetch('http://localhost:3100/api/videos', {
 const { data: { video } } = await createResponse.json();
 
 // 2. Update processing status as video is processed
-await fetch(`http://localhost:3100/api/videos/${video.id}/processing-status`, {
+await fetch(`http://localhost:4400/api/videos/${video.id}/processing-status`, {
   method: 'PUT',
   headers: {
     'Authorization': `Bearer ${accessToken}`,
@@ -754,7 +754,7 @@ await fetch(`http://localhost:3100/api/videos/${video.id}/processing-status`, {
 // 3. Add multiple quality versions
 const qualities = ['360p', '720p', '1080p'];
 for (const quality of qualities) {
-  await fetch(`http://localhost:3100/api/videos/${video.id}/qualities`, {
+  await fetch(`http://localhost:4400/api/videos/${video.id}/qualities`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
@@ -770,7 +770,7 @@ for (const quality of qualities) {
 }
 
 // 4. Update processing status to completed
-await fetch(`http://localhost:3100/api/videos/${video.id}/processing-status`, {
+await fetch(`http://localhost:4400/api/videos/${video.id}/processing-status`, {
   method: 'PUT',
   headers: {
     'Authorization': `Bearer ${accessToken}`,
@@ -782,7 +782,7 @@ await fetch(`http://localhost:3100/api/videos/${video.id}/processing-status`, {
 });
 
 // 5. Publish video
-await fetch(`http://localhost:3100/api/videos/${video.id}`, {
+await fetch(`http://localhost:4400/api/videos/${video.id}`, {
   method: 'PUT',
   headers: {
     'Authorization': `Bearer ${accessToken}`,
@@ -799,7 +799,7 @@ await fetch(`http://localhost:3100/api/videos/${video.id}`, {
 
 ```javascript
 // When user starts watching
-await fetch(`http://localhost:3100/api/videos/${videoId}/views`, {
+await fetch(`http://localhost:4400/api/videos/${videoId}/views`, {
   method: 'POST'
 });
 ```

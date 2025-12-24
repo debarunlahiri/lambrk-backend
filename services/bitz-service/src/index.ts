@@ -5,7 +5,7 @@ import { errorHandler } from '@lambrk/shared';
 import bitzRoutes from './routes/bitzRoutes';
 
 const app: Application = express();
-const PORT = process.env.PORT || 3103;
+const PORT = process.env.PORT || 4403;
 
 // Middleware
 app.use(cors());
