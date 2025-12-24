@@ -39,7 +39,24 @@ CREATE TABLE IF NOT EXISTS videos (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     views INTEGER DEFAULT 0,
     likes INTEGER DEFAULT 0,
-    status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'processing')),
+    status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived', 'deleted')),
+    processing_status VARCHAR(20) DEFAULT 'pending' CHECK (processing_status IN ('pending', 'queued', 'processing', 'completed', 'failed')),
+    file_size BIGINT,
+    format VARCHAR(50),
+    codec VARCHAR(50),
+    resolution_width INTEGER,
+    resolution_height INTEGER,
+    bitrate INTEGER,
+    frame_rate DECIMAL(5, 2),
+    category VARCHAR(100),
+    tags TEXT[],
+    privacy VARCHAR(20) DEFAULT 'public' CHECK (privacy IN ('public', 'unlisted', 'private')),
+    is_live BOOLEAN DEFAULT false,
+    live_stream_url TEXT,
+    published_at TIMESTAMP,
+    scheduled_publish_at TIMESTAMP,
+    language VARCHAR(10),
+    location VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -47,7 +64,13 @@ CREATE TABLE IF NOT EXISTS videos (
 -- Videos table indexes
 CREATE INDEX IF NOT EXISTS idx_videos_user_id ON videos(user_id);
 CREATE INDEX IF NOT EXISTS idx_videos_status ON videos(status);
+CREATE INDEX IF NOT EXISTS idx_videos_processing_status ON videos(processing_status);
 CREATE INDEX IF NOT EXISTS idx_videos_created_at ON videos(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_videos_published_at ON videos(published_at DESC);
+CREATE INDEX IF NOT EXISTS idx_videos_category ON videos(category);
+CREATE INDEX IF NOT EXISTS idx_videos_privacy ON videos(privacy);
+CREATE INDEX IF NOT EXISTS idx_videos_is_live ON videos(is_live);
+CREATE INDEX IF NOT EXISTS idx_videos_scheduled_publish_at ON videos(scheduled_publish_at) WHERE scheduled_publish_at IS NOT NULL;
 
 -- ============================================
 -- UPDATE TRIGGER FUNCTION

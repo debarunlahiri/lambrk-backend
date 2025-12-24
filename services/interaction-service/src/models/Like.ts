@@ -2,14 +2,12 @@ import { getPool } from '@lambrk/shared';
 import { LikeQueries } from '../queries/likeQueries';
 
 export type ContentType = 'video' | 'bitz' | 'post';
-export type LikeType = 'like' | 'dislike';
 
 export interface Like {
   id: string;
   userId: string;
   contentType: ContentType;
   contentId: string;
-  likeType: LikeType;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -18,13 +16,13 @@ export interface CreateLikeData {
   userId: string;
   contentType: ContentType;
   contentId: string;
-  likeType: LikeType;
 }
 
 export interface LikeStats {
   likes: number;
   dislikes: number;
-  userLikeType?: LikeType | null;
+  userLiked?: boolean;
+  userDisliked?: boolean;
 }
 
 export class LikeModel {
@@ -53,7 +51,7 @@ export class LikeModel {
     return this.getQueries().getStats(contentType, contentId, userId);
   }
 
-  async getUserLikedContent(userId: string, contentType: ContentType, likeType: LikeType, limit: number = 20, offset: number = 0): Promise<string[]> {
-    return this.getQueries().getUserLikedContent(userId, contentType, likeType, limit, offset);
+  async getUserLikedContent(userId: string, contentType: ContentType, limit: number = 20, offset: number = 0): Promise<string[]> {
+    return this.getQueries().getUserLikedContent(userId, contentType, limit, offset);
   }
 }

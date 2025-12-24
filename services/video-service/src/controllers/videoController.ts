@@ -30,7 +30,31 @@ export const createVideo = async (req: AuthRequest, res: Response, next: NextFun
       return;
     }
 
-    const { title, description, url, thumbnailUrl, duration, status } = req.body;
+    const {
+      title,
+      description,
+      url,
+      thumbnailUrl,
+      duration,
+      status,
+      processingStatus,
+      fileSize,
+      format,
+      codec,
+      resolutionWidth,
+      resolutionHeight,
+      bitrate,
+      frameRate,
+      category,
+      tags,
+      privacy,
+      isLive,
+      liveStreamUrl,
+      publishedAt,
+      scheduledPublishAt,
+      language,
+      location,
+    } = req.body;
 
     const video = await videoService.createVideo({
       title,
@@ -40,6 +64,23 @@ export const createVideo = async (req: AuthRequest, res: Response, next: NextFun
       duration,
       userId,
       status,
+      processingStatus,
+      fileSize,
+      format,
+      codec,
+      resolutionWidth,
+      resolutionHeight,
+      bitrate,
+      frameRate,
+      category,
+      tags,
+      privacy,
+      isLive,
+      liveStreamUrl,
+      publishedAt,
+      scheduledPublishAt,
+      language,
+      location,
     });
 
     res.status(201).json({
@@ -155,13 +196,52 @@ export const updateVideo = async (req: AuthRequest, res: Response, next: NextFun
       return;
     }
 
-    const { title, description, thumbnailUrl, status } = req.body;
+    const {
+      title,
+      description,
+      thumbnailUrl,
+      status,
+      processingStatus,
+      fileSize,
+      format,
+      codec,
+      resolutionWidth,
+      resolutionHeight,
+      bitrate,
+      frameRate,
+      category,
+      tags,
+      privacy,
+      isLive,
+      liveStreamUrl,
+      publishedAt,
+      scheduledPublishAt,
+      language,
+      location,
+    } = req.body;
 
     const video = await videoService.updateVideo(id, userId, {
       title,
       description,
       thumbnailUrl,
       status,
+      processingStatus,
+      fileSize,
+      format,
+      codec,
+      resolutionWidth,
+      resolutionHeight,
+      bitrate,
+      frameRate,
+      category,
+      tags,
+      privacy,
+      isLive,
+      liveStreamUrl,
+      publishedAt,
+      scheduledPublishAt,
+      language,
+      location,
     });
 
     res.status(200).json({
@@ -226,15 +306,94 @@ export const incrementLikes = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+export const updateProcessingStatus = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({
+        success: false,
+        error: {
+          message: 'Validation failed',
+          errors: errors.array(),
+        },
+      });
+      return;
+    }
+
+    const { id } = req.params;
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: {
+          message: 'Unauthorized',
+        },
+      });
+      return;
+    }
+
+    const { processingStatus } = req.body;
+
+    const video = await videoService.updateProcessingStatus(id, userId, processingStatus);
+
+    res.status(200).json({
+      success: true,
+      data: { video },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const createVideoValidation = [
   body('title').trim().notEmpty().withMessage('Title is required'),
   body('url').isURL().withMessage('Valid URL is required'),
-  body('status').optional().isIn(['draft', 'published', 'processing']).withMessage('Invalid status'),
+  body('status').optional().isIn(['draft', 'published', 'archived', 'deleted']).withMessage('Invalid status'),
+  body('processingStatus').optional().isIn(['pending', 'queued', 'processing', 'completed', 'failed']).withMessage('Invalid processing status'),
+  body('fileSize').optional().isInt({ min: 0 }).withMessage('File size must be a positive integer'),
+  body('format').optional().isString().isLength({ max: 50 }).withMessage('Format must be less than 50 characters'),
+  body('codec').optional().isString().isLength({ max: 50 }).withMessage('Codec must be less than 50 characters'),
+  body('resolutionWidth').optional().isInt({ min: 1 }).withMessage('Resolution width must be a positive integer'),
+  body('resolutionHeight').optional().isInt({ min: 1 }).withMessage('Resolution height must be a positive integer'),
+  body('bitrate').optional().isInt({ min: 0 }).withMessage('Bitrate must be a non-negative integer'),
+  body('frameRate').optional().isFloat({ min: 0 }).withMessage('Frame rate must be a positive number'),
+  body('category').optional().isString().isLength({ max: 100 }).withMessage('Category must be less than 100 characters'),
+  body('tags').optional().isArray().withMessage('Tags must be an array'),
+  body('tags.*').optional().isString().withMessage('Each tag must be a string'),
+  body('privacy').optional().isIn(['public', 'unlisted', 'private']).withMessage('Invalid privacy setting'),
+  body('isLive').optional().isBoolean().withMessage('isLive must be a boolean'),
+  body('liveStreamUrl').optional().isURL().withMessage('Valid live stream URL is required'),
+  body('publishedAt').optional().isISO8601().withMessage('Published date must be a valid ISO 8601 date'),
+  body('scheduledPublishAt').optional().isISO8601().withMessage('Scheduled publish date must be a valid ISO 8601 date'),
+  body('language').optional().isString().isLength({ max: 10 }).withMessage('Language must be less than 10 characters'),
+  body('location').optional().isString().isLength({ max: 255 }).withMessage('Location must be less than 255 characters'),
 ];
 
 export const updateVideoValidation = [
   body('title').optional().trim().notEmpty().withMessage('Title cannot be empty'),
-  body('status').optional().isIn(['draft', 'published', 'processing']).withMessage('Invalid status'),
+  body('status').optional().isIn(['draft', 'published', 'archived', 'deleted']).withMessage('Invalid status'),
+  body('processingStatus').optional().isIn(['pending', 'queued', 'processing', 'completed', 'failed']).withMessage('Invalid processing status'),
+  body('fileSize').optional().isInt({ min: 0 }).withMessage('File size must be a positive integer'),
+  body('format').optional().isString().isLength({ max: 50 }).withMessage('Format must be less than 50 characters'),
+  body('codec').optional().isString().isLength({ max: 50 }).withMessage('Codec must be less than 50 characters'),
+  body('resolutionWidth').optional().isInt({ min: 1 }).withMessage('Resolution width must be a positive integer'),
+  body('resolutionHeight').optional().isInt({ min: 1 }).withMessage('Resolution height must be a positive integer'),
+  body('bitrate').optional().isInt({ min: 0 }).withMessage('Bitrate must be a non-negative integer'),
+  body('frameRate').optional().isFloat({ min: 0 }).withMessage('Frame rate must be a positive number'),
+  body('category').optional().isString().isLength({ max: 100 }).withMessage('Category must be less than 100 characters'),
+  body('tags').optional().isArray().withMessage('Tags must be an array'),
+  body('tags.*').optional().isString().withMessage('Each tag must be a string'),
+  body('privacy').optional().isIn(['public', 'unlisted', 'private']).withMessage('Invalid privacy setting'),
+  body('isLive').optional().isBoolean().withMessage('isLive must be a boolean'),
+  body('liveStreamUrl').optional().isURL().withMessage('Valid live stream URL is required'),
+  body('publishedAt').optional().isISO8601().withMessage('Published date must be a valid ISO 8601 date'),
+  body('scheduledPublishAt').optional().isISO8601().withMessage('Scheduled publish date must be a valid ISO 8601 date'),
+  body('language').optional().isString().isLength({ max: 10 }).withMessage('Language must be less than 10 characters'),
+  body('location').optional().isString().isLength({ max: 255 }).withMessage('Location must be less than 255 characters'),
+];
+
+export const updateProcessingStatusValidation = [
+  body('processingStatus').isIn(['pending', 'queued', 'processing', 'completed', 'failed']).withMessage('Invalid processing status'),
 ];
 
 // Video Quality Controllers

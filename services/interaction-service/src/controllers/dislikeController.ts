@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import { LikeService } from '../services/likeService';
+import { DislikeService } from '../services/dislikeService';
 import { body, validationResult } from 'express-validator';
 import { AuthRequest } from '@lambrk/shared';
 import { ContentType } from '../models/Like';
 
-const likeService = new LikeService();
+const dislikeService = new DislikeService();
 
-export const toggleLike = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const toggleDislike = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -31,7 +31,7 @@ export const toggleLike = async (req: AuthRequest, res: Response, next: NextFunc
 
     const { contentType, contentId } = req.body;
 
-    const result = await likeService.toggleLike(userId, contentType as ContentType, contentId);
+    const result = await dislikeService.toggleDislike(userId, contentType as ContentType, contentId);
 
     res.status(200).json({
       success: true,
@@ -42,23 +42,7 @@ export const toggleLike = async (req: AuthRequest, res: Response, next: NextFunc
   }
 };
 
-export const getLikeStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const { contentType, contentId } = req.params;
-    const userId = (req as AuthRequest).user?.userId;
-
-    const stats = await likeService.getLikeStats(contentType as ContentType, contentId, userId);
-
-    res.status(200).json({
-      success: true,
-      data: { stats },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getUserLikedContent = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const getUserDislikedContent = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = req.user?.userId;
     if (!userId) {
@@ -73,7 +57,7 @@ export const getUserLikedContent = async (req: AuthRequest, res: Response, next:
     const limit = parseInt(req.query.limit as string) || 20;
     const offset = parseInt(req.query.offset as string) || 0;
 
-    const contentIds = await likeService.getUserLikedContent(userId, contentType as ContentType, limit, offset);
+    const contentIds = await dislikeService.getUserDislikedContent(userId, contentType as ContentType, limit, offset);
 
     res.status(200).json({
       success: true,
@@ -84,7 +68,8 @@ export const getUserLikedContent = async (req: AuthRequest, res: Response, next:
   }
 };
 
-export const toggleLikeValidation = [
+export const toggleDislikeValidation = [
   body('contentType').isIn(['video', 'bitz', 'post']).withMessage('Invalid content type'),
   body('contentId').isUUID().withMessage('Valid content ID is required'),
 ];
+

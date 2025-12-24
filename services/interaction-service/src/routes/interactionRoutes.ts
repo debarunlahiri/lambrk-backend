@@ -9,6 +9,38 @@ import {
   toggleLikeValidation,
 } from '../controllers/likeController';
 
+// Dislike Controller
+import {
+  toggleDislike,
+  getUserDislikedContent,
+  toggleDislikeValidation,
+} from '../controllers/dislikeController';
+
+// Report Controller
+import {
+  createReport,
+  getReport,
+  updateReport,
+  getContentReports,
+  getUserReports,
+  getReportsByStatus,
+  getReportCount,
+  checkUserReported,
+  createReportValidation,
+  updateReportValidation,
+} from '../controllers/reportController';
+
+// Share Controller
+import {
+  createShare,
+  getShare,
+  getContentShares,
+  getUserShares,
+  getShareCount,
+  getSharesByPlatform,
+  createShareValidation,
+} from '../controllers/shareController';
+
 // Comment Controller
 import {
   createComment,
@@ -88,6 +120,34 @@ const writeLimiter = createGeneralRateLimiter({
 router.post('/likes', writeLimiter, authenticate as any, toggleLikeValidation, toggleLike as any);
 router.get('/likes/:contentType/:contentId', readLimiter, getLikeStats);
 router.get('/likes/user/:contentType', readLimiter, authenticate as any, getUserLikedContent as any);
+
+// ============================================
+// DISLIKE ROUTES
+// ============================================
+router.post('/dislikes', writeLimiter, authenticate as any, toggleDislikeValidation, toggleDislike as any);
+router.get('/dislikes/user/:contentType', readLimiter, authenticate as any, getUserDislikedContent as any);
+
+// ============================================
+// REPORT ROUTES
+// ============================================
+router.post('/reports', writeLimiter, authenticate as any, createReportValidation, createReport as any);
+router.get('/reports/:id', readLimiter, getReport);
+router.put('/reports/:id', writeLimiter, authenticate as any, updateReportValidation, updateReport as any);
+router.get('/reports/:contentType/:contentId', readLimiter, getContentReports);
+router.get('/reports/user/my-reports', readLimiter, authenticate as any, getUserReports as any);
+router.get('/reports/status/:status', readLimiter, getReportsByStatus);
+router.get('/reports/:contentType/:contentId/count', readLimiter, getReportCount);
+router.get('/reports/:contentType/:contentId/check', readLimiter, authenticate as any, checkUserReported as any);
+
+// ============================================
+// SHARE ROUTES
+// ============================================
+router.post('/shares', writeLimiter, authenticate as any, createShareValidation, createShare as any);
+router.get('/shares/:id', readLimiter, getShare);
+router.get('/shares/:contentType/:contentId', readLimiter, getContentShares);
+router.get('/shares/user/my-shares', readLimiter, authenticate as any, getUserShares as any);
+router.get('/shares/:contentType/:contentId/count', readLimiter, getShareCount);
+router.get('/shares/platform/:platform', readLimiter, getSharesByPlatform);
 
 // ============================================
 // COMMENT ROUTES

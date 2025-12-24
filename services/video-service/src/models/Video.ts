@@ -12,7 +12,24 @@ export interface Video {
   views: number;
   likes: number;
   dislikes: number;
-  status: 'draft' | 'published' | 'processing';
+  status: 'draft' | 'published' | 'archived' | 'deleted';
+  processingStatus: 'pending' | 'queued' | 'processing' | 'completed' | 'failed';
+  fileSize?: number;
+  format?: string;
+  codec?: string;
+  resolutionWidth?: number;
+  resolutionHeight?: number;
+  bitrate?: number;
+  frameRate?: number;
+  category?: string;
+  tags?: string[];
+  privacy: 'public' | 'unlisted' | 'private';
+  isLive: boolean;
+  liveStreamUrl?: string;
+  publishedAt?: Date;
+  scheduledPublishAt?: Date;
+  language?: string;
+  location?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,14 +41,48 @@ export interface CreateVideoData {
   thumbnailUrl?: string;
   duration?: number;
   userId: string;
-  status?: 'draft' | 'published' | 'processing';
+  status?: 'draft' | 'published' | 'archived' | 'deleted';
+  processingStatus?: 'pending' | 'queued' | 'processing' | 'completed' | 'failed';
+  fileSize?: number;
+  format?: string;
+  codec?: string;
+  resolutionWidth?: number;
+  resolutionHeight?: number;
+  bitrate?: number;
+  frameRate?: number;
+  category?: string;
+  tags?: string[];
+  privacy?: 'public' | 'unlisted' | 'private';
+  isLive?: boolean;
+  liveStreamUrl?: string;
+  publishedAt?: Date;
+  scheduledPublishAt?: Date;
+  language?: string;
+  location?: string;
 }
 
 export interface UpdateVideoData {
   title?: string;
   description?: string;
   thumbnailUrl?: string;
-  status?: 'draft' | 'published' | 'processing';
+  status?: 'draft' | 'published' | 'archived' | 'deleted';
+  processingStatus?: 'pending' | 'queued' | 'processing' | 'completed' | 'failed';
+  fileSize?: number;
+  format?: string;
+  codec?: string;
+  resolutionWidth?: number;
+  resolutionHeight?: number;
+  bitrate?: number;
+  frameRate?: number;
+  category?: string;
+  tags?: string[];
+  privacy?: 'public' | 'unlisted' | 'private';
+  isLive?: boolean;
+  liveStreamUrl?: string;
+  publishedAt?: Date;
+  scheduledPublishAt?: Date;
+  language?: string;
+  location?: string;
 }
 
 export class VideoModel {

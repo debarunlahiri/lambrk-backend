@@ -8,6 +8,7 @@ import {
   deleteVideo,
   incrementViews,
   incrementLikes,
+  updateProcessingStatus,
   addVideoQuality,
   getVideoQualities,
   getVideoQuality,
@@ -16,6 +17,7 @@ import {
   setDefaultQuality,
   createVideoValidation,
   updateVideoValidation,
+  updateProcessingStatusValidation,
   addVideoQualityValidation,
   updateVideoQualityValidation,
 } from '../controllers/videoController';
@@ -44,6 +46,7 @@ router.put('/:id', videoOperationLimiter, authenticate as any, updateVideoValida
 router.delete('/:id', videoOperationLimiter, authenticate as any, deleteVideo as any);
 router.post('/:id/views', readLimiter, incrementViews);
 router.post('/:id/likes', readLimiter, incrementLikes);
+router.put('/:id/processing-status', videoOperationLimiter, authenticate as any, updateProcessingStatusValidation, updateProcessingStatus as any);
 
 // Video Quality routes
 router.post('/:videoId/qualities', videoOperationLimiter, authenticate as any, addVideoQualityValidation, addVideoQuality as any);

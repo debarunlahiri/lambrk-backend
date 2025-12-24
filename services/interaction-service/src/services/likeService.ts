@@ -1,31 +1,28 @@
-import { LikeModel, CreateLikeData, ContentType, LikeType, LikeStats } from '../models/Like';
-import { NotFoundError } from '@lambrk/shared';
+import { LikeModel, CreateLikeData, ContentType, LikeStats } from '../models/Like';
+import { DislikeModel } from '../models/Dislike';
 
 export class LikeService {
   private likeModel: LikeModel;
+  private dislikeModel: DislikeModel;
 
   constructor() {
     this.likeModel = new LikeModel();
+    this.dislikeModel = new DislikeModel();
   }
 
-  async toggleLike(userId: string, contentType: ContentType, contentId: string, likeType: LikeType): Promise<{ action: 'added' | 'updated' | 'removed'; stats: LikeStats }> {
-    const existing = await this.likeModel.findByUserAndContent(userId, contentType, contentId);
+  async toggleLike(userId: string, contentType: ContentType, contentId: string): Promise<{ action: 'added' | 'removed'; stats: LikeStats }> {
+    const existingLike = await this.likeModel.findByUserAndContent(userId, contentType, contentId);
+    const existingDislike = await this.dislikeModel.findByUserAndContent(userId, contentType, contentId);
 
-    if (existing) {
-      if (existing.likeType === likeType) {
-        // Remove the like/dislike
-        await this.likeModel.remove(userId, contentType, contentId);
-        const stats = await this.likeModel.getStats(contentType, contentId, userId);
-        return { action: 'removed', stats };
-      } else {
-        // Update to the opposite
-        await this.likeModel.upsert({ userId, contentType, contentId, likeType });
-        const stats = await this.likeModel.getStats(contentType, contentId, userId);
-        return { action: 'updated', stats };
-      }
+    if (existingLike) {
+      await this.likeModel.remove(userId, contentType, contentId);
+      const stats = await this.likeModel.getStats(contentType, contentId, userId);
+      return { action: 'removed', stats };
     } else {
-      // Add new like/dislike
-      await this.likeModel.upsert({ userId, contentType, contentId, likeType });
+      if (existingDislike) {
+        await this.dislikeModel.remove(userId, contentType, contentId);
+      }
+      await this.likeModel.create({ userId, contentType, contentId });
       const stats = await this.likeModel.getStats(contentType, contentId, userId);
       return { action: 'added', stats };
     }
@@ -35,7 +32,7 @@ export class LikeService {
     return this.likeModel.getStats(contentType, contentId, userId);
   }
 
-  async getUserLikedContent(userId: string, contentType: ContentType, likeType: LikeType, limit: number = 20, offset: number = 0): Promise<string[]> {
-    return this.likeModel.getUserLikedContent(userId, contentType, likeType, limit, offset);
+  async getUserLikedContent(userId: string, contentType: ContentType, limit: number = 20, offset: number = 0): Promise<string[]> {
+    return this.likeModel.getUserLikedContent(userId, contentType, limit, offset);
   }
 }

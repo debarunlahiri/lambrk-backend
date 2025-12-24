@@ -68,6 +68,19 @@ export class VideoService {
     await this.videoModel.incrementLikes(id);
   }
 
+  async updateProcessingStatus(id: string, userId: string, processingStatus: 'pending' | 'queued' | 'processing' | 'completed' | 'failed'): Promise<Video> {
+    const video = await this.videoModel.findById(id);
+    if (!video) {
+      throw new NotFoundError('Video not found');
+    }
+
+    if (video.userId !== userId) {
+      throw new ForbiddenError('You can only update processing status of your own videos');
+    }
+
+    return this.videoModel.update(id, userId, { processingStatus });
+  }
+
   // Video Quality Methods
   async addVideoQuality(data: CreateVideoQualityData): Promise<VideoQuality> {
     // Verify video exists
