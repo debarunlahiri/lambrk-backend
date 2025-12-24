@@ -31,6 +31,7 @@ Complete API reference for Lambrk video streaming platform backend services.
   - [Subscriptions](#subscriptions-api)
   - [Downloads](#downloads-api)
   - [Trending](#trending-api)
+  - [Recommendations](#recommendations-api)
 
 ## Base URLs
 
@@ -621,6 +622,88 @@ Bitz are short vertical videos similar to TikTok/Instagram Reels.
 #### 4. Refresh Trending Data
 
 **Endpoint:** `POST /api/trending/refresh`
+
+---
+
+### Recommendations API
+
+Personalized content recommendation system using advanced algorithmic scoring.
+
+The recommendation system uses a weighted scoring algorithm:
+- **Engagement Score (40%)**: Views, likes, comments, shares
+- **Recency Score (25%)**: Exponential decay based on publication time
+- **Relevance Score (20%)**: Personalization based on user behavior
+- **Quality Score (15%)**: Like/dislike ratios and engagement metrics
+
+#### 1. Get Recommended Videos
+
+**Endpoint:** `GET /api/recommendations/videos`
+
+**Authentication:** Required
+
+**Query Parameters:**
+- `currentVideoId` (optional): UUID of currently watching video
+- `limit` (optional): Number of recommendations (default: 20)
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "videos": [
+      {
+        "id": "660e8400-e29b-41d4-a716-446655440000",
+        "title": "Recommended Video",
+        "views": 50000,
+        "likes": 2500,
+        "dislikes": 50,
+        "score": 0.875,
+        ...
+      }
+    ],
+    "count": 20
+  }
+}
+```
+
+#### 2. Get Recommended Posts
+
+**Endpoint:** `GET /api/recommendations/posts`
+
+**Authentication:** Required
+
+**Query Parameters:**
+- `currentPostId` (optional): UUID of currently viewing post
+- `limit` (optional): Number of recommendations (default: 15)
+
+#### 3. Get Recommended Bitz
+
+**Endpoint:** `GET /api/recommendations/bitz`
+
+**Authentication:** Required
+
+**Query Parameters:**
+- `currentBitzId` (optional): UUID of currently viewing bitz
+- `limit` (optional): Number of recommendations (default: 10)
+
+#### 4. Get Trending Recommendations
+
+**Endpoint:** `GET /api/recommendations/trending/:contentType`
+
+**Authentication:** Not required
+
+**Path Parameters:**
+- `contentType`: `video`, `bitz`, or `post`
+
+**Query Parameters:**
+- `timeWindow` (optional): `24h`, `7d`, or `30d` (default: `7d`)
+- `limit` (optional): Number of recommendations (default: 10)
+
+**Examples:**
+- `GET /api/recommendations/trending/video?timeWindow=24h&limit=10`
+- `GET /api/recommendations/trending/post?timeWindow=7d&limit=20`
+
+**Note:** For detailed algorithm explanation and examples, see [Interaction Service Documentation](./docs/interaction-service.md#recommendations-api).
 
 **Note:** This endpoint refreshes the materialized views for trending content. Should be called periodically (e.g., every hour) via a cron job.
 
