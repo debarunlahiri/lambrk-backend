@@ -1,5 +1,5 @@
 import { createProxyMiddleware, Options } from 'http-proxy-middleware';
-import { AUTH_SERVICE_URL, VIDEO_SERVICE_URL, BITZ_SERVICE_URL, POSTS_SERVICE_URL, INTERACTION_SERVICE_URL } from '../config/proxy';
+import { AUTH_SERVICE_URL, VIDEO_SERVICE_URL, BITZ_SERVICE_URL, POSTS_SERVICE_URL, INTERACTION_SERVICE_URL, COMPRESSION_SERVICE_URL } from '../config/proxy';
 
 export const createAuthProxy = () => {
   const options: Options = {
@@ -148,6 +148,38 @@ export const createInteractionProxy = () => {
           success: false,
           error: {
             message: 'Interaction service unavailable',
+            details: err.message,
+          },
+        });
+      }
+    },
+  };
+
+  return createProxyMiddleware(options);
+};
+
+export const createCompressionProxy = () => {
+  const options: Options = {
+    target: COMPRESSION_SERVICE_URL,
+    changeOrigin: true,
+    pathRewrite: {
+      '^/api/compression': '/api/compression',
+    },
+    timeout: 600000,
+    proxyTimeout: 600000,
+    onProxyReq: (proxyReq, req, res) => {
+      console.log(`[Gateway] Proxying ${req.method} ${req.url} to ${COMPRESSION_SERVICE_URL}${req.url}`);
+    },
+    onProxyRes: (proxyRes, req, res) => {
+      console.log(`[Gateway] Response ${proxyRes.statusCode} for ${req.url}`);
+    },
+    onError: (err, req, res) => {
+      console.error('[Gateway] Compression service proxy error:', err);
+      if (!res.headersSent) {
+        res.status(503).json({
+          success: false,
+          error: {
+            message: 'Compression service unavailable',
             details: err.message,
           },
         });

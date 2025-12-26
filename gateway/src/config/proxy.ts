@@ -7,6 +7,7 @@ export const VIDEO_SERVICE_URL = process.env.VIDEO_SERVICE_URL || 'http://localh
 export const BITZ_SERVICE_URL = process.env.BITZ_SERVICE_URL || 'http://localhost:4403';
 export const POSTS_SERVICE_URL = process.env.POSTS_SERVICE_URL || 'http://localhost:4404';
 export const INTERACTION_SERVICE_URL = process.env.INTERACTION_SERVICE_URL || 'http://localhost:4405';
+export const COMPRESSION_SERVICE_URL = process.env.COMPRESSION_SERVICE_URL || 'http://localhost:4500';
 export const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:4400';
 export const PORT = process.env.PORT || 4400;
 

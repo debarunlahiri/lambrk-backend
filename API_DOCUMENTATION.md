@@ -8,6 +8,7 @@
 > - [Bitz Service](./docs/bitz-service.md)
 > - [Posts Service](./docs/posts-service.md)
 > - [Interaction Service](./docs/interaction-service.md)
+> - [Compression Service](./docs/compression-service.md)
 
 ---
 
@@ -32,6 +33,7 @@ Complete API reference for Lambrk video streaming platform backend services.
   - [Downloads](#downloads-api)
   - [Trending](#trending-api)
   - [Recommendations](#recommendations-api)
+- [Compression Service API](#compression-service-api)
 
 ## Base URLs
 
@@ -41,6 +43,7 @@ Complete API reference for Lambrk video streaming platform backend services.
 - **Bitz Service (Direct)**: `http://localhost:4403`
 - **Posts Service (Direct)**: `http://localhost:4404`
 - **Interaction Service (Direct)**: `http://localhost:4405`
+- **Compression Service (Direct)**: `http://localhost:4500`
 
 > **Note**: All requests should go through the API Gateway unless accessing services directly for development.
 
@@ -705,7 +708,172 @@ The recommendation system uses a weighted scoring algorithm:
 
 **Note:** For detailed algorithm explanation and examples, see [Interaction Service Documentation](./docs/interaction-service.md#recommendations-api).
 
-**Note:** This endpoint refreshes the materialized views for trending content. Should be called periodically (e.g., every hour) via a cron job.
+---
+
+## Compression Service API
+
+Video compression service that creates multiple quality versions and uploads to S3.
+
+**Base URL**: `http://localhost:4400/api/compression` (Gateway) or `http://localhost:4500/api/compression` (Direct)
+
+### 1. Compress Single Video
+
+**Endpoint:** `POST /api/compression/compress`
+
+**Authentication:** Not required (can be added for production)
+
+**Request Body:**
+```json
+{
+  "video_id": "550e8400-e29b-41d4-a716-446655440000",
+  "filename": "my_video.mp4",
+  "video_url_base": "https://example.com/videos"
+}
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `video_id` | string (UUID) | Yes | UUID of the video record in the database |
+| `filename` | string | Yes | Name of the video file in the pending directory |
+| `video_url_base` | string | No | Base URL for fallback (default: "https://example.com/videos") |
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "Compression job started",
+  "video_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+---
+
+### 2. Batch Compress Videos
+
+**Endpoint:** `POST /api/compression/compress/batch`
+
+**Authentication:** Not required
+
+**Request Body:**
+```json
+{
+  "videos": [
+    {
+      "video_id": "550e8400-e29b-41d4-a716-446655440000",
+      "filename": "video1.mp4",
+      "video_url_base": "https://example.com/videos"
+    },
+    {
+      "video_id": "660e8400-e29b-41d4-a716-446655440001",
+      "filename": "video2.mp4"
+    }
+  ],
+  "max_workers": 4
+}
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `videos` | array | Yes | Array of video compression requests |
+| `videos[].video_id` | string (UUID) | Yes | UUID of the video record |
+| `videos[].filename` | string | Yes | Name of the video file |
+| `videos[].video_url_base` | string | No | Base URL for fallback |
+| `max_workers` | integer | No | Maximum parallel workers (default: 4) |
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "total": 2,
+  "success_count": 0,
+  "failed_count": 0,
+  "results": []
+}
+```
+
+---
+
+### 3. Get Video Qualities
+
+**Endpoint:** `GET /api/compression/video/{video_id}/qualities`
+
+**Authentication:** Not required
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "qualities": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440000",
+      "video_id": "550e8400-e29b-41d4-a716-446655440000",
+      "quality": "720p",
+      "url": "https://lam-brk.s3.ap-south-1.amazonaws.com/videos/550e8400-e29b-41d4-a716-446655440000/my_video_720p.mp4",
+      "file_size": 104857600,
+      "bitrate": 5000,
+      "resolution_width": 1280,
+      "resolution_height": 720,
+      "codec": "h264",
+      "container": "mp4",
+      "duration": 3600,
+      "is_default": true,
+      "status": "ready",
+      "created_at": "2024-01-01T00:00:00.000Z",
+      "updated_at": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### 4. Get Video Status
+
+**Endpoint:** `GET /api/compression/video/{video_id}/status`
+
+**Authentication:** Not required
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "video_id": "550e8400-e29b-41d4-a716-446655440000",
+  "video_status": "published",
+  "qualities": {
+    "144p": "ready",
+    "240p": "ready",
+    "360p": "ready",
+    "480p": "ready",
+    "720p": "ready",
+    "1080p": "ready",
+    "original": "ready"
+  }
+}
+```
+
+---
+
+### 5. Health Check
+
+**Endpoint:** `GET /api/compression/health`
+
+**Authentication:** Not required
+
+**Success Response (200):**
+```json
+{
+  "status": "healthy",
+  "database": "connected",
+  "pending_dir": "/Volumes/Expansion/Lambrk/pending",
+  "completed_dir": "/Volumes/Expansion/Lambrk/completed"
+}
+```
+
+**Note:** All compression jobs run asynchronously in the background. Video files must be placed in the `PENDING_DIR` before starting compression.
+
+For detailed API documentation, request/response examples, error codes, and complete data models, see [Compression Service Documentation](./docs/compression-service.md).
 
 ---
 

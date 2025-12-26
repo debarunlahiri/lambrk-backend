@@ -19,6 +19,7 @@ Welcome to the Lambrk Backend API documentation. This directory contains compreh
 - **Bitz Service**: `http://localhost:4403`
 - **Posts Service**: `http://localhost:4404`
 - **Interaction Service**: `http://localhost:4405`
+- **Compression Service**: `http://localhost:4500`
 
 ### Authentication
 
@@ -67,6 +68,15 @@ User interactions across all content types.
 - **Subscriptions**: Channel subscriptions
 - **Downloads**: Download tracking
 - **Trending**: Algorithmic trending content
+- **Recommendations**: Personalized content recommendations
+
+### [Compression Service](./compression-service.md)
+Video compression and quality management.
+- Single and batch video compression
+- Multiple quality versions (144p to 4K)
+- S3 upload integration
+- Compression status tracking
+- Quality version management
 
 ## Common Patterns
 
