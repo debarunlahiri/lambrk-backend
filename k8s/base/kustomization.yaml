@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - deployment.yaml
+  - configmap.yaml
+  - secret.yaml
+
+commonLabels:
+  app: lambrk-backend
+  tier: backend
+
+images:
+  - name: lambrk-backend
+    newTag: latest
+
+replicas:
+  - name: lambrk-backend
+    count: 3

@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lambrk-backend
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+      - name: lambrk-backend
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "staging"
+        - name: LOGGING_LEVEL_COM_EXAMPLE_REDDIT
+          value: "DEBUG"

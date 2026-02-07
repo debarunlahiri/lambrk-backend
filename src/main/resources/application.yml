@@ -1,0 +1,363 @@
+server:
+  port: 8080
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 10
+    connection-timeout: 20000ms
+    accept-count: 100
+
+spring:
+  application:
+    name: lambrk-backend
+  
+  threads:
+    virtual:
+      enabled: true
+  
+  profiles:
+    active: dev
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/lambrk_db
+    username: lambrk_user
+    password: lambrk_password
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 25
+          order_inserts: true
+          order_updates: true
+        connection:
+          provider_disables_autocommit: true
+        query:
+          plan_cache_max_size: 4096
+          in_clause_parameter_padding: true
+  
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+  
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=10000,expireAfterWrite=5m,recordStats
+    
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+  
+  # CORS Configuration
+  cors:
+    allowed-origins: "http://localhost:3000,http://localhost:4200,https://reddit-frontend.example.com"
+    allowed-methods: "GET,POST,PUT,DELETE,OPTIONS,PATCH"
+    allowed-headers: "*"
+    allow-credentials: true
+    max-age: 3600
+  
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://auth.example.com
+          jwk-set-uri: https://auth.example.com/.well-known/jwks.json
+  
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+          auto-create-topics: true
+          configuration:
+            key.serializer: org.apache.kafka.common.serialization.StringSerializer
+            value.serializer: org.apache.kafka.common.serialization.JsonSerializer
+            key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+            value.deserializer: org.apache.kafka.common.serialization.JsonDeserializer
+            spring.json.trusted.packages: "com.lambrk.dto"
+      bindings:
+        postCreated:
+          destination: post.created
+          content-type: application/json
+        postUpdated:
+          destination: post.updated
+          content-type: application/json
+        commentCreated:
+          destination: comment.created
+          content-type: application/json
+        voteCast:
+          destination: vote.cast
+          content-type: application/json
+  
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:your-openai-key}
+      chat:
+        options:
+          model: gpt-4
+          temperature: 0.7
+          max-tokens: 1000
+
+# AWS S3 Configuration
+aws:
+  s3:
+    enabled: true
+    region: ${AWS_REGION:us-east-1}
+    bucket: ${AWS_S3_BUCKET:lambrk-files}
+    endpoint: ${AWS_S3_ENDPOINT:} # Leave empty for production AWS, set for MinIO/local
+    presigned-url-expiry: 3600 # 1 hour
+  access-key: ${AWS_ACCESS_KEY_ID:}
+  secret-key: ${AWS_SECRET_ACCESS_KEY:}
+
+# Logging Configuration
+# JWT Configuration
+app:
+  jwt:
+    secret: ${JWT_SECRET:lambrk-backend-secret-key-for-jwt-tokens-2024-change-in-production}
+    expiration: 86400      # 24 hours in seconds
+    refresh-expiration: 604800  # 7 days in seconds
+    issuer: lambrk-backend
+    audience: lambrk-frontend
+  logging:
+    enabled: true
+    log-request-body: true
+    log-response-body: true
+    max-body-size: 10000
+    sensitive-headers: authorization,cookie,x-api-key
+  upload:
+    directory: uploads
+    max-file-size: 10485760 # 10MB
+    allowed-types: image/jpeg,image/png,image/gif,video/mp4,image/webp
+  free-tier:
+    enabled: true
+    storage-limit-mb: 5120 # 5GB
+    monthly-upload-limit: 100
+    monthly-bandwidth-gb: 100
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,env,configprops,loggers,threaddump,heapdump
+  endpoint:
+    health:
+      show-details: always
+      group:
+        readiness:
+          include: db,redis,kafka
+        liveness:
+          include: ping
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5,0.9,0.95,0.99
+      sla:
+        http.server.requests: 10ms,25ms,50ms,100ms,200ms,500ms,1s,2s,5s
+    tags:
+      application: lambrk-backend
+    enable:
+      jvm: true
+      system: true
+      process: true
+  tracing:
+    sampling:
+      probability: 0.1
+  info:
+    env:
+      enabled: true
+    build:
+      enabled: true
+    git:
+      mode: full
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      postService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 30s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      commentService:
+        registerHealthIndicator: true
+        slidingWindowSize: 20
+        minimumNumberOfCalls: 10
+        permittedNumberOfCallsInHalfOpenState: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 45s
+        failureRateThreshold: 60
+        eventConsumerBufferSize: 10
+  
+  retry:
+    instances:
+      postService:
+        maxAttempts: 3
+        waitDuration: 1s
+        retryExceptions:
+          - org.springframework.dao.DataAccessException
+          - org.springframework.web.client.ResourceAccessException
+        ignoreExceptions:
+          - org.springframework.web.client.HttpClientErrorException$BadRequest
+      commentService:
+        maxAttempts: 2
+        waitDuration: 500ms
+        retryExceptions:
+          - org.springframework.dao.DataAccessException
+  
+  bulkhead:
+    instances:
+      postService:
+        maxConcurrentCalls: 10
+        maxWaitDuration: 100ms
+      commentService:
+        maxConcurrentCalls: 20
+        maxWaitDuration: 50ms
+  
+  ratelimiter:
+    instances:
+      postCreation:
+        limitForPeriod: 100
+        limitRefreshPeriod: 1m
+        timeoutDuration: 0
+        registerHealthIndicator: true
+      commentCreation:
+        limitForPeriod: 500
+        limitRefreshPeriod: 1m
+        timeoutDuration: 0
+        registerHealthIndicator: true
+
+logging:
+  level:
+    com.lambrk: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.lambrk.service.LoggingService: INFO
+    API_LOGGER: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
+  file:
+    name: logs/lambrk-backend.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+      clean-history-on-start: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cache:
+    type: caffeine
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://postgres:5432/lambrk_db}
+    username: ${DATABASE_USERNAME:lambrk_user}
+    password: ${DATABASE_PASSWORD:lambrk_password}
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 10
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: ${KAFKA_BROKERS:kafka:9092}
+  logging:
+  level:
+    com.lambrk: INFO
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN

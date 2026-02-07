@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: production
+
+namePrefix: prod-
+
+resources:
+  - ../../base
+  - canary-deployment.yaml
+
+patchesStrategicMerge:
+  - deployment-patch.yaml
+  - hpa-patch.yaml
+
+replicas:
+  - name: lambrk-backend
+    count: 5
+
+configMapGenerator:
+  - name: lambrk-backend-config
+    behavior: merge
+    literals:
+      - SPRING_PROFILES_ACTIVE=prod
+      - LOGGING_LEVEL_COM_EXAMPLE_REDDIT=INFO
+
+commonLabels:
+  environment: production
+
+images:
+  - name: lambrk-backend
+    newTag: stable

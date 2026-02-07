@@ -1,0 +1,114 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lambrk-backend-config
+data:
+  application.yml: |
+    spring:
+      application:
+        name: lambrk-backend
+      profiles:
+        active: prod
+      
+      datasource:
+        url: jdbc:postgresql://postgres:5432/reddit_db
+        username: ${DB_USERNAME}
+        password: ${DB_PASSWORD}
+        hikari:
+          maximum-pool-size: 20
+          minimum-idle: 5
+          connection-timeout: 20000
+          idle-timeout: 300000
+          max-lifetime: 1200000
+          leak-detection-threshold: 60000
+      
+      data:
+        redis:
+          host: redis
+          port: 6379
+          timeout: 2000ms
+          lettuce:
+            pool:
+              max-active: 8
+              max-idle: 8
+              min-idle: 0
+      
+      kafka:
+        bootstrap-servers: kafka:9092
+        producer:
+          retries: 3
+          acks: all
+          compression-type: snappy
+        consumer:
+          group-id: lambrk-backend
+          auto-offset-reset: earliest
+      
+      mail:
+        host: ${MAIL_HOST:smtp.gmail.com}
+        port: ${MAIL_PORT:587}
+        username: ${MAIL_USERNAME}
+        password: ${MAIL_PASSWORD}
+        properties:
+          mail:
+            smtp:
+              auth: true
+              starttls:
+                enable: true
+      
+      servlet:
+        multipart:
+          max-file-size: 50MB
+          max-request-size: 100MB
+    
+    server:
+      port: 8080
+      compression:
+        enabled: true
+        mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css
+    
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,prometheus,metrics,env,configprops,loggers
+      endpoint:
+        health:
+          show-details: always
+          probes:
+            enabled: true
+          group:
+            liveness:
+              include: ping
+            readiness:
+              include: db,redis,kafka
+      metrics:
+        export:
+          prometheus:
+            enabled: true
+        tags:
+          application: ${spring.application.name}
+        distribution:
+          slo:
+            http.server.requests: 10ms,25ms,50ms,100ms,200ms,500ms,1s,2s,5s
+      tracing:
+        sampling:
+          probability: 0.1
+    
+    app:
+      upload:
+        directory: /app/uploads
+        max-file-size: 52428800
+        allowed-types: image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm
+    
+    jwt:
+      secret: ${JWT_SECRET}
+      expiration: 86400000
+      refresh-expiration: 604800000
+    
+    logging:
+      level:
+        com.example.reddit: INFO
+        org.springframework.security: WARN
+        org.hibernate.SQL: DEBUG
+      pattern:
+        console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] [%X{traceId:-},%X{spanId:-}] %-5level %logger{36} - %msg%n"

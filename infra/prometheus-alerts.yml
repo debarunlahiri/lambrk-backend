@@ -1,0 +1,181 @@
+# Prometheus Alerting Rules for Reddit Backend
+# Place in /etc/prometheus/rules/ or include in prometheus.yml
+
+groups:
+  - name: lambrk-backend-alerts
+    rules:
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum by (job, instance) (increase(http_server_requests_seconds_count{status=~"5.."}[5m]))
+            /
+            sum by (job, instance) (increase(http_server_requests_seconds_count[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High error rate on {{ $labels.instance }}"
+          description: "Error rate is above 5%: {{ $value | humanizePercentage }}"
+
+      # High Latency
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95, 
+            sum by (job, le) (rate(http_server_requests_seconds_bucket[5m]))
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High latency on {{ $labels.job }}"
+          description: "95th percentile latency is {{ $value }}s"
+
+      # Circuit Breaker Open
+      - alert: CircuitBreakerOpen
+        expr: resilience4j_circuitbreaker_state{name!="CLOSED"} > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Circuit breaker {{ $labels.name }} is open"
+          description: "Circuit breaker has been open for more than 1 minute"
+
+      # Rate Limiting Triggered
+      - alert: RateLimitingTriggered
+        expr: |
+          increase(resilience4j_ratelimiter_calls_total{kind="failed_with_rate_limiter"}[1m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Rate limiting active on {{ $labels.name }}"
+          description: "Rate limiter is rejecting requests"
+
+      # Database Connection Pool Exhaustion
+      - alert: DatabaseConnectionsExhausted
+        expr: hikaricp_connections_active / hikaricp_connections_max > 0.9
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "{{ $value | humanizePercentage }} of connections are active"
+
+      # Kafka Consumer Lag
+      - alert: KafkaConsumerLag
+        expr: kafka_consumer_group_lag > 1000
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Kafka consumer lag is high"
+          description: "Consumer lag is {{ $value }} messages"
+
+      # JVM Memory Usage
+      - alert: HighJVMMemoryUsage
+        expr: |
+          (
+            jvm_memory_used_bytes{area="heap"} /
+            jvm_memory_max_bytes{area="heap"}
+          ) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High JVM memory usage"
+          description: "JVM heap usage is {{ $value | humanizePercentage }}"
+
+      # Virtual Thread Issues
+      - alert: VirtualThreadErrors
+        expr: |
+          increase(lambrk_virtual_thread_errors_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Virtual thread errors detected"
+          description: "Virtual threads are experiencing errors"
+
+      # AI Content Moderation Failures
+      - alert: ContentModerationFailures
+        expr: |
+          increase(lambrk_moderation_error_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Content moderation service issues"
+          description: "Multiple content moderation failures detected"
+
+      # Health Check Failure
+      - alert: HealthCheckFailure
+        expr: |
+          health_status{status!="UP"} == 1
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Health check {{ $labels.component }} is failing"
+          description: "Health check has been failing for more than 1 minute"
+
+      # Search Service Issues
+      - alert: SearchServiceDegraded
+        expr: |
+          increase(search_advanced_errors_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Search service is experiencing issues"
+          description: "Multiple search errors detected"
+
+      # Notification Delivery Failures
+      - alert: NotificationDeliveryFailures
+        expr: |
+          increase(lambrk_notifications_errors_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Notification delivery is failing"
+          description: "Multiple notification delivery failures"
+
+      # WebSocket Connection Issues
+      - alert: WebSocketConnectionIssues
+        expr: |
+          (
+            sum(websocket_connected) - sum(websocket_disconnected)
+          ) < 0
+        for: 2m
+        labels:
+          severity: info
+          team: backend
+        annotations:
+          summary: "WebSocket connections dropping"
+          description: "WebSocket connections are being lost"
+
+      # File Upload Service Issues
+      - alert: FileUploadFailures
+        expr: |
+          increase(lambrk_files_upload_errors_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "File upload service issues"
+          description: "Multiple file upload failures detected"
