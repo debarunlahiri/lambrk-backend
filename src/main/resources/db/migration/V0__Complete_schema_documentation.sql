@@ -1,6 +1,6 @@
 -- ============================================================
 -- Database Schema Documentation
--- Reddit Backend Application - PostgreSQL
+-- Lambrk Backend Application - PostgreSQL
 -- ============================================================
 
 -- ============================================================
@@ -32,11 +32,11 @@ CREATE INDEX idx_user_created_at ON users(created_at);     -- Sorting/pagination
 CREATE INDEX idx_user_role ON users(role);                 -- RBAC queries
 
 -- ============================================================
--- 2. SUBREDDITS TABLE
+-- 2. SUBLAMBRKS TABLE
 -- ============================================================
 -- Purpose: Communities/forums where users post content
 
-CREATE TABLE subreddits (
+CREATE TABLE sublambrks (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(21) UNIQUE NOT NULL,                 -- URL-friendly name (r/name)
     title VARCHAR(100) NOT NULL,                    -- Display title
@@ -55,16 +55,16 @@ CREATE TABLE subreddits (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indexes for Subreddits
-CREATE INDEX idx_subreddit_name ON subreddits(name);
-CREATE INDEX idx_subreddit_created_at ON subreddits(created_at);
-CREATE INDEX idx_subreddit_member_count ON subreddits(member_count);
-CREATE INDEX idx_subreddit_created_by ON subreddits(created_by);
+-- Indexes for Sublambrks
+CREATE INDEX idx_sublambrk_name ON sublambrks(name);
+CREATE INDEX idx_sublambrk_created_at ON sublambrks(created_at);
+CREATE INDEX idx_sublambrk_member_count ON sublambrks(member_count);
+CREATE INDEX idx_sublambrk_created_by ON sublambrks(created_by);
 
 -- ============================================================
 -- 3. POSTS TABLE
 -- ============================================================
--- Purpose: User-submitted content to subreddits
+-- Purpose: User-submitted content to sublambrks
 
 CREATE TABLE posts (
     id BIGSERIAL PRIMARY KEY,
@@ -88,7 +88,7 @@ CREATE TABLE posts (
     view_count INTEGER NOT NULL DEFAULT 0,          -- Page views
     award_count INTEGER NOT NULL DEFAULT 0,         -- Awards received
     author_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    subreddit_id BIGINT NOT NULL REFERENCES subreddits(id) ON DELETE CASCADE,
+    sublambrk_id BIGINT NOT NULL REFERENCES sublambrks(id) ON DELETE CASCADE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     archived_at TIMESTAMP,                          -- When archived
@@ -97,7 +97,7 @@ CREATE TABLE posts (
 
 -- Indexes for Posts
 CREATE INDEX idx_post_author ON posts(author_id);
-CREATE INDEX idx_post_subreddit ON posts(subreddit_id);
+CREATE INDEX idx_post_sublambrk ON posts(sublambrk_id);
 CREATE INDEX idx_post_created_at ON posts(created_at);
 CREATE INDEX idx_post_score ON posts(score);
 CREATE INDEX idx_post_title ON posts(title);
@@ -105,10 +105,10 @@ CREATE INDEX idx_post_type ON posts(post_type);
 CREATE INDEX idx_post_is_stickied ON posts(is_stickied);
 CREATE INDEX idx_post_is_removed ON posts(is_removed);
 CREATE INDEX idx_post_is_archived ON posts(is_archived);
--- Composite: Hot posts by subreddit
-CREATE INDEX idx_post_subreddit_score ON posts(subreddit_id, score DESC);
--- Composite: New posts by subreddit
-CREATE INDEX idx_post_subreddit_created ON posts(subreddit_id, created_at DESC);
+-- Composite: Hot posts by sublambrk
+CREATE INDEX idx_post_sublambrk_score ON posts(sublambrk_id, score DESC);
+-- Composite: New posts by sublambrk
+CREATE INDEX idx_post_sublambrk_created ON posts(sublambrk_id, created_at DESC);
 
 -- ============================================================
 -- 4. COMMENTS TABLE
@@ -185,27 +185,27 @@ CREATE INDEX idx_vote_user_post ON votes(user_id, post_id);
 CREATE INDEX idx_vote_user_comment ON votes(user_id, comment_id);
 
 -- ============================================================
--- 6. USER-SUBREDDIT MEMBERSHIPS TABLE
+-- 6. USER-SUBLAMBRK MEMBERSHIPS TABLE
 -- ============================================================
--- Purpose: Many-to-many join table for users subscribed to subreddits
+-- Purpose: Many-to-many join table for users subscribed to sublambrks
 
-CREATE TABLE user_subreddit_memberships (
+CREATE TABLE user_sublambrk_memberships (
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    subreddit_id BIGINT NOT NULL REFERENCES subreddits(id) ON DELETE CASCADE,
+    sublambrk_id BIGINT NOT NULL REFERENCES sublambrks(id) ON DELETE CASCADE,
     joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, subreddit_id)
+    PRIMARY KEY (user_id, sublambrk_id)
 );
 
 -- ============================================================
--- 7. USER-SUBREDDIT MODERATORS TABLE
+-- 7. USER-SUBLAMBRK MODERATORS TABLE
 -- ============================================================
--- Purpose: Users with moderation privileges for subreddits
+-- Purpose: Users with moderation privileges for sublambrks
 
-CREATE TABLE user_subreddit_moderators (
+CREATE TABLE user_sublambrk_moderators (
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    subreddit_id BIGINT NOT NULL REFERENCES subreddits(id) ON DELETE CASCADE,
+    sublambrk_id BIGINT NOT NULL REFERENCES sublambrks(id) ON DELETE CASCADE,
     added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, subreddit_id)
+    PRIMARY KEY (user_id, sublambrk_id)
 );
 
 -- ============================================================
@@ -247,7 +247,7 @@ CREATE TABLE admin_actions (
     id BIGSERIAL PRIMARY KEY,
     type VARCHAR(30) NOT NULL,                      -- BAN, UNBAN, REMOVE_POST, etc.
     target_id BIGINT NOT NULL,                      -- ID of affected entity
-    target_type VARCHAR(50) NOT NULL,             -- USER, POST, COMMENT, SUBREDDIT
+    target_type VARCHAR(50) NOT NULL,             -- USER, POST, COMMENT, SUBLAMBRK
     reason TEXT NOT NULL,                           -- Why action was taken
     notes TEXT,                                     -- Additional details
     performed_by BIGINT NOT NULL REFERENCES users(id),
@@ -345,7 +345,7 @@ $$ language 'plpgsql';
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_subreddits_updated_at BEFORE UPDATE ON subreddits
+CREATE TRIGGER update_sublambrks_updated_at BEFORE UPDATE ON sublambrks
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_posts_updated_at BEFORE UPDATE ON posts

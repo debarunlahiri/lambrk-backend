@@ -17,11 +17,11 @@ Get personalized recommendations using ML-based analysis.
   "userId": 1,
   "type": "POSTS",
   "limit": 20,
-  "excludeSubreddits": ["gaming", "memes"],
+  "excludeSublambrks": ["gaming", "memes"],
   "excludeUsers": ["spammer123"],
   "includeNSFW": false,
   "includeOver18": false,
-  "contextSubredditId": "1",
+  "contextSublambrkId": "1",
   "contextPostId": "1"
 }
 ```
@@ -33,12 +33,63 @@ Get personalized recommendations using ML-based analysis.
 | userId           | Required, must exist                                    |
 | type             | `POSTS`, `SUBREDDITS`, `USERS`, `COMMENTS`              |
 | limit            | 1–100, default 20                                        |
-| excludeSubreddits| Optional, list of subreddit names to exclude        |
+| excludeSublambrks| Optional, list of sublambrk names to exclude        |
 | excludeUsers     | Optional, list of usernames to exclude              |
 | includeNSFW      | Boolean, default false                                  |
 | includeOver18    | Boolean, default false                                  |
-| contextSubredditId| Optional, context for recommendations              |
+| contextSublambrkId| Optional, context for recommendations              |
 | contextPostId    | Optional, context for recommendations              |
+
+### cURL Examples
+
+**Get Post Recommendations:**
+```bash
+curl -X POST http://localhost:8080/api/recommendations \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": 1,
+    "type": "POSTS",
+    "limit": 20,
+    "includeNSFW": false,
+    "includeOver18": false
+  }'
+```
+
+**Get Sublambrk Recommendations:**
+```bash
+curl -X POST http://localhost:8080/api/recommendations \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": 1,
+    "type": "SUBREDDITS",
+    "limit": 10
+  }'
+```
+
+**Get User Recommendations:**
+```bash
+curl -X POST http://localhost:8080/api/recommendations \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": 1,
+    "type": "USERS",
+    "limit": 15
+  }'
+```
+
+**Get Trending Recommendations (No Auth Required):**
+```bash
+curl "http://localhost:8080/api/recommendations/trending?type=posts&limit=10"
+```
+
+**Get Post Recommendations via GET:**
+```bash
+curl "http://localhost:8080/api/recommendations/posts/1?limit=20&includeNSFW=false" \
+  -H "Authorization: Bearer <access_token>"
+```
 
 ### Response `200 OK`
 
@@ -51,20 +102,20 @@ Get personalized recommendations using ML-based analysis.
       "title": "Advanced Spring Boot Patterns",
       "content": "Exploring advanced patterns...",
       "author": { "id": 2, "username": "expert_dev" },
-      "subreddit": { "id": 1, "name": "programming" },
+      "sublambrk": { "id": 1, "name": "programming" },
       "score": 45,
       "commentCount": 12,
       "createdAt": "2026-02-07T14:00:00Z"
     }
   ],
-  "subreddits": [],
+  "sublambrks": [],
   "users": [],
   "comments": [],
   "explanation": "Based on your activity in 5 communities and 25 interactions, we've selected 20 posts that match your interests and engagement patterns.",
   "confidence": 0.85,
   "factors": [
     "User interaction history",
-    "Subreddit preferences",
+    "Sublambrk preferences",
     "Content similarity",
     "Trending topics"
   ]
@@ -88,11 +139,11 @@ Get post recommendations for a specific user.
 | Param            | Type    | Default | Description |
 |------------------|---------|---------|-------------|
 | limit            | int     | 20      | Number of recommendations |
-| excludeSubreddits| String  | —       | Comma-separated subreddit names |
+| excludeSublambrks| String  | —       | Comma-separated sublambrk names |
 | excludeUsers     | String  | —       | Comma-separated usernames |
 | includeNSFW      | boolean | false   | Include NSFW content |
 | includeOver18    | boolean | false   | Include 18+ content |
-| contextSubredditId| String  | —       | Context subreddit |
+| contextSublambrkId| String  | —       | Context sublambrk |
 | contextPostId    | String  | —       | Context post |
 
 ### Response `200 OK`
@@ -101,9 +152,9 @@ Same shape as POST endpoint with only posts populated.
 
 ---
 
-## GET `/api/recommendations/subreddits/{userId}`
+## GET `/api/recommendations/sublambrks/{userId}`
 
-Get subreddit recommendations for a user.
+Get sublambrk recommendations for a user.
 
 ### Path Parameters
 
@@ -116,9 +167,9 @@ Get subreddit recommendations for a user.
 | Param            | Type    | Default | Description |
 |------------------|---------|---------|-------------|
 | limit            | int     | 20      | Number of recommendations |
-| excludeSubreddits| String  | —       | Comma-separated subreddit names |
-| includeNSFW      | boolean | false   | Include NSFW subreddits |
-| includeOver18    | boolean | false   | Include 18+ subreddits |
+| excludeSublambrks| String  | —       | Comma-separated sublambrk names |
+| includeNSFW      | boolean | false   | Include NSFW sublambrks |
+| includeOver18    | boolean | false   | Include 18+ sublambrks |
 
 ### Response `200 OK`
 
@@ -126,7 +177,7 @@ Get subreddit recommendations for a user.
 {
   "type": "SUBREDDITS",
   "posts": [],
-  "subreddits": [
+  "sublambrks": [
     {
       "id": 5,
       "name": "java",
@@ -139,7 +190,7 @@ Get subreddit recommendations for a user.
   ],
   "users": [],
   "comments": [],
-  "explanation": "Based on your subscriptions to programming communities, we recommend these related subreddits.",
+  "explanation": "Based on your subscriptions to programming communities, we recommend these related sublambrks.",
   "confidence": 0.78,
   "factors": [
     "User subscriptions",
@@ -175,7 +226,7 @@ Get user recommendations (similar users to follow).
 {
   "type": "USERS",
   "posts": [],
-  "subreddits": [],
+  "sublambrks": [],
   "users": [
     {
       "id": 3,
@@ -232,7 +283,7 @@ Get contextual recommendations based on current context.
 
 | Param             | Type   | Default | Description |
 |-------------------|--------|---------|-------------|
-| contextSubredditId| String | —       | Current subreddit context |
+| contextSublambrkId| String | —       | Current sublambrk context |
 | contextPostId    | String | —       | Current post context |
 | type              | String | posts   | Recommendation type |
 | limit             | int    | 20      | Number of recommendations |
@@ -285,7 +336,7 @@ Get trending recommendations for all users.
 
 1. **User Interaction History**
    - Posts viewed, voted, commented on
-   - Subreddit subscriptions and activity
+   - Sublambrk subscriptions and activity
    - Time spent on different content types
 
 2. **Content Similarity**
@@ -294,7 +345,7 @@ Get trending recommendations for all users.
    - Tag and category matching
 
 3. **Community Patterns**
-   - Subreddit overlap analysis
+   - Sublambrk overlap analysis
    - User behavior in similar communities
    - Engagement patterns
 
@@ -354,7 +405,7 @@ All recommendation endpoints emit these metrics:
 
 - `recommendations.generated` - Recommendations generated
 - `recommendations.posts` - Post recommendations
-- `recommendations.subreddits` - Subreddit recommendations
+- `recommendations.sublambrks` - Sublambrk recommendations
 - `recommendations.users` - User recommendations
 - `recommendations.comments` - Comment recommendations
 - `recommendations.contextual` - Contextual recommendations

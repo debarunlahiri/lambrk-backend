@@ -59,7 +59,7 @@ All messages use **STOMP** protocol over WebSocket.
 |---------------|-------------|
 | `/topic/posts/{postId}` | Post-specific updates |
 | `/topic/posts/{postId}/comments` | Comment updates for post |
-| `/topic/subreddits/{subredditId}` | Subreddit updates |
+| `/topic/sublambrks/{sublambrkId}` | Sublambrk updates |
 | `/topic/announcements` | System announcements |
 | `/topic/user-status/{username}` | User online status |
 
@@ -103,12 +103,12 @@ stompClient.subscribe('/topic/posts/123/comments', function(message) {
 });
 ```
 
-### Subscribe to Subreddit
+### Subscribe to Sublambrk
 
 ```javascript
-stompClient.subscribe('/topic/subreddits/programming', function(message) {
+stompClient.subscribe('/topic/sublambrks/programming', function(message) {
   const update = JSON.parse(message.body);
-  console.log('Subreddit update:', update);
+  console.log('Sublambrk update:', update);
 });
 ```
 

@@ -1,14 +1,14 @@
-# Subreddits API
+# Sublambrks API
 
-Base URL: `/api/subreddits`
+Base URL: `/api/sublambrks`
 
 All endpoints require **JWT authentication** unless noted otherwise.
 
 ---
 
-## POST `/api/subreddits`
+## POST `/api/sublambrks`
 
-Create a new subreddit. The creator automatically becomes a moderator and subscriber.
+Create a new sublambrk. The creator automatically becomes a moderator and subscriber.
 
 ### Headers
 
@@ -77,19 +77,19 @@ Content-Type: application/json
 |--------|-------------------------------|
 | 400    | Validation failed             |
 | 401    | Not authenticated             |
-| 409    | Subreddit name already exists |
+| 409    | Sublambrk name already exists |
 
 ---
 
-## GET `/api/subreddits/{subredditId}`
+## GET `/api/sublambrks/{sublambrkId}`
 
-Get subreddit details by ID.
+Get sublambrk details by ID.
 
 ### Path Parameters
 
 | Param       | Type | Description  |
 |-------------|------|--------------|
-| subredditId | Long | Subreddit ID |
+| sublambrkId | Long | Sublambrk ID |
 
 ### Response `200 OK`
 
@@ -97,21 +97,21 @@ Same shape as create response. `isUserSubscribed` and `isUserModerator` reflect 
 
 ---
 
-## GET `/api/subreddits/r/{name}`
+## GET `/api/sublambrks/r/{name}`
 
-Get subreddit details by name (e.g. `/api/subreddits/r/programming`).
+Get sublambrk details by name (e.g. `/api/sublambrks/r/programming`).
 
 ### Path Parameters
 
 | Param | Type   | Description    |
 |-------|--------|----------------|
-| name  | String | Subreddit name |
+| name  | String | Sublambrk name |
 
 ---
 
-## GET `/api/subreddits/trending`
+## GET `/api/sublambrks/trending`
 
-Get trending subreddits sorted by active user count.
+Get trending sublambrks sorted by active user count.
 
 ### Query Parameters
 
@@ -122,9 +122,9 @@ Get trending subreddits sorted by active user count.
 
 ---
 
-## GET `/api/subreddits`
+## GET `/api/sublambrks`
 
-Get all public subreddits sorted by subscriber count (descending).
+Get all public sublambrks sorted by subscriber count (descending).
 
 ### Query Parameters
 
@@ -135,9 +135,9 @@ Get all public subreddits sorted by subscriber count (descending).
 
 ---
 
-## GET `/api/subreddits/search`
+## GET `/api/sublambrks/search`
 
-Search subreddits by name, title, or description.
+Search sublambrks by name, title, or description.
 
 ### Query Parameters
 
@@ -149,9 +149,9 @@ Search subreddits by name, title, or description.
 
 ---
 
-## PUT `/api/subreddits/{subredditId}`
+## PUT `/api/sublambrks/{sublambrkId}`
 
-Update subreddit settings. **Requires MODERATOR or ADMIN role.**
+Update sublambrk settings. **Requires MODERATOR or ADMIN role.**
 
 ### Request Body
 
@@ -162,13 +162,13 @@ Same shape as create request (name is immutable — ignored on update).
 | Status | Condition                      |
 |--------|--------------------------------|
 | 403    | Not a moderator of this sub    |
-| 404    | Subreddit not found            |
+| 404    | Sublambrk not found            |
 
 ---
 
-## POST `/api/subreddits/{subredditId}/subscribe`
+## POST `/api/sublambrks/{sublambrkId}/subscribe`
 
-Subscribe the authenticated user to a subreddit.
+Subscribe the authenticated user to a sublambrk.
 
 ### Response `200 OK`
 
@@ -176,9 +176,9 @@ Empty body. Increments `subscriberCount` and `memberCount`.
 
 ---
 
-## POST `/api/subreddits/{subredditId}/unsubscribe`
+## POST `/api/sublambrks/{sublambrkId}/unsubscribe`
 
-Unsubscribe the authenticated user from a subreddit.
+Unsubscribe the authenticated user from a sublambrk.
 
 ### Response `200 OK`
 
@@ -186,13 +186,13 @@ Empty body. Decrements `subscriberCount` and `memberCount`.
 
 ---
 
-## GET `/api/subreddits/user/subscriptions`
+## GET `/api/sublambrks/user/subscriptions`
 
-Get all subreddits the authenticated user is subscribed to.
+Get all sublambrks the authenticated user is subscribed to.
 
 ### Response `200 OK`
 
-Set of `SubredditResponse`.
+Set of `SublambrkResponse`.
 
 ---
 
@@ -200,7 +200,7 @@ Set of `SubredditResponse`.
 
 | Endpoint                | Cache Name          | TTL    |
 |-------------------------|---------------------|--------|
-| GET /{subredditId}      | subreddits          | 15 min |
-| GET /trending           | trendingSubreddits  | 15 min |
+| GET /{sublambrkId}      | sublambrks          | 15 min |
+| GET /trending           | trendingSublambrks  | 15 min |
 
-Creating, updating, subscribing, or unsubscribing evicts subreddit caches.
+Creating, updating, subscribing, or unsubscribing evicts sublambrk caches.

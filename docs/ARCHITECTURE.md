@@ -17,12 +17,12 @@
 │                  Spring Boot Application                        │
 │                                                                 │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-│  │  Auth    │  │  Post    │  │ Comment  │  │Subreddit │       │
+│  │  Auth    │  │  Post    │  │ Comment  │  │Sublambrk │       │
 │  │Controller│  │Controller│  │Controller│  │Controller│       │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
 │       │              │              │              │             │
 │  ┌────▼─────┐  ┌────▼─────┐  ┌────▼─────┐  ┌────▼─────┐       │
-│  │  Auth   │  │  Post    │  │ Comment  │  │Subreddit │       │
+│  │  Auth   │  │  Post    │  │ Comment  │  │Sublambrk │       │
 │  │ Service │  │ Service  │  │ Service  │  │ Service  │       │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
 │       │              │              │              │             │
@@ -63,7 +63,7 @@
 ## Package Structure
 
 ```
-com.example.reddit
+com.example.lambrk
 ├── LambrkBackendApplication.java       # @SpringBootApplication + @Modulith
 ├── config/
 │   ├── SecurityConfig.java             # Spring Security 6 filter chain
@@ -81,7 +81,7 @@ com.example.reddit
 │   ├── User.java                       # JPA record entity
 │   ├── Post.java                       # JPA record entity + PostType enum
 │   ├── Comment.java                    # JPA record entity (tree structure)
-│   ├── Subreddit.java                  # JPA record entity
+│   ├── Sublambrk.java                  # JPA record entity
 │   ├── Vote.java                       # JPA record entity + VoteType enum
 │   ├── FileUpload.java                 # JPA record entity for file metadata
 │   └── FreeTierUsage.java              # JPA record entity for usage tracking
@@ -93,8 +93,8 @@ com.example.reddit
 │   ├── PostResponse.java               # Post API response
 │   ├── CommentCreateRequest.java       # Comment creation
 │   ├── CommentResponse.java            # Comment API response
-│   ├── SubredditCreateRequest.java     # Subreddit creation/update
-│   ├── SubredditResponse.java          # Subreddit API response
+│   ├── SublambrkCreateRequest.java     # Sublambrk creation/update
+│   ├── SublambrkResponse.java          # Sublambrk API response
 │   ├── UserResponse.java               # User API response (no email/password)
 │   ├── VoteRequest.java                # Vote creation
 │   ├── FileUploadRequest.java          # File upload request
@@ -103,7 +103,7 @@ com.example.reddit
 │   ├── UserRepository.java             # JPA + custom queries
 │   ├── PostRepository.java             # JPA + custom queries
 │   ├── CommentRepository.java          # JPA + custom queries
-│   ├── SubredditRepository.java        # JPA + custom queries
+│   ├── SublambrkRepository.java        # JPA + custom queries
 │   ├── VoteRepository.java             # JPA + custom queries
 │   ├── FileUploadRepository.java       # File metadata queries
 │   └── FreeTierUsageRepository.java    # Free tier usage queries
@@ -111,7 +111,7 @@ com.example.reddit
 │   ├── PostService.java                # Business logic + structured concurrency
 │   ├── CommentService.java             # Comment CRUD + threading
 │   ├── VoteService.java                # Toggle voting logic
-│   ├── SubredditService.java           # Community management
+│   ├── SublambrkService.java           # Community management
 │   ├── AuthService.java                # Registration + login + refresh
 │   ├── KafkaEventService.java          # Event publishing via StreamBridge
 │   ├── AIContentModerationService.java # Spring AI moderation + recommendations
@@ -126,7 +126,7 @@ com.example.reddit
 │   ├── AuthController.java             # /api/auth/*
 │   ├── PostController.java             # /api/posts/*
 │   ├── CommentController.java          # /api/comments/*
-│   ├── SubredditController.java        # /api/subreddits/*
+│   ├── SublambrkController.java        # /api/sublambrks/*
 │   ├── VoteController.java             # /api/votes/*
 │   ├── UserController.java             # /api/users/*
 │   └── FileUploadController.java       # /api/files/*
@@ -186,7 +186,7 @@ Side Effects:
 ### Structured Concurrency in Services
 - `StructuredTaskScope.ShutdownOnFailure` for parallel DB lookups
 - Clean cancellation when any subtask fails
-- Used in `PostService.createPost()` to fetch User + Subreddit concurrently
+- Used in `PostService.createPost()` to fetch User + Sublambrk concurrently
 
 ### Record-Based Domain Model
 - JPA entities as Java records (immutable by default)
@@ -211,7 +211,7 @@ Side Effects:
 
 ### S3 Storage Architecture
 - AWS S3 as primary file storage with configurable fallback to local filesystem
-- Files organized by type: `avatars/`, `posts/images/`, `posts/videos/`, `subreddits/icons/`, etc.
+- Files organized by type: `avatars/`, `posts/images/`, `posts/videos/`, `sublambrks/icons/`, etc.
 - Presigned URLs for secure temporary access to private files
 - Circuit breaker and retry patterns for S3 operations (Resilience4j)
 - Support for MinIO and other S3-compatible services via custom endpoint
@@ -239,9 +239,9 @@ User 1──* Comment
 User 1──* Vote
 User 1──* FileUpload
 User 1──* FreeTierUsage
-User *──* Subreddit (membership)
-User *──* Subreddit (moderation)
-Subreddit 1──* Post
+User *──* Sublambrk (membership)
+User *──* Sublambrk (moderation)
+Sublambrk 1──* Post
 Post 1──* Comment
 Post 1──* Vote
 Post *──* FileUpload (post attachments)
@@ -285,5 +285,5 @@ Register/Login → JWT access token (24h) + refresh token (7d)
 |------------|------------------------------------------------|
 | USER       | CRUD own posts/comments, vote, subscribe       |
 | VERIFIED   | Same as USER (badge only)                      |
-| MODERATOR  | Edit subreddit settings, remove content        |
+| MODERATOR  | Edit sublambrk settings, remove content        |
 | ADMIN      | All permissions, delete users, manage system   |

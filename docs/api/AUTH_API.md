@@ -30,6 +30,19 @@ Register a new user account.
 | password    | Required, min 8 chars                      |
 | displayName | Optional                                   |
 
+### cURL Example
+
+```bash
+curl -X POST http://localhost:8080/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "john_doe",
+    "email": "john@example.com",
+    "password": "securePassword123",
+    "displayName": "John Doe"
+  }'
+```
+
 ### Response `200 OK`
 
 ```json
@@ -86,6 +99,17 @@ Same shape as register response.
 |--------|---------------------|
 | 400    | Validation failed   |
 | 401    | Invalid credentials |
+
+### cURL Example
+
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "john_doe",
+    "password": "securePassword123"
+  }'
+```
 
 ---
 

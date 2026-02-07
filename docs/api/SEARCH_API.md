@@ -18,7 +18,7 @@ Advanced search across all content types with complex filtering and sorting opti
   "type": "ALL",
   "sort": "RELEVANCE",
   "timeFilter": "WEEK",
-  "subreddits": ["programming", "java"],
+  "sublambrks": ["programming", "java"],
   "flairs": ["tutorial", "guide"],
   "includeNSFW": false,
   "includeOver18": false,
@@ -38,7 +38,7 @@ Advanced search across all content types with complex filtering and sorting opti
 | type         | `ALL`, `POSTS`, `COMMENTS`, `USERS`, `SUBREDDITS` |
 | sort         | `RELEVANCE`, `NEW`, `HOT`, `TOP`, `CONTROVERSIAL` |
 | timeFilter   | `ALL`, `HOUR`, `DAY`, `WEEK`, `MONTH`, `YEAR` |
-| subreddits   | Optional, list of subreddit names          |
+| sublambrks   | Optional, list of sublambrk names          |
 | flairs       | Optional, list of flair texts                 |
 | minScore     | Optional, minimum score filter               |
 | minComments  | Optional, minimum comment count filter       |
@@ -56,7 +56,7 @@ Advanced search across all content types with complex filtering and sorting opti
       "title": "Spring Boot 3.5 with Virtual Threads",
       "content": "Exploring the new virtual thread features...",
       "author": { "id": 1, "username": "john_doe" },
-      "subreddit": { "id": 1, "name": "programming" },
+      "sublambrk": { "id": 1, "name": "programming" },
       "score": 25,
       "commentCount": 8,
       "createdAt": "2026-02-07T14:00:00Z"
@@ -64,7 +64,7 @@ Advanced search across all content types with complex filtering and sorting opti
   ],
   "comments": [],
   "users": [],
-  "subreddits": [],
+  "sublambrks": [],
   "metadata": {
     "query": "spring boot virtual threads",
     "type": "ALL",
@@ -95,7 +95,7 @@ Search posts only with filtering options.
 | size         | int    | 20      | Page size         |
 | sort         | String | RELEVANCE| Sort method       |
 | timeFilter   | String | ALL      | Time filter       |
-| subreddits   | String | —       | Comma-separated |
+| sublambrks   | String | —       | Comma-separated |
 | flairs       | String | —       | Comma-separated |
 | includeNSFW  | bool   | false    | Include NSFW     |
 | includeOver18 | bool   | false    | Include 18+      |
@@ -143,9 +143,9 @@ Search users by username or display name.
 
 ---
 
-## GET `/api/search/subreddits`
+## GET `/api/search/sublambrks`
 
-Search subreddits by name, title, or description.
+Search sublambrks by name, title, or description.
 
 ### Query Parameters
 
@@ -217,7 +217,7 @@ Get trending search terms.
   "posts": [],
   "comments": [],
   "users": [],
-  "subreddits": [],
+  "sublambrks": [],
   "metadata": {
     "query": "trending",
     "type": "ALL",
@@ -240,7 +240,7 @@ Get trending search terms.
 ### Advanced Filtering
 
 - **Time-based filtering**: Search content within specific time windows
-- **Subreddit filtering**: Limit search to specific communities
+- **Sublambrk filtering**: Limit search to specific communities
 - **Flair filtering**: Filter by post/comment flair text
 - **Score filtering**: Minimum score/vote/comment thresholds
 - **Content filtering**: NSFW and 18+ content controls
@@ -279,6 +279,6 @@ All search endpoints emit these metrics:
 - `search.posts` - Post search requests  
 - `search.comments` - Comment search requests
 - `search.users` - User search requests
-- `search.subreddits` - Subreddit search requests
+- `search.sublambrks` - Sublambrk search requests
 - `search.suggestions` - Suggestion requests
 - `search.trending` - Trending search requests

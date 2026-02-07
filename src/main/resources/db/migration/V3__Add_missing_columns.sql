@@ -91,7 +91,7 @@ UPDATE users SET role = 'ADMIN' WHERE username = 'admin';
 UPDATE users SET role = 'USER' WHERE username IN ('john_doe', 'jane_smith');
 
 -- Add sample posts for search testing
-INSERT INTO posts (title, content, post_type, author_id, subreddit_id) VALUES
+INSERT INTO posts (title, content, post_type, author_id, sublambrk_id) VALUES
 ('Getting Started with Spring Boot 3.5', 'Spring Boot 3.5 introduces virtual threads, structured concurrency, and many new features for modern Java development.', 'TEXT', 2, 1),
 ('Virtual Threads in Production', 'After running virtual threads in production for 3 months, here are our findings and best practices.', 'TEXT', 3, 1),
 ('Java 25 Pattern Matching Deep Dive', 'Pattern matching in Java 25 has reached its final form. Let us explore all the features.', 'TEXT', 2, 1),

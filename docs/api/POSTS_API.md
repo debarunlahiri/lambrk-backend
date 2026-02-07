@@ -29,7 +29,7 @@ Content-Type: application/json
   "flairCssClass": "discussion",
   "isSpoiler": false,
   "isOver18": false,
-  "subredditId": 1
+  "sublambrkId": 1
 }
 ```
 
@@ -41,7 +41,23 @@ Content-Type: application/json
 | content     | Optional (TEXT type), max 40000     |
 | url         | Optional (LINK type), max 2000     |
 | postType    | TEXT, LINK, IMAGE, VIDEO, POLL      |
-| subredditId | Required, must exist                |
+| sublambrkId | Required, must exist                |
+
+### cURL Example
+
+```bash
+curl -X POST http://localhost:8080/api/posts \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "My first post about Spring Boot 3.5",
+    "content": "Virtual threads are amazing for high-concurrency workloads...",
+    "postType": "TEXT",
+    "sublambrkId": 1,
+    "isSpoiler": false,
+    "isOver18": false
+  }'
+```
 
 ### Response `200 OK`
 
@@ -72,7 +88,7 @@ Content-Type: application/json
     "displayName": "John Doe",
     "karma": 10
   },
-  "subreddit": {
+  "sublambrk": {
     "id": 1,
     "name": "programming",
     "title": "Programming"
@@ -90,7 +106,7 @@ Content-Type: application/json
 |--------|------------------------------------|
 | 400    | Validation failed                  |
 | 401    | Not authenticated                  |
-| 404    | Subreddit or user not found        |
+| 404    | Sublambrk or user not found        |
 | 422    | Content moderation violation       |
 | 429    | Rate limit exceeded (100/min)      |
 | 503    | Circuit breaker open               |
@@ -168,15 +184,15 @@ Same as `/hot`.
 
 ---
 
-## GET `/api/posts/subreddit/{subredditId}`
+## GET `/api/posts/sublambrk/{sublambrkId}`
 
-Get posts for a specific subreddit.
+Get posts for a specific sublambrk.
 
 ### Path Parameters
 
 | Param       | Type | Description   |
 |-------------|------|---------------|
-| subredditId | Long | Subreddit ID  |
+| sublambrkId | Long | Sublambrk ID  |
 
 ### Query Parameters
 
@@ -248,13 +264,13 @@ Delete a post. Only the author can delete.
 
 ## GET `/api/posts/stickied`
 
-Get stickied (pinned) posts, optionally filtered by subreddit.
+Get stickied (pinned) posts, optionally filtered by sublambrk.
 
 ### Query Parameters
 
 | Param       | Type | Required | Description          |
 |-------------|------|----------|----------------------|
-| subredditId | Long | No       | Filter by subreddit  |
+| sublambrkId | Long | No       | Filter by sublambrk  |
 
 ### Response `200 OK`
 

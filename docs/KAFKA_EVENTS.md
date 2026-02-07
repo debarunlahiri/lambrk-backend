@@ -28,7 +28,7 @@ Published to `post.created` and `post.updated`.
   "postId": 1,
   "title": "My first post about Spring Boot 3.5",
   "authorId": 2,
-  "subredditId": 1,
+  "sublambrkId": 1,
   "timestamp": "2026-02-07T14:00:00Z",
   "eventType": "POST_CREATED"
 }
@@ -39,7 +39,7 @@ Published to `post.created` and `post.updated`.
 | postId      | Long    | ID of the post                       |
 | title       | String  | Post title                           |
 | authorId    | Long    | ID of the author                     |
-| subredditId | Long    | ID of the subreddit                  |
+| sublambrkId | Long    | ID of the sublambrk                  |
 | timestamp   | Instant | When the event occurred              |
 | eventType   | String  | `POST_CREATED` or `POST_UPDATED`     |
 
@@ -136,7 +136,7 @@ spring.cloud.stream:
         value.serializer: JsonSerializer
         key.deserializer: StringDeserializer
         value.deserializer: JsonDeserializer
-        spring.json.trusted.packages: "com.example.reddit.dto"
+        spring.json.trusted.packages: "com.example.lambrk.dto"
   bindings:
     postCreated:
       destination: post.created

@@ -64,25 +64,25 @@ Prometheus-compatible metrics scrape endpoint.
 
 ```
 # Posts
-reddit_posts_created_total{subreddit="programming"} 42
-reddit_comments_created_total{subreddit="programming"} 128
-reddit_votes_cast_total{type="UPVOTE"} 1500
-reddit_votes_cast_total{type="DOWNVOTE"} 200
+lambrk_posts_created_total{sublambrk="programming"} 42
+lambrk_comments_created_total{sublambrk="programming"} 128
+lambrk_votes_cast_total{type="UPVOTE"} 1500
+lambrk_votes_cast_total{type="DOWNVOTE"} 200
 
 # Users
 lambrk_users_registered_total 350
 lambrk_users_login_total{userId="1"} 15
 
-# Subreddits
-reddit_subreddits_created_total 12
-reddit_subreddits_subscription_total{action="subscribe"} 500
+# Sublambrks
+lambrk_sublambrks_created_total 12
+lambrk_sublambrks_subscription_total{action="subscribe"} 500
 
 # Content Moderation
-reddit_moderation_result_total{type="post",approved="true"} 95
-reddit_moderation_result_total{type="post",approved="false"} 5
+lambrk_moderation_result_total{type="post",approved="true"} 95
+lambrk_moderation_result_total{type="post",approved="false"} 5
 
 # Search
-reddit_search_queries_total{type="subreddit"} 200
+lambrk_search_queries_total{type="sublambrk"} 200
 
 # Errors
 errors_total{type="not_found"} 50
@@ -175,7 +175,7 @@ All HTTP responses include W3C trace context headers:
 
 ```
 traceparent: 00-abc123def456-789012-01
-tracestate: reddit=t:1
+tracestate: lambrk=t:1
 ```
 
 ### Sampling

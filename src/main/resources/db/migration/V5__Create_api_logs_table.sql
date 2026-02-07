@@ -26,7 +26,7 @@ CREATE TABLE api_logs (
     exception_message VARCHAR(1000),
     exception_stack_trace TEXT,
     source VARCHAR(50) DEFAULT 'API',
-    service_name VARCHAR(100) DEFAULT 'reddit-backend',
+    service_name VARCHAR(100) DEFAULT 'lambrk-backend',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

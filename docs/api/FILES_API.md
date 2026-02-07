@@ -35,8 +35,8 @@ Content-Type: multipart/form-data
 | AVATAR          | User profile picture                     | 5MB      |
 | POST_IMAGE      | Post image content                        | 10MB     |
 | POST_VIDEO       | Post video content                        | 50MB     |
-| SUBREDDIT_ICON  | Subreddit icon                           | 2MB      |
-| SUBREDDIT_HEADER| Subreddit header/banner                  | 10MB     |
+| SUBREDDIT_ICON  | Sublambrk icon                           | 2MB      |
+| SUBREDDIT_HEADER| Sublambrk header/banner                  | 10MB     |
 | BANNER          | Site banner                              | 5MB      |
 
 ### Allowed MIME Types
@@ -250,7 +250,7 @@ Get file upload statistics for the authenticated user.
   "imageCount": 20,
   "videoCount": 3,
   "avatarCount": 1,
-  "subredditIconCount": 1
+  "sublambrkIconCount": 1
 }
 ```
 
@@ -309,7 +309,7 @@ Get recently uploaded files.
 
 - **AWS S3**: Primary cloud storage (configurable, default enabled)
 - **Local Storage**: Fallback when S3 is disabled
-- **File Organization**: Organized by type (avatars/, posts/, subreddits/)
+- **File Organization**: Organized by type (avatars/, posts/, sublambrks/)
 - **Presigned URLs**: Temporary secure access URLs for private files
 - **Cleanup**: Automatic cleanup of orphaned files
 - **Backup**: S3 lifecycle policies for archival
@@ -419,7 +419,7 @@ All file endpoints emit these metrics:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `AWS_REGION` | AWS region for S3 | `us-east-1` |
-| `AWS_S3_BUCKET` | S3 bucket name | `reddit-files` |
+| `AWS_S3_BUCKET` | S3 bucket name | `lambrk-files` |
 | `AWS_ACCESS_KEY_ID` | AWS access key | - |
 | `AWS_SECRET_ACCESS_KEY` | AWS secret key | - |
 | `AWS_S3_ENDPOINT` | Custom S3 endpoint (MinIO) | - |

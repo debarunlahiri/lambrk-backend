@@ -14,8 +14,8 @@ CREATE TABLE users (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create Subreddits table
-CREATE TABLE subreddits (
+-- Create Sublambrks table
+CREATE TABLE sublambrks (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(21) UNIQUE NOT NULL,
     title VARCHAR(100) NOT NULL,
@@ -56,7 +56,7 @@ CREATE TABLE posts (
     view_count INTEGER NOT NULL DEFAULT 0,
     award_count INTEGER NOT NULL DEFAULT 0,
     author_id BIGINT NOT NULL REFERENCES users(id),
-    subreddit_id BIGINT NOT NULL REFERENCES subreddits(id),
+    sublambrk_id BIGINT NOT NULL REFERENCES sublambrks(id),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     archived_at TIMESTAMP
@@ -108,20 +108,20 @@ CREATE TABLE votes (
     )
 );
 
--- Create User-Subreddit membership table
-CREATE TABLE user_subreddit_memberships (
+-- Create User-Sublambrk membership table
+CREATE TABLE user_sublambrk_memberships (
     user_id BIGINT NOT NULL REFERENCES users(id),
-    subreddit_id BIGINT NOT NULL REFERENCES subreddits(id),
+    sublambrk_id BIGINT NOT NULL REFERENCES sublambrks(id),
     joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, subreddit_id)
+    PRIMARY KEY (user_id, sublambrk_id)
 );
 
--- Create User-Subreddit moderator table
-CREATE TABLE user_subreddit_moderators (
+-- Create User-Sublambrk moderator table
+CREATE TABLE user_sublambrk_moderators (
     user_id BIGINT NOT NULL REFERENCES users(id),
-    subreddit_id BIGINT NOT NULL REFERENCES subreddits(id),
+    sublambrk_id BIGINT NOT NULL REFERENCES sublambrks(id),
     added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, subreddit_id)
+    PRIMARY KEY (user_id, sublambrk_id)
 );
 
 -- Create indexes for better performance
@@ -129,12 +129,12 @@ CREATE INDEX idx_user_username ON users(username);
 CREATE INDEX idx_user_email ON users(email);
 CREATE INDEX idx_user_created_at ON users(created_at);
 
-CREATE INDEX idx_subreddit_name ON subreddits(name);
-CREATE INDEX idx_subreddit_created_at ON subreddits(created_at);
-CREATE INDEX idx_subreddit_member_count ON subreddits(member_count);
+CREATE INDEX idx_sublambrk_name ON sublambrks(name);
+CREATE INDEX idx_sublambrk_created_at ON sublambrks(created_at);
+CREATE INDEX idx_sublambrk_member_count ON sublambrks(member_count);
 
 CREATE INDEX idx_post_author ON posts(author_id);
-CREATE INDEX idx_post_subreddit ON posts(subreddit_id);
+CREATE INDEX idx_post_sublambrk ON posts(sublambrk_id);
 CREATE INDEX idx_post_created_at ON posts(created_at);
 CREATE INDEX idx_post_score ON posts(score);
 CREATE INDEX idx_post_title ON posts(title);
@@ -164,7 +164,7 @@ $$ language 'plpgsql';
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_subreddits_updated_at BEFORE UPDATE ON subreddits
+CREATE TRIGGER update_sublambrks_updated_at BEFORE UPDATE ON sublambrks
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_posts_updated_at BEFORE UPDATE ON posts
@@ -178,26 +178,26 @@ CREATE TRIGGER update_votes_updated_at BEFORE UPDATE ON votes
 
 -- Insert some sample data
 INSERT INTO users (username, email, password, display_name) VALUES
-('admin', 'admin@reddit.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'Admin User'),
+('admin', 'admin@lambrk.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'Admin User'),
 ('john_doe', 'john@example.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'John Doe'),
 ('jane_smith', 'jane@example.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'Jane Smith');
 
-INSERT INTO subreddits (name, title, description, created_by) VALUES
+INSERT INTO sublambrks (name, title, description, created_by) VALUES
 ('programming', 'Programming', 'All things programming and software development', 1),
 ('gaming', 'Gaming', 'Discussions about video games', 1),
 ('technology', 'Technology', 'Latest tech news and discussions', 1);
 
-INSERT INTO user_subreddit_moderators (user_id, subreddit_id) VALUES
+INSERT INTO user_sublambrk_moderators (user_id, sublambrk_id) VALUES
 (1, 1), (1, 2), (1, 3);
 
-INSERT INTO user_subreddit_memberships (user_id, subreddit_id) VALUES
+INSERT INTO user_sublambrk_memberships (user_id, sublambrk_id) VALUES
 (1, 1), (1, 2), (1, 3),
 (2, 1), (2, 2),
 (3, 1), (3, 3);
 
--- Update subreddit member counts
-UPDATE subreddits SET member_count = (
-    SELECT COUNT(*) FROM user_subreddit_memberships WHERE subreddit_id = subreddits.id
+-- Update sublambrk member counts
+UPDATE sublambrks SET member_count = (
+    SELECT COUNT(*) FROM user_sublambrk_memberships WHERE sublambrk_id = sublambrks.id
 );
 
-UPDATE subreddits SET subscriber_count = member_count;
+UPDATE sublambrks SET subscriber_count = member_count;

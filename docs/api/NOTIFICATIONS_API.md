@@ -233,7 +233,7 @@ Paginated notifications of the specified type.
 | COMMENT_UPVOTE    | User's comment received upvote          | VoteService                       |
 | POST_MENTION      | User mentioned in post                  | ContentModerationAspect           |
 | COMMENT_MENTION   | User mentioned in comment               | ContentModerationAspect           |
-| SUBREDDIT_INVITE  | Invited to moderate subreddit          | SubredditService                  |
+| SUBREDDIT_INVITE  | Invited to moderate sublambrk          | SublambrkService                  |
 | MODERATOR_ACTION  | Moderator action on user's content      | AdminService                      |
 | SYSTEM_ANNOUNCEMENT| System-wide announcement              | Admin/Manual                      |
 | CONTENT_MODERATION| Content moderation result              | ContentModerationAspect           |

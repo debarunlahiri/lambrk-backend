@@ -43,7 +43,7 @@ Content-Type: application/json
 | LOCK_COMMENT       | Comment     | Prevent replies to comment              |
 | REMOVE_MODERATOR   | User        | Remove moderator privileges             |
 | ADD_MODERATOR      | User        | Grant moderator privileges              |
-| BAN_SUBREDDIT      | Subreddit   | Ban entire subreddit                     |
+| BAN_SUBREDDIT      | Sublambrk   | Ban entire sublambrk                     |
 | QUARANTINE_POST    | Post        | Mark post as quarantined (18+)           |
 | QUARANTINE_COMMENT | Comment     | Mark comment as quarantined (18+)        |
 
@@ -312,7 +312,7 @@ Get currently active admin actions (not expired).
 |---------------|------------------------------------------------|
 | BAN_USER      | `isActive = false`, cannot login               |
 | SUSPEND_USER  | Temporary suspension, can login but limited    |
-| REMOVE_MODERATOR| Cleared moderatedSubreddits set              |
+| REMOVE_MODERATOR| Cleared moderatedSublambrks set              |
 
 ### Post Actions
 

@@ -27,7 +27,7 @@ Validation errors include an extra `fieldErrors` map:
   "detail": "Validation failed",
   "fieldErrors": {
     "title": "Title is required",
-    "subredditId": "must not be null"
+    "sublambrkId": "must not be null"
   },
   "timestamp": "2026-02-07T14:00:00Z"
 }
@@ -57,7 +57,7 @@ Content moderation errors include `violationCategories`:
 | 403    | `access-denied`        | Access Denied                | Missing required role                     |
 | 403    | `unauthorized-action`  | Unauthorized Action          | E.g. editing another user's post          |
 | 404    | `not-found`            | Resource Not Found           | Entity does not exist                     |
-| 409    | `duplicate`            | Duplicate Resource           | Username/email/subreddit name taken       |
+| 409    | `duplicate`            | Duplicate Resource           | Username/email/sublambrk name taken       |
 | 422    | `content-moderation`   | Content Moderation Violation | AI moderation rejected the content        |
 | 429    | `rate-limit`           | Rate Limit Exceeded          | Resilience4j RateLimiter triggered        |
 | 429    | `bulkhead`             | Bulkhead Full                | Too many concurrent requests              |
