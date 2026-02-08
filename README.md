@@ -272,7 +272,7 @@ Starts: **PostgreSQL**, **Redis**, **Kafka** + Zookeeper, **Prometheus**, **Graf
 | Service    | Port  | URL                          |
 |------------|-------|------------------------------|
 | App        | 9500  | http://localhost:9500         |
-| PostgreSQL | 5432  | `jdbc:postgresql://localhost:5432/lambrk_db` |
+| PostgreSQL | 5432  | `jdbc:postgresql://localhost:5432/lambrk` |
 | Redis      | 6379  | `redis://localhost:6379`      |
 | Kafka      | 9092  | `localhost:9092`              |
 | Prometheus | 9090  | http://localhost:9090         |
@@ -282,7 +282,7 @@ Starts: **PostgreSQL**, **Redis**, **Kafka** + Zookeeper, **Prometheus**, **Graf
 ### Environment Variables
 
 ```bash
-DATABASE_URL=jdbc:postgresql://localhost:5432/lambrk_db
+DATABASE_URL=jdbc:postgresql://localhost:5432/lambrk
 DATABASE_USERNAME=lambrk_user
 DATABASE_PASSWORD=lambrk_password
 REDIS_HOST=localhost

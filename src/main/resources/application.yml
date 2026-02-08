@@ -20,7 +20,7 @@ spring:
     active: dev
   
   datasource:
-    url: jdbc:postgresql://localhost:5432/lambrk_db
+    url: jdbc:postgresql://localhost:5432/lambrk
     username: lambrk_user
     password: lambrk_password
     hikari:
@@ -339,7 +339,7 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://postgres:5432/lambrk_db}
+    url: ${DATABASE_URL:jdbc:postgresql://postgres:5432/lambrk}
     username: ${DATABASE_USERNAME:lambrk_user}
     password: ${DATABASE_PASSWORD:lambrk_password}
     hikari:
