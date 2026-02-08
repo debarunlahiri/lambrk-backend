@@ -18,7 +18,7 @@ spec:
       - name: lambrk-backend
         image: lambrk-backend:latest
         ports:
-        - containerPort: 8080
+        - containerPort: 9500
           name: http
         - containerPort: 8443
           name: https
@@ -37,7 +37,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /actuator/health/liveness
-            port: 8080
+            port: 9500
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -45,7 +45,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /actuator/health/readiness
-            port: 8080
+            port: 9500
           initialDelaySeconds: 10
           periodSeconds: 5
           timeoutSeconds: 3
@@ -53,7 +53,7 @@ spec:
         startupProbe:
           httpGet:
             path: /actuator/health
-            port: 8080
+            port: 9500
           initialDelaySeconds: 10
           periodSeconds: 5
           timeoutSeconds: 3
@@ -98,8 +98,8 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - port: 8080
-    targetPort: 8080
+  - port: 9500
+    targetPort: 9500
     protocol: TCP
     name: http
   - port: 8443
@@ -198,7 +198,7 @@ spec:
           service:
             name: lambrk-backend
             port:
-              number: 8080
+              number: 9500
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
@@ -228,14 +228,14 @@ spec:
           name: ingress-nginx
     ports:
     - protocol: TCP
-      port: 8080
+      port: 9500
   - from:
     - namespaceSelector:
         matchLabels:
           name: monitoring
     ports:
     - protocol: TCP
-      port: 8080
+      port: 9500
   egress:
   - to:
     - namespaceSelector: {}

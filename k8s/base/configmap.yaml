@@ -61,7 +61,7 @@ data:
           max-request-size: 100MB
     
     server:
-      port: 8080
+      port: 9500
       compression:
         enabled: true
         mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css

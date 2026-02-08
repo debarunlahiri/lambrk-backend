@@ -44,7 +44,7 @@ Get personalized recommendations using ML-based analysis.
 
 **Get Post Recommendations:**
 ```bash
-curl -X POST http://localhost:8080/api/recommendations \
+curl -X POST http://localhost:9500/api/recommendations \
   -H "Authorization: Bearer <access_token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -58,7 +58,7 @@ curl -X POST http://localhost:8080/api/recommendations \
 
 **Get Sublambrk Recommendations:**
 ```bash
-curl -X POST http://localhost:8080/api/recommendations \
+curl -X POST http://localhost:9500/api/recommendations \
   -H "Authorization: Bearer <access_token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -70,7 +70,7 @@ curl -X POST http://localhost:8080/api/recommendations \
 
 **Get User Recommendations:**
 ```bash
-curl -X POST http://localhost:8080/api/recommendations \
+curl -X POST http://localhost:9500/api/recommendations \
   -H "Authorization: Bearer <access_token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -82,12 +82,12 @@ curl -X POST http://localhost:8080/api/recommendations \
 
 **Get Trending Recommendations (No Auth Required):**
 ```bash
-curl "http://localhost:8080/api/recommendations/trending?type=posts&limit=10"
+curl "http://localhost:9500/api/recommendations/trending?type=posts&limit=10"
 ```
 
 **Get Post Recommendations via GET:**
 ```bash
-curl "http://localhost:8080/api/recommendations/posts/1?limit=20&includeNSFW=false" \
+curl "http://localhost:9500/api/recommendations/posts/1?limit=20&includeNSFW=false" \
   -H "Authorization: Bearer <access_token>"
 ```
 

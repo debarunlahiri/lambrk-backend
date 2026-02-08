@@ -43,11 +43,11 @@ RUN mkdir -p /app/uploads && chown -R lambrk:lambrk /app
 USER lambrk
 
 # Expose port
-EXPOSE 8080
+EXPOSE 9500
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
+    CMD curl -f http://localhost:9500/actuator/health || exit 1
 
 # JVM options for containers
 ENV JAVA_OPTS="-XX:+UseContainerSupport \

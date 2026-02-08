@@ -25,7 +25,7 @@ Get a personalized feed of posts and suggested users.
 ### cURL Example
 
 ```bash
-curl "http://localhost:8080/api/feed?limit=20&sortBy=algorithm&includeNsfw=false" \
+curl "http://localhost:9500/api/feed?limit=20&sortBy=algorithm&includeNsfw=false" \
   -H "Authorization: Bearer <access_token>"
 ```
 
@@ -146,7 +146,7 @@ Get personalized feed with advanced filtering options.
 ### cURL Example
 
 ```bash
-curl -X POST http://localhost:8080/api/feed \
+curl -X POST http://localhost:9500/api/feed \
   -H "Authorization: Bearer <access_token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -177,7 +177,7 @@ Get trending posts based on popularity and recent activity.
 ### cURL Example
 
 ```bash
-curl "http://localhost:8080/api/feed/hot?limit=20" \
+curl "http://localhost:9500/api/feed/hot?limit=20" \
   -H "Authorization: Bearer <access_token>"
 ```
 
@@ -196,7 +196,7 @@ Get the most recent posts with minimal algorithmic ranking.
 ### cURL Example
 
 ```bash
-curl "http://localhost:8080/api/feed/new?limit=20" \
+curl "http://localhost:9500/api/feed/new?limit=20" \
   -H "Authorization: Bearer <access_token>"
 ```
 
@@ -216,7 +216,7 @@ Get highest scoring posts.
 ### cURL Example
 
 ```bash
-curl "http://localhost:8080/api/feed/top?limit=20&timePeriod=week" \
+curl "http://localhost:9500/api/feed/top?limit=20&timePeriod=week" \
   -H "Authorization: Bearer <access_token>"
 ```
 
@@ -235,7 +235,7 @@ Discover new content from subreddits you don't follow.
 ### cURL Example
 
 ```bash
-curl "http://localhost:8080/api/feed/discover?limit=20" \
+curl "http://localhost:9500/api/feed/discover?limit=20" \
   -H "Authorization: Bearer <access_token>"
 ```
 

@@ -33,7 +33,7 @@ Register a new user account.
 ### cURL Example
 
 ```bash
-curl -X POST http://localhost:8080/api/auth/register \
+curl -X POST http://localhost:9500/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "username": "john_doe",
@@ -103,7 +103,7 @@ Same shape as register response.
 ### cURL Example
 
 ```bash
-curl -X POST http://localhost:8080/api/auth/login \
+curl -X POST http://localhost:9500/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "john_doe",

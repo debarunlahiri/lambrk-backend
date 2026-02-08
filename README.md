@@ -35,7 +35,7 @@ mvn clean package -Pnative -DskipTests
 ./target/reddit-backend
 ```
 
-The app starts on **http://localhost:8080**.
+The app starts on **http://localhost:9500**.
 
 Default seed users (password for all: `password`):
 
@@ -271,7 +271,7 @@ Starts: **PostgreSQL**, **Redis**, **Kafka** + Zookeeper, **Prometheus**, **Graf
 
 | Service    | Port  | URL                          |
 |------------|-------|------------------------------|
-| App        | 8080  | http://localhost:8080         |
+| App        | 9500  | http://localhost:9500         |
 | PostgreSQL | 5432  | `jdbc:postgresql://localhost:5432/lambrk_db` |
 | Redis      | 6379  | `redis://localhost:6379`      |
 | Kafka      | 9092  | `localhost:9092`              |

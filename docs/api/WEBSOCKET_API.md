@@ -9,20 +9,20 @@ Real-time updates and notifications via WebSocket connections.
 ### WebSocket Endpoint
 
 ```
-ws://localhost:8080/ws
+ws://localhost:9500/ws
 ```
 
 ### SockJS Fallback
 
 ```
-http://localhost:8080/ws (with SockJS)
+http://localhost:9500/ws (with SockJS)
 ```
 
 ### Connection Headers
 
 ```
 Authorization: Bearer <access_token>
-Origin: http://localhost:8080
+Origin: http://localhost:9500
 ```
 
 ---

@@ -21,7 +21,7 @@ spec:
       - name: lambrk-backend
         image: lambrk-backend:canary
         ports:
-        - containerPort: 8080
+        - containerPort: 9500
           name: http
         env:
         - name: SPRING_PROFILES_ACTIVE
@@ -36,12 +36,12 @@ spec:
         livenessProbe:
           httpGet:
             path: /actuator/health/liveness
-            port: 8080
+            port: 9500
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /actuator/health/readiness
-            port: 8080
+            port: 9500
           initialDelaySeconds: 10
           periodSeconds: 5

@@ -46,7 +46,7 @@ Content-Type: application/json
 ### cURL Example
 
 ```bash
-curl -X POST http://localhost:8080/api/posts \
+curl -X POST http://localhost:9500/api/posts \
   -H "Authorization: Bearer <access_token>" \
   -H "Content-Type: application/json" \
   -d '{
