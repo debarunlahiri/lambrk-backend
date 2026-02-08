@@ -47,7 +47,15 @@ public class CustomMetrics {
     }
 
     public void recordRecommendationError() {
-        meterRegistry.counter("reddit.recommendation.error").increment();
+        meterRegistry.counter("lambrk.recommendation.error").increment();
+    }
+
+    public void recordFeedGeneration(int postCount, int userCount) {
+        meterRegistry.counter("lambrk.feed.generated", "posts", String.valueOf(postCount), "users", String.valueOf(userCount)).increment();
+    }
+
+    public void recordFeedError() {
+        meterRegistry.counter("lambrk.feed.error").increment();
     }
 
     public void recordSubredditCreated() {
