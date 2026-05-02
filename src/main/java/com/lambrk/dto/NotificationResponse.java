@@ -7,7 +7,7 @@ public record NotificationResponse(
     
     Long id,
     
-    NotificationRequest.NotificationType type,
+    Notification.NotificationType type,
     
     Long recipientId,
     

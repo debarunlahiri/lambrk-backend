@@ -15,7 +15,7 @@ public record FileUploadResponse(
     
     String thumbnailUrl,
     
-    FileUploadRequest.FileType type,
+    FileUpload.FileUploadType type,
     
     long fileSize,
     

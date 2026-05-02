@@ -5,15 +5,8 @@ import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.binder.system.UptimeMetrics;
-import io.micrometer.tracing.Tracer;
-import io.micrometer.tracing.brave.bridge.BraveBaggageManager;
-import io.micrometer.tracing.brave.bridge.BraveCurrentTraceContext;
-import io.micrometer.tracing.brave.bridge.BravePropagator;
-import io.micrometer.tracing.brave.bridge.BraveTracer;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.TracerProvider;
-import io.opentelemetry.api.trace.propagation.TextMapPropagator;
-import io.opentelemetry.context.propagation.TextMapPropagatorBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -24,9 +17,6 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import zipkin2.reporter.brave.AsyncZipkinSpanHandler;
-import zipkin2.reporter.urlconnection.UrlConnectionSender;
 
 import java.time.Duration;
 import java.util.concurrent.Executors;
@@ -39,7 +29,7 @@ public class ObservabilityConfig {
     @Bean
     public MeterRegistryCustomizer<MeterRegistry> metricsCommonTags() {
         return registry -> registry.config()
-            .commonTags("application", "reddit-backend", "version", "1.0.0");
+            .commonTags("application", "lambrk-backend", "version", "1.0.0");
     }
 
     @Bean
@@ -84,36 +74,11 @@ public class ObservabilityConfig {
 
     @Bean
     public ScheduledExecutorService metricsScheduler() {
-        ScheduledExecutorService scheduler = Executors.newVirtualThreadPerTaskExecutor();
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.scheduleAtFixedRate(() -> {
             // Custom metrics collection can be added here
         }, 1, 1, TimeUnit.MINUTES);
         return scheduler;
-    }
-
-    @Bean
-    @Primary
-    public Tracer braveTracer(MeterRegistry meterRegistry) {
-        // Configure Zipkin exporter for local development
-        var sender = UrlConnectionSender.create("http://localhost:9411/api/v2/spans");
-        var spanHandler = AsyncZipkinSpanHandler.create(sender);
-        
-        var tracing = brave.Tracing.newBuilder()
-            .localServiceName("reddit-backend")
-            .spanHandler(spanHandler)
-            .traceId128Bit(true)
-            .sampler(brave.sampler.Sampler.create(0.1)) // 10% sampling
-            .build();
-
-        var braveTracer = tracing.tracer();
-        var meterRegistryTracing = new io.micrometer.tracing.brave.otel.bridge.OtelTracingBridge(
-            braveTracer, 
-            new BraveCurrentTraceContext(tracing.currentTraceContext()),
-            new BravePropagator(tracing.propagation()),
-            new BraveBaggageManager()
-        );
-
-        return new BraveTracer(braveTracer, meterRegistryTracing);
     }
 
     @Bean
@@ -132,31 +97,12 @@ public class ObservabilityConfig {
 
         return OpenTelemetrySdk.builder()
             .setTracerProvider(tracerProvider)
-            .setPropagators(io.opentelemetry.context.propagation.ContextPropagators.create(
-                TextMapPropagator.composite(
-                    io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator.getInstance(),
-                    io.opentelemetry.api.trace.propagation.W3CBaggagePropagator.getInstance()
-                )
-            ))
             .build();
     }
 
     @Bean
     public TracerProvider openTelemetryTracerProvider(OpenTelemetry openTelemetry) {
         return openTelemetry.getTracerProvider();
-    }
-
-    @Bean
-    public TextMapPropagator textMapPropagator() {
-        return TextMapPropagator.composite(
-            io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator.getInstance(),
-            io.opentelemetry.api.trace.propagation.W3CBaggagePropagator.getInstance()
-        );
-    }
-
-    @Bean
-    public CustomMetrics customMetrics(MeterRegistry meterRegistry) {
-        return new CustomMetrics(meterRegistry);
     }
 
     public static class CustomMetrics {
@@ -169,10 +115,10 @@ public class ObservabilityConfig {
 
         private void initializeMetrics() {
             // Custom business metrics
-            meterRegistry.gauge("reddit.posts.total", this, CustomMetrics::getTotalPosts);
-            meterRegistry.gauge("reddit.comments.total", this, CustomMetrics::getTotalComments);
-            meterRegistry.gauge("reddit.users.active", this, CustomMetrics::getActiveUsers);
-            meterRegistry.gauge("reddit.subreddits.total", this, CustomMetrics::getTotalSubreddits);
+            meterRegistry.gauge("lambrk.posts.total", this, CustomMetrics::getTotalPosts);
+            meterRegistry.gauge("lambrk.comments.total", this, CustomMetrics::getTotalComments);
+            meterRegistry.gauge("lambrk.users.active", this, CustomMetrics::getActiveUsers);
+            meterRegistry.gauge("lambrk.communities.total", this, CustomMetrics::getTotalSubreddits);
         }
 
         private double getTotalPosts() {
@@ -196,23 +142,23 @@ public class ObservabilityConfig {
         }
 
         public void recordPostCreated(String subreddit) {
-            meterRegistry.counter("reddit.posts.created", "subreddit", subreddit).increment();
+            meterRegistry.counter("lambrk.posts.created", "community", subreddit).increment();
         }
 
         public void recordCommentCreated(String subreddit) {
-            meterRegistry.counter("reddit.comments.created", "subreddit", subreddit).increment();
+            meterRegistry.counter("lambrk.comments.created", "community", subreddit).increment();
         }
 
         public void recordVoteCast(String voteType) {
-            meterRegistry.counter("reddit.votes.cast", "type", voteType).increment();
+            meterRegistry.counter("lambrk.votes.cast", "type", voteType).increment();
         }
 
         public void recordUserLogin(String userId) {
-            meterRegistry.counter("reddit.users.login", "userId", userId).increment();
+            meterRegistry.counter("lambrk.users.login", "userId", userId).increment();
         }
 
         public void recordUserRegistration() {
-            meterRegistry.counter("reddit.users.registered").increment();
+            meterRegistry.counter("lambrk.users.registered").increment();
         }
     }
 }

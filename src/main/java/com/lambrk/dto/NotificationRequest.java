@@ -32,11 +32,7 @@ public record NotificationRequest(
     
     boolean isRead
 ) {
-    
-    public NotificationRequest {
-        this.isRead = false;
-    }
-    
+
     public enum NotificationType {
         COMMENT_REPLY, POST_UPVOTE, COMMENT_UPVOTE, POST_MENTION, COMMENT_MENTION,
         SUBREDDIT_INVITE, MODERATOR_ACTION, SYSTEM_ANNOUNCEMENT, CONTENT_MODERATION

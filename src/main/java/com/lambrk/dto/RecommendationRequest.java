@@ -26,12 +26,10 @@ public record RecommendationRequest(
 ) {
     
     public RecommendationRequest {
-        this.type = type != null ? type : RecommendationType.POSTS;
-        this.limit = limit != null ? limit : 20;
-        this.excludeSubreddits = excludeSubreddits != null ? excludeSubreddits : List.of();
-        this.excludeUsers = excludeUsers != null ? excludeUsers : List.of();
-        this.includeNSFW = false;
-        this.includeOver18 = false;
+        type = type != null ? type : RecommendationType.POSTS;
+        limit = limit != null ? limit : 20;
+        excludeSubreddits = excludeSubreddits != null ? excludeSubreddits : List.of();
+        excludeUsers = excludeUsers != null ? excludeUsers : List.of();
     }
     
     public enum RecommendationType {

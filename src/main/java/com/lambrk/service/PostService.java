@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.StructuredTaskScope;
 
 @Service
 @Transactional
@@ -53,18 +52,11 @@ public class PostService {
     @CacheEvict(value = {"posts", "hotPosts", "newPosts"}, allEntries = true)
     @ModerateContent(contentType = "post")
     public PostResponse createPost(PostCreateRequest request, Long authorId) {
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-            var userFuture = scope.fork(() -> userRepository.findById(authorId)
-                .orElseThrow(() -> new RuntimeException("User not found")));
-            
-            var subredditFuture = scope.fork(() -> subredditRepository.findById(request.subredditId())
-                .orElseThrow(() -> new RuntimeException("Subreddit not found")));
-
-            scope.join();
-            scope.throwIfFailed();
-
-            User author = userFuture.get();
-            Subreddit subreddit = subredditFuture.get();
+        try {
+            User author = userRepository.findById(authorId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+            Subreddit subreddit = subredditRepository.findById(request.subredditId())
+                .orElseThrow(() -> new RuntimeException("Subreddit not found"));
 
             Post post = new Post(
                 request.title(),
@@ -88,6 +80,7 @@ public class PostService {
                 post.isStickied(),
                 post.isLocked(),
                 post.isArchived(),
+                post.isRemoved(),
                 request.isOver18(),
                 post.score(),
                 post.upvoteCount(),
@@ -230,6 +223,7 @@ public class PostService {
             post.isStickied(),
             post.isLocked(),
             post.isArchived(),
+            post.isRemoved(),
             request.isOver18(),
             post.score(),
             post.upvoteCount(),

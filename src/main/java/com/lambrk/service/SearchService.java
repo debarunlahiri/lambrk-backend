@@ -27,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.StructuredTaskScope;
 
 @Service
 @Transactional(readOnly = true)
@@ -56,35 +55,23 @@ public class SearchService {
     public SearchResponse search(SearchRequest request) {
         long startTime = System.currentTimeMillis();
         
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-            
-            var postsFuture = scope.fork(() -> 
+        try {
+            List<PostResponse> posts =
                 request.type() == SearchRequest.SearchType.ALL || request.type() == SearchRequest.SearchType.POSTS
                     ? searchPosts(request)
-                    : List.of());
-            
-            var commentsFuture = scope.fork(() -> 
+                    : List.of();
+            List<CommentResponse> comments =
                 request.type() == SearchRequest.SearchType.ALL || request.type() == SearchRequest.SearchType.COMMENTS
                     ? searchComments(request)
-                    : List.of());
-            
-            var usersFuture = scope.fork(() -> 
+                    : List.of();
+            List<UserResponse> users =
                 request.type() == SearchRequest.SearchType.ALL || request.type() == SearchRequest.SearchType.USERS
                     ? searchUsers(request)
-                    : List.of());
-            
-            var subredditsFuture = scope.fork(() -> 
+                    : List.of();
+            List<SubredditResponse> subreddits =
                 request.type() == SearchRequest.SearchType.ALL || request.type() == SearchRequest.SearchType.SUBREDDITS
                     ? searchSubreddits(request)
-                    : List.of());
-            
-            scope.join();
-            scope.throwIfFailed();
-            
-            List<PostResponse> posts = postsFuture.get();
-            List<CommentResponse> comments = commentsFuture.get();
-            List<UserResponse> users = usersFuture.get();
-            List<SubredditResponse> subreddits = subredditsFuture.get();
+                    : List.of();
             
             int totalResults = posts.size() + comments.size() + users.size() + subreddits.size();
             

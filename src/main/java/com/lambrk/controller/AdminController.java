@@ -91,7 +91,7 @@ public class AdminController {
     public ResponseEntity<AdminActionResponse> banUser(
             @PathVariable @SpanTag Long userId,
             @RequestParam String reason,
-            @RequestParam(required = false) Integer durationDays,
+            @RequestParam(required = false) Long durationDays,
             @RequestParam(defaultValue = "false") boolean permanent,
             @RequestParam(defaultValue = "true") boolean notifyUser,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -118,7 +118,7 @@ public class AdminController {
     public ResponseEntity<AdminActionResponse> suspendUser(
             @PathVariable @SpanTag Long userId,
             @RequestParam String reason,
-            @RequestParam Integer durationDays,
+            @RequestParam Long durationDays,
             @RequestParam(defaultValue = "true") boolean notifyUser,
             @AuthenticationPrincipal UserDetails userDetails) {
         
@@ -194,7 +194,7 @@ public class AdminController {
     public ResponseEntity<AdminActionResponse> lockPost(
             @PathVariable @SpanTag Long postId,
             @RequestParam String reason,
-            @RequestParam(required = false) Integer durationDays,
+            @RequestParam(required = false) Long durationDays,
             @RequestParam(defaultValue = "false") boolean permanent,
             @RequestParam(defaultValue = "true") boolean notifyUser,
             @AuthenticationPrincipal UserDetails userDetails) {

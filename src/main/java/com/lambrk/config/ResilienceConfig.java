@@ -72,10 +72,6 @@ public class ResilienceConfig {
             .permittedNumberOfCallsInHalfOpenState(2)
             .build());
 
-        // Register metrics for all circuit breakers
-        registry.getAllCircuitBreakers().forEach(cb -> 
-            io.github.resilience4j.micrometer.CircuitBreakerMetrics.of(cb).bindTo(meterRegistry));
-
         return registry;
     }
 
@@ -115,14 +111,9 @@ public class ResilienceConfig {
         registry.retry("externalApi", RetryConfig.custom()
             .maxAttempts(5)
             .waitDuration(Duration.ofSeconds(2))
-            .exponentialBackoffMultiplier(2)
             .retryExceptions(org.springframework.web.client.ResourceAccessException.class,
                            java.net.SocketTimeoutException.class)
             .build());
-
-        // Register metrics for all retry instances
-        registry.getAllRetries().forEach(retry -> 
-            io.github.resilience4j.micrometer.RetryMetrics.of(retry).bindTo(meterRegistry));
 
         return registry;
     }
@@ -174,10 +165,6 @@ public class ResilienceConfig {
             .timeoutDuration(Duration.ofSeconds(10))
             .build());
 
-        // Register metrics for all rate limiters
-        registry.getAllRateLimiters().forEach(rateLimiter -> 
-            io.github.resilience4j.micrometer.RateLimiterMetrics.of(rateLimiter).bindTo(meterRegistry));
-
         return registry;
     }
 
@@ -215,10 +202,6 @@ public class ResilienceConfig {
             .maxConcurrentCalls(3)
             .maxWaitDuration(Duration.ofSeconds(10))
             .build());
-
-        // Register metrics for all bulkheads
-        registry.getAllBulkheads().forEach(bulkhead -> 
-            io.github.resilience4j.micrometer.BulkheadMetrics.of(bulkhead).bindTo(meterRegistry));
 
         return registry;
     }

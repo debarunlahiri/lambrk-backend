@@ -25,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.StructuredTaskScope;
 
 @Service
 @Transactional
@@ -61,7 +60,7 @@ public class NotificationService {
 
         Notification notification = new Notification(
             null,
-            request.type(),
+            Notification.NotificationType.valueOf(request.type().name()),
             recipient,
             request.title(),
             request.message(),
@@ -172,26 +171,13 @@ public class NotificationService {
     }
 
     public void createCommentReplyNotification(Long commentId, Long postId, Long authorId) {
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-            
-            var commentFuture = scope.fork(() -> 
-                commentRepository.findById(commentId)
-                    .orElseThrow(() -> new RuntimeException("Comment not found: " + commentId)));
-            
-            var postFuture = scope.fork(() -> 
-                postRepository.findById(postId)
-                    .orElseThrow(() -> new RuntimeException("Post not found: " + postId)));
-            
-            var authorFuture = scope.fork(() -> 
-                userRepository.findById(authorId)
-                    .orElseThrow(() -> new RuntimeException("Author not found: " + authorId)));
-            
-            scope.join();
-            scope.throwIfFailed();
-            
-            Comment comment = commentFuture.get();
-            Post post = postFuture.get();
-            User author = authorFuture.get();
+        try {
+            Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found: " + commentId));
+            Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found: " + postId));
+            User author = userRepository.findById(authorId)
+                .orElseThrow(() -> new RuntimeException("Author not found: " + authorId));
             
             // Don't notify if user is replying to their own comment
             if (comment.parent() != null && comment.parent().author().id().equals(authorId)) {
@@ -227,21 +213,11 @@ public class NotificationService {
             return; // Don't notify for self-votes
         }
         
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-            
-            var postFuture = scope.fork(() -> 
-                postRepository.findById(postId)
-                    .orElseThrow(() -> new RuntimeException("Post not found: " + postId)));
-            
-            var voterFuture = scope.fork(() -> 
-                userRepository.findById(voterId)
-                    .orElseThrow(() -> new RuntimeException("Voter not found: " + voterId)));
-            
-            scope.join();
-            scope.throwIfFailed();
-            
-            Post post = postFuture.get();
-            User voter = voterFuture.get();
+        try {
+            Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found: " + postId));
+            User voter = userRepository.findById(voterId)
+                .orElseThrow(() -> new RuntimeException("Voter not found: " + voterId));
             
             NotificationRequest notification = new NotificationRequest(
                 NotificationRequest.NotificationType.POST_UPVOTE,
@@ -268,16 +244,9 @@ public class NotificationService {
             return; // Don't notify for self-mentions
         }
         
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-            
-            var authorFuture = scope.fork(() -> 
-                userRepository.findById(authorId)
-                    .orElseThrow(() -> new RuntimeException("Author not found: " + authorId)));
-            
-            scope.join();
-            scope.throwIfFailed();
-            
-            User author = authorFuture.get();
+        try {
+            User author = userRepository.findById(authorId)
+                .orElseThrow(() -> new RuntimeException("Author not found: " + authorId));
             
             NotificationRequest notification = new NotificationRequest(
                 NotificationRequest.NotificationType.POST_MENTION,

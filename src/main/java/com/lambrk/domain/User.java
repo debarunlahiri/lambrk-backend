@@ -109,27 +109,4 @@ public record User(
              Instant.now(), Instant.now());
     }
     
-    public User(Long id, String username, String email, String password, String displayName, String bio,
-                String avatarUrl, boolean isActive, boolean isVerified, int karma,
-                Set<Post> posts, Set<Comment> comments, Set<Vote> votes,
-                Set<Subreddit> subscribedSubreddits, Set<Subreddit> moderatedSubreddits,
-                Instant createdAt, Instant updatedAt) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.displayName = displayName;
-        this.bio = bio;
-        this.avatarUrl = avatarUrl;
-        this.isActive = isActive;
-        this.isVerified = isVerified;
-        this.karma = karma;
-        this.posts = posts;
-        this.comments = comments;
-        this.votes = votes;
-        this.subscribedSubreddits = subscribedSubreddits;
-        this.moderatedSubreddits = moderatedSubreddits;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
 }

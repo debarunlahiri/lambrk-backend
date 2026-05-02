@@ -70,11 +70,7 @@ public record Notification(
     @Column(name = "read_at")
     Instant readAt
 ) {
-    
-    public Notification {
-        this.isRead = false;
-    }
-    
+
     public Notification(NotificationType type, User recipient, String title, String message,
                       Long relatedPostId, Long relatedCommentId, Long relatedUserId,
                       String actionUrl, String actionText, boolean isRead, Instant createdAt,

@@ -1,23 +1,64 @@
 package com.lambrk.service;
 
+import com.lambrk.domain.Post;
+import com.lambrk.domain.Comment;
+import com.lambrk.domain.User;
+import com.lambrk.domain.Vote;
+import com.lambrk.domain.Subreddit;
+import com.lambrk.repository.CommentRepository;
+import com.lambrk.repository.PostRepository;
+import com.lambrk.repository.SubredditRepository;
+import com.lambrk.repository.UserRepository;
+import com.lambrk.repository.VoteRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.concurrent.StructuredTaskScope;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
+@Profile("!test")
 public class AIContentModerationService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AIContentModerationService.class);
 
     private final ChatClient chatClient;
     private final CustomMetrics customMetrics;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+    private final VoteRepository voteRepository;
+    private final UserRepository userRepository;
+    private final SubredditRepository subredditRepository;
 
-    public AIContentModerationService(OpenAiChatModel chatModel, CustomMetrics customMetrics) {
+    public AIContentModerationService(
+            OpenAiChatModel chatModel,
+            CustomMetrics customMetrics,
+            PostRepository postRepository,
+            CommentRepository commentRepository,
+            VoteRepository voteRepository,
+            UserRepository userRepository,
+            SubredditRepository subredditRepository) {
         this.customMetrics = customMetrics;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
+        this.voteRepository = voteRepository;
+        this.userRepository = userRepository;
+        this.subredditRepository = subredditRepository;
+        
         this.chatClient = ChatClient.builder(chatModel)
             .defaultSystem("""
                 You are a content moderator for a Reddit-like platform. Your task is to analyze content 
@@ -27,42 +68,45 @@ public class AIContentModerationService {
                 - "categories": array of strings (policy categories if violated)
                 - "confidence": number (0.0 to 1.0)
                 
-                Policy categories include: hate_speech, harassment, violence, spam, nsfw, misinformation.
+                Policy categories include: hate_speech, harassment, violence, spam, nsfw, misinformation, adult_content.
                 Be thorough but fair. Allow controversial but legitimate discussions.
                 """)
             .defaultAdvisors(new MessageChatMemoryAdvisor(new InMemoryChatMemory()))
             .build();
     }
 
-    @Cacheable(value = "contentModeration", key = "#content.hashCode()")
+    @Cacheable(value = "contentModeration", key = "#content.hashCode() + '-' + #contentType")
     public ModerationResult moderateContent(String content, String contentType) {
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+        try {
+            ModerationResult moderation = performModeration(content, contentType);
+            ToxicityAnalysis toxicity = analyzeToxicity(content);
+            SpamAnalysis spam = analyzeSpam(content);
             
-            var moderationFuture = scope.fork(() -> performModeration(content, contentType));
-            var toxicityFuture = scope.fork(() -> analyzeToxicity(content));
-            var spamFuture = scope.fork(() -> analyzeSpam(content));
-            
-            scope.join();
-            scope.throwIfFailed();
-            
-            ModerationResult moderation = moderationFuture.get();
-            ToxicityAnalysis toxicity = toxicityFuture.get();
-            SpamAnalysis spam = spamFuture.get();
-            
-            // Combine results
             boolean approved = moderation.approved() && 
                              toxicity.toxicityScore() < 0.8 && 
                              spam.spamScore() < 0.7;
             
+            double finalConfidence = Math.max(moderation.confidence(), 
+                Math.max(toxicity.toxicityScore(), spam.spamScore()));
+            
+            List<String> allCategories = new ArrayList<>(moderation.categories());
+            if (toxicity.toxicityScore() >= 0.6) {
+                allCategories.add("toxic_content");
+            }
+            if (spam.spamScore() >= 0.5) {
+                allCategories.add("spam_indicators");
+            }
+            
             return new ModerationResult(
                 approved,
                 moderation.reason(),
-                moderation.categories(),
-                Math.max(moderation.confidence(), Math.max(toxicity.toxicityScore(), spam.spamScore())),
+                allCategories,
+                finalConfidence,
                 toxicity,
                 spam
             );
         } catch (Exception e) {
+            logger.error("Content moderation failed for type: {}", contentType, e);
             customMetrics.recordModerationError(contentType);
             throw new RuntimeException("Content moderation failed", e);
         }
@@ -70,21 +114,20 @@ public class AIContentModerationService {
 
     private ModerationResult performModeration(String content, String contentType) {
         String prompt = String.format("""
-            Analyze this %s for policy violations:
+            Analyze this %s for policy violations.
             
             Content: "%s"
             
-            Provide moderation decision in the specified JSON format.
-            """, contentType, content);
+            Provide moderation decision as JSON with keys: approved, reason, categories (array), confidence (0.0-1.0)
+            """, contentType, content.substring(0, Math.min(content.length(), 2000)));
         
         String response = chatClient.prompt()
             .user(prompt)
             .call()
             .content();
         
-        // Parse JSON response (simplified - in production use proper JSON parsing)
-        boolean approved = response.contains("\"approved\": true");
-        double confidence = extractConfidence(response);
+        boolean approved = extractBoolean(response, "approved", true);
+        double confidence = extractDouble(response, "confidence", 0.5);
         List<String> categories = extractCategories(response);
         String reason = extractReason(response);
         
@@ -100,17 +143,17 @@ public class AIContentModerationService {
             
             Content: "%s"
             
-            Respond with JSON: {"toxicityScore": 0.0, "behaviors": ["list"], "explanation": "..."}
-            """, content);
+            Provide JSON: {"toxicityScore": 0.0-1.0, "behaviors": ["list"], "explanation": "..."}
+            """, content.substring(0, Math.min(content.length(), 1500)));
         
         String response = chatClient.prompt()
             .user(prompt)
             .call()
             .content();
         
-        double toxicityScore = extractToxicityScore(response);
-        List<String> behaviors = extractToxicBehaviors(response);
-        String explanation = extractExplanation(response);
+        double toxicityScore = extractDouble(response, "toxicityScore", 0.2);
+        List<String> behaviors = extractStringList(response, "behaviors");
+        String explanation = extractStringValue(response, "explanation", "Analysis completed");
         
         return new ToxicityAnalysis(toxicityScore, behaviors, explanation);
     }
@@ -122,106 +165,318 @@ public class AIContentModerationService {
             
             Content: "%s"
             
-            Respond with JSON: {"spamScore": 0.0, "indicators": ["list"], "explanation": "..."}
-            """, content);
+            Provide JSON: {"spamScore": 0.0-1.0, "indicators": ["list"], "explanation": "..."}
+            """, content.substring(0, Math.min(content.length(), 1500)));
         
         String response = chatClient.prompt()
             .user(prompt)
             .call()
             .content();
         
-        double spamScore = extractSpamScore(response);
-        List<String> indicators = extractSpamIndicators(response);
-        String explanation = extractExplanation(response);
+        double spamScore = extractDouble(response, "spamScore", 0.1);
+        List<String> indicators = extractStringList(response, "indicators");
+        String explanation = extractStringValue(response, "explanation", "Analysis completed");
         
         return new SpamAnalysis(spamScore, indicators, explanation);
     }
 
     @Cacheable(value = "contentRecommendations", key = "#userId + '-' + #limit")
     public List<Recommendation> getPersonalizedRecommendations(Long userId, int limit) {
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+        try {
+            List<Recommendation> userHistoryRecs = getUserContentHistory(userId, limit);
+            List<Recommendation> trendingRecs = getTrendingContent(limit);
+            List<Recommendation> similarUsersRecs = getSimilarUsersContent(userId, limit);
+            List<Recommendation> subscribedRecs = getSubscribedSubredditsContent(userId, limit);
             
-            var userHistoryFuture = scope.fork(() -> getUserContentHistory(userId));
-            var trendingFuture = scope.fork(() -> getTrendingContent());
-            var similarUsersFuture = scope.fork(() -> getSimilarUsersContent(userId));
-            
-            scope.join();
-            scope.throwIfFailed();
-            
-            // Combine and rank recommendations
-            return combineRecommendations(
-                userHistoryFuture.get(),
-                trendingFuture.get(),
-                similarUsersFuture.get(),
-                limit
-            );
+            return combineRecommendations(userHistoryRecs, trendingRecs, similarUsersRecs, subscribedRecs, limit);
         } catch (Exception e) {
+            logger.error("Recommendation generation failed for user: {}", userId, e);
             customMetrics.recordRecommendationError();
             throw new RuntimeException("Recommendation generation failed", e);
         }
     }
 
-    private List<Recommendation> getUserContentHistory(Long userId) {
-        // This would query user's interaction history
-        // For now, return empty list
-        return List.of();
+    private List<Recommendation> getUserContentHistory(Long userId, int limit) {
+        Instant thirtyDaysAgo = Instant.now().minus(30, ChronoUnit.DAYS);
+        Pageable pageable = PageRequest.of(0, limit);
+        
+        List<Recommendation> recommendations = new ArrayList<>();
+        
+        Page<Post> userPosts = postRepository.findUserPostsSince(userId, thirtyDaysAgo, pageable);
+        List<String> interactedSubreddits = getUserInteractedSubreddits(userId);
+        
+        for (Post post : userPosts.getContent()) {
+            Subreddit subreddit = post.subreddit();
+            if (!interactedSubreddits.contains(subreddit.name())) {
+                recommendations.add(new Recommendation(
+                    subreddit.id(),
+                    "subreddit",
+                    subreddit.name(),
+                    0.6,
+                    "Related to your activity"
+                ));
+            }
+        }
+        
+        List<Vote> userVotes = voteRepository.findPostVotesByUser(userId);
+        for (Vote vote : userVotes.stream().limit(20).toList()) {
+            if (vote.post() != null) {
+                Post post = vote.post();
+                for (Post similarPost : findSimilarPosts(post, 3)) {
+                    recommendations.add(new Recommendation(
+                        similarPost.id(),
+                        "post",
+                        similarPost.title(),
+                        0.7,
+                        "Similar to posts you've upvoted"
+                    ));
+                }
+            }
+        }
+        
+        return recommendations.stream().limit(limit).toList();
     }
 
-    private List<Recommendation> getTrendingContent() {
-        // This would get trending posts based on engagement metrics
-        return List.of();
+    private List<String> getUserInteractedSubreddits(Long userId) {
+        Instant thirtyDaysAgo = Instant.now().minus(30, ChronoUnit.DAYS);
+        Pageable pageable = PageRequest.of(0, 50);
+        
+        Page<Post> posts = postRepository.findUserPostsSince(userId, thirtyDaysAgo, pageable);
+        return posts.getContent().stream()
+            .map(post -> post.subreddit().name())
+            .distinct()
+            .collect(Collectors.toList());
     }
 
-    private List<Recommendation> getSimilarUsersContent(Long userId) {
-        // This would find similar users and their preferred content
-        return List.of();
+    private List<Post> findSimilarPosts(Post post, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        
+        String textToAnalyze = (post.title() != null ? post.title() : "") + " " + (post.content() != null ? post.content() : "");
+        List<String> keywords = extractKeywords(textToAnalyze);
+        
+        return postRepository.findBySubreddit(post.subreddit(), pageable).getContent().stream()
+            .filter(p -> !p.id().equals(post.id()))
+            .filter(p -> keywords.stream().anyMatch(k -> 
+                p.title().toLowerCase().contains(k.toLowerCase()) || 
+                (p.content() != null && p.content().toLowerCase().contains(k.toLowerCase()))))
+            .toList();
+    }
+
+    private List<String> extractKeywords(String text) {
+        String[] words = text.toLowerCase().split("\\s+");
+        return Arrays.stream(words)
+            .filter(word -> word.length() > 4)
+            .filter(word -> !CommonWords.isCommonWord(word))
+            .distinct()
+            .limit(10)
+            .toList();
+    }
+
+    private List<Recommendation> getTrendingContent(int limit) {
+        Instant twentyFourHoursAgo = Instant.now().minus(24, ChronoUnit.HOURS);
+        Pageable pageable = PageRequest.of(0, limit);
+        
+        Page<Post> trendingPosts = postRepository.findHotPostsSince(twentyFourHoursAgo, pageable);
+        
+        return trendingPosts.getContent().stream()
+            .filter(post -> !post.isOver18())
+            .map(post -> new Recommendation(
+                post.id(),
+                "post",
+                post.title(),
+                calculateTrendingScore(post),
+                "Trending in your feed"
+            ))
+            .toList();
+    }
+
+    private double calculateTrendingScore(Post post) {
+        double timeWeight = ChronoUnit.HOURS.between(post.createdAt(), Instant.now());
+        timeWeight = Math.max(1, 24 - timeWeight) / 24;
+        
+        double scoreWeight = Math.min(post.score() / 1000.0, 1.0);
+        double commentWeight = Math.min(post.commentCount() / 50.0, 1.0);
+        
+        return (timeWeight * 0.4 + scoreWeight * 0.4 + commentWeight * 0.2);
+    }
+
+    private List<Recommendation> getSimilarUsersContent(Long userId, int limit) {
+        User currentUser = userRepository.findById(userId).orElse(null);
+        if (currentUser == null) return List.of();
+        
+        Pageable pageable = PageRequest.of(0, limit * 2);
+        
+        Instant thirtyDaysAgo = Instant.now().minus(30, ChronoUnit.DAYS);
+        List<Vote> userVotes = voteRepository.findPostVotesByUser(userId);
+        
+        if (userVotes.isEmpty()) return List.of();
+        
+        Set<Long> upvotedPostIds = userVotes.stream()
+            .filter(v -> v.voteType() == Vote.VoteType.UPVOTE)
+            .filter(v -> v.post() != null)
+            .map(v -> v.post().id())
+            .collect(Collectors.toSet());
+        
+        if (upvotedPostIds.isEmpty()) return List.of();
+        
+        List<Post> posts = postRepository.findAll(pageable).getContent();
+        List<Recommendation> recommendations = new ArrayList<>();
+        
+        Set<Post> upvotedPosts = userVotes.stream()
+            .filter(v -> v.post() != null)
+            .map(Vote::post)
+            .collect(Collectors.toSet());
+        
+        for (Post post : posts) {
+            if (!upvotedPostIds.contains(post.id()) && !post.isArchived()) {
+                long sharedSubreddits = posts.stream()
+                    .filter(p -> upvotedPosts.contains(p) && 
+                                p.subreddit().id().equals(post.subreddit().id()))
+                    .count();
+                
+                if (sharedSubreddits > 0) {
+                    recommendations.add(new Recommendation(
+                        post.id(),
+                        "post",
+                        post.title(),
+                        Math.min(sharedSubreddits / 5.0, 0.8),
+                        "Popular among similar users"
+                    ));
+                }
+            }
+        }
+        
+        return recommendations.stream().limit(limit).toList();
+    }
+
+    private List<Recommendation> getSubscribedSubredditsContent(Long userId, int limit) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null || user.subscribedSubreddits() == null) return List.of();
+        
+        Pageable pageable = PageRequest.of(0, limit);
+        
+        List<Recommendation> recommendations = new ArrayList<>();
+        
+        for (Subreddit subreddit : user.subscribedSubreddits()) {
+            Page<Post> posts = postRepository.findBySubredditAndIsArchivedFalse(subreddit, pageable);
+            for (Post post : posts.getContent()) {
+                if (!post.isOver18()) {
+                    recommendations.add(new Recommendation(
+                        post.id(),
+                        "post",
+                        post.title(),
+                        0.8,
+                        "From your subscribed subreddit: " + subreddit.name()
+                    ));
+                }
+            }
+        }
+        
+        return recommendations.stream().limit(limit).toList();
     }
 
     private List<Recommendation> combineRecommendations(
             List<Recommendation> userHistory,
             List<Recommendation> trending,
             List<Recommendation> similarUsers,
+            List<Recommendation> subscribed,
             int limit) {
         
-        // Implement recommendation algorithm
-        // Combine different sources with weights and rank
-        return List.of(); // Placeholder
+        Map<String, Recommendation> merged = new LinkedHashMap<>();
+        double[] weights = {0.35, 0.25, 0.20, 0.20};
+        List<List<Recommendation>> sources = List.of(userHistory, trending, similarUsers, subscribed);
+        
+        for (int i = 0; i < sources.size(); i++) {
+            for (Recommendation rec : sources.get(i)) {
+                String key = rec.contentId() + "-" + rec.contentType();
+                if (!merged.containsKey(key)) {
+                    double adjustedScore = rec.score() * weights[i];
+                    merged.put(key, new Recommendation(
+                        rec.contentId(),
+                        rec.contentType(),
+                        rec.title(),
+                        adjustedScore,
+                        rec.reason()
+                    ));
+                } else {
+                    Recommendation existing = merged.get(key);
+                    double newScore = existing.score() + rec.score() * weights[i] * 0.5;
+                    merged.put(key, new Recommendation(
+                        existing.contentId(),
+                        existing.contentType(),
+                        existing.title(),
+                        newScore,
+                        existing.reason() + " | " + rec.reason()
+                    ));
+                }
+            }
+        }
+        
+        return merged.values().stream()
+            .sorted(Comparator.comparing(Recommendation::score).reversed())
+            .limit(limit)
+            .toList();
     }
 
-    // Helper methods for parsing AI responses
-    private double extractConfidence(String response) {
-        // Extract confidence value from JSON response
-        return 0.8; // Placeholder
+    private boolean extractBoolean(String json, String key, boolean defaultValue) {
+        Pattern pattern = Pattern.compile("\"" + key + "\"\\s*:\\s*(true|false)", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(json);
+        if (matcher.find()) {
+            return matcher.group(1).equalsIgnoreCase("true");
+        }
+        return defaultValue;
     }
 
-    private List<String> extractCategories(String response) {
-        // Extract categories from JSON response
-        return List.of(); // Placeholder
+    private double extractDouble(String json, String key, double defaultValue) {
+        Pattern pattern = Pattern.compile("\"" + key + "\"\\s*:\\s*([0-9.]+)");
+        Matcher matcher = pattern.matcher(json);
+        if (matcher.find()) {
+            try {
+                return Double.parseDouble(matcher.group(1));
+            } catch (NumberFormatException e) {
+                return defaultValue;
+            }
+        }
+        return defaultValue;
     }
 
-    private String extractReason(String response) {
-        // Extract reason from JSON response
-        return "Content analysis completed"; // Placeholder
+    private List<String> extractCategories(String json) {
+        return extractStringList(json, "categories");
     }
 
-    private double extractToxicityScore(String response) {
-        return 0.2; // Placeholder
+    private List<String> extractStringList(String json, String key) {
+        Pattern pattern = Pattern.compile("\"" + key + "\"\\s*:\\s*\\[([^\\]]*)\\]");
+        Matcher matcher = pattern.matcher(json);
+        if (matcher.find()) {
+            String content = matcher.group(1);
+            if (content.trim().isEmpty()) return List.of();
+            return Arrays.stream(content.split(","))
+                .map(s -> s.replace("\"", "").trim())
+                .filter(s -> !s.isEmpty())
+                .toList();
+        }
+        return List.of();
     }
 
-    private List<String> extractToxicBehaviors(String response) {
-        return List.of(); // Placeholder
+    private String extractReason(String json) {
+        String extracted = extractStringValue(json, "reason", null);
+        if (extracted != null) return extracted;
+        
+        Pattern pattern = Pattern.compile("\"reason\"\\s*:\\s*\"([^\"]*)\"");
+        Matcher matcher = pattern.matcher(json);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return "Content analysis completed";
     }
 
-    private double extractSpamScore(String response) {
-        return 0.1; // Placeholder
-    }
-
-    private List<String> extractSpamIndicators(String response) {
-        return List.of(); // Placeholder
-    }
-
-    private String extractExplanation(String response) {
-        return "Analysis completed"; // Placeholder
+    private String extractStringValue(String json, String key, String defaultValue) {
+        Pattern pattern = Pattern.compile("\"" + key + "\"\\s*:\\s*\"([^\"]*)\"");
+        Matcher matcher = pattern.matcher(json);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return defaultValue;
     }
 
     public record ModerationResult(
@@ -252,4 +507,17 @@ public class AIContentModerationService {
         double score,
         String reason
     ) {}
+
+    private static class CommonWords {
+        private static final Set<String> WORDS = Set.of(
+            "about", "after", "again", "being", "could", "would", "should", 
+            "their", "there", "these", "thing", "think", "those", "through",
+            "where", "which", "while", "withou", "your", "just", "like",
+            "know", "make", "only", "such", "take", "than", "them", "very"
+        );
+        
+        static boolean isCommonWord(String word) {
+            return WORDS.contains(word.toLowerCase());
+        }
+    }
 }

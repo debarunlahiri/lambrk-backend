@@ -4,11 +4,13 @@ import com.lambrk.domain.Post;
 import com.lambrk.domain.Comment;
 import com.lambrk.domain.Vote;
 import org.springframework.cloud.stream.function.StreamBridge;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
 @Service
+@Profile("!test")
 public class KafkaEventService {
 
     private final StreamBridge streamBridge;

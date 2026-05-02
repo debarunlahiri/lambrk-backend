@@ -21,12 +21,7 @@ public record AdminActionRequest(
     
     boolean notifyUser
 ) {
-    
-    public AdminActionRequest {
-        this.permanent = false;
-        this.notifyUser = true;
-    }
-    
+
     public enum AdminActionType {
         BAN_USER, SUSPEND_USER, DELETE_POST, DELETE_COMMENT, LOCK_POST, LOCK_COMMENT,
         REMOVE_MODERATOR, ADD_MODERATOR, BAN_SUBREDDIT, QUARANTINE_POST, QUARANTINE_COMMENT

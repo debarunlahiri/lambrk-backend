@@ -7,10 +7,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportRuntimeHints;
 
 @Configuration
-@ImportRuntimeHints(NativeImageConfig.RuntimeHintsRegistrar.class)
+@ImportRuntimeHints(NativeImageConfig.LambrkRuntimeHintsRegistrar.class)
 public class NativeImageConfig {
 
-    static class RuntimeHintsRegistrar implements RuntimeHintsRegistrar {
+    static class LambrkRuntimeHintsRegistrar implements org.springframework.aot.hint.RuntimeHintsRegistrar {
 
         @Override
         public void registerHints(RuntimeHints hints, ClassLoader classLoader) {

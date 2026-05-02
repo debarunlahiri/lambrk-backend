@@ -2,6 +2,7 @@ package com.lambrk.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -104,29 +105,4 @@ public record Subreddit(
              new HashSet<>(), new HashSet<>(), new HashSet<>(), createdBy, Instant.now(), Instant.now());
     }
     
-    public Subreddit(Long id, String name, String title, String description, String sidebarText,
-                     String headerImageUrl, String iconImageUrl, boolean isPublic, boolean isRestricted,
-                     boolean isOver18, int memberCount, int subscriberCount, int activeUserCount,
-                     Set<Post> posts, Set<User> members, Set<User> moderators, User createdBy,
-                     Instant createdAt, Instant updatedAt) {
-        this.id = id;
-        this.name = name;
-        this.title = title;
-        this.description = description;
-        this.sidebarText = sidebarText;
-        this.headerImageUrl = headerImageUrl;
-        this.iconImageUrl = iconImageUrl;
-        this.isPublic = isPublic;
-        this.isRestricted = isRestricted;
-        this.isOver18 = isOver18;
-        this.memberCount = memberCount;
-        this.subscriberCount = subscriberCount;
-        this.activeUserCount = activeUserCount;
-        this.posts = posts;
-        this.members = members;
-        this.moderators = moderators;
-        this.createdBy = createdBy;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
 }

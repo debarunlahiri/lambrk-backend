@@ -36,18 +36,13 @@ public record SearchRequest(
 ) {
     
     public SearchRequest {
-        this.type = type != null ? type : SearchType.ALL;
-        this.sort = sort != null ? sort : SortBy.RELEVANCE;
-        this.timeFilter = timeFilter != null ? timeFilter : TimeFilter.ALL;
-        this.subreddits = subreddits != null ? subreddits : List.of();
-        this.flairs = flairs != null ? flairs : List.of();
-        this.includeNSFW = false;
-        this.includeOver18 = false;
-        this.minScore = null;
-        this.minComments = null;
-        this.minVotes = null;
-        this.page = page != null ? page : 0;
-        this.size = size != null ? size : 20;
+        type = type != null ? type : SearchType.ALL;
+        sort = sort != null ? sort : SortBy.RELEVANCE;
+        timeFilter = timeFilter != null ? timeFilter : TimeFilter.ALL;
+        subreddits = subreddits != null ? subreddits : List.of();
+        flairs = flairs != null ? flairs : List.of();
+        page = page != null ? page : 0;
+        size = size != null ? size : 20;
     }
     
     public enum SearchType {

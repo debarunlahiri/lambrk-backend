@@ -7,7 +7,7 @@ public record AdminActionResponse(
     
     Long actionId,
     
-    AdminActionRequest.AdminActionType action,
+    AdminAction.AdminActionType action,
     
     Long targetId,
     

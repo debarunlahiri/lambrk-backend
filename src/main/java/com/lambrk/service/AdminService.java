@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.StructuredTaskScope;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -116,7 +116,7 @@ public class AdminService {
         userRepository.save(updated);
 
         return new AdminAction(
-            null, AdminActionRequest.AdminActionType.BAN_USER, userId, "User",
+            null, AdminAction.AdminActionType.BAN_USER, userId, "User",
             reason, null, admin.id(), now, expiresAt, expiresAt == null, "User banned successfully"
         );
     }
@@ -129,7 +129,7 @@ public class AdminService {
         // For now, we'll just create the action record
 
         return new AdminAction(
-            null, AdminActionRequest.AdminActionType.SUSPEND_USER, userId, "User",
+            null, AdminAction.AdminActionType.SUSPEND_USER, userId, "User",
             reason, null, admin.id(), now, expiresAt, expiresAt == null, "User suspended"
         );
     }
@@ -152,7 +152,7 @@ public class AdminService {
         postRepository.save(updated);
 
         return new AdminAction(
-            null, AdminActionRequest.AdminActionType.DELETE_POST, postId, "Post",
+            null, AdminAction.AdminActionType.DELETE_POST, postId, "Post",
             reason, null, admin.id(), now, null, true, "Post deleted"
         );
     }
@@ -176,7 +176,7 @@ public class AdminService {
         commentRepository.save(updated);
 
         return new AdminAction(
-            null, AdminActionRequest.AdminActionType.DELETE_COMMENT, commentId, "Comment",
+            null, AdminAction.AdminActionType.DELETE_COMMENT, commentId, "Comment",
             reason, null, admin.id(), now, null, true, "Comment deleted"
         );
     }
@@ -198,7 +198,7 @@ public class AdminService {
         postRepository.save(updated);
 
         return new AdminAction(
-            null, AdminActionRequest.AdminActionType.LOCK_POST, postId, "Post",
+            null, AdminAction.AdminActionType.LOCK_POST, postId, "Post",
             reason, null, admin.id(), now, expiresAt, expiresAt == null, "Post locked"
         );
     }
@@ -221,7 +221,7 @@ public class AdminService {
         commentRepository.save(updated);
 
         return new AdminAction(
-            null, AdminActionRequest.AdminActionType.LOCK_COMMENT, commentId, "Comment",
+            null, AdminAction.AdminActionType.LOCK_COMMENT, commentId, "Comment",
             reason, null, admin.id(), now, expiresAt, expiresAt == null, "Comment locked"
         );
     }
@@ -243,7 +243,7 @@ public class AdminService {
         userRepository.save(updated);
 
         return new AdminAction(
-            null, AdminActionRequest.AdminActionType.REMOVE_MODERATOR, userId, "User",
+            null, AdminAction.AdminActionType.REMOVE_MODERATOR, userId, "User",
             reason, null, admin.id(), now, null, true, "Moderator privileges removed"
         );
     }
@@ -256,7 +256,7 @@ public class AdminService {
         // For now, we'll just create the action record
 
         return new AdminAction(
-            null, AdminActionRequest.AdminActionType.ADD_MODERATOR, userId, "User",
+            null, AdminAction.AdminActionType.ADD_MODERATOR, userId, "User",
             reason, null, admin.id(), now, null, true, "Moderator privileges added"
         );
     }
@@ -269,7 +269,7 @@ public class AdminService {
         // For now, we'll just create the action record
 
         return new AdminAction(
-            null, AdminActionRequest.AdminActionType.BAN_SUBREDDIT, subredditId, "Subreddit",
+            null, AdminAction.AdminActionType.BAN_SUBREDDIT, subredditId, "Subreddit",
             reason, null, admin.id(), now, expiresAt, expiresAt == null, "Subreddit banned"
         );
     }
@@ -293,7 +293,7 @@ public class AdminService {
         postRepository.save(updated);
 
         return new AdminAction(
-            null, AdminActionRequest.AdminActionType.QUARANTINE_POST, postId, "Post",
+            null, AdminAction.AdminActionType.QUARANTINE_POST, postId, "Post",
             reason, null, admin.id(), now, null, true, "Post quarantined"
         );
     }
@@ -317,7 +317,7 @@ public class AdminService {
         commentRepository.save(updated);
 
         return new AdminAction(
-            null, AdminActionRequest.AdminActionType.QUARANTINE_COMMENT, commentId, "Comment",
+            null, AdminAction.AdminActionType.QUARANTINE_COMMENT, commentId, "Comment",
             reason, null, admin.id(), now, null, true, "Comment quarantined"
         );
     }

@@ -42,10 +42,10 @@ public class JwtTokenProvider {
     @Value("${app.jwt.refresh-expiration:604800}")
     private int jwtRefreshExpirationInSeconds;
 
-    @Value("${app.jwt.issuer:reddit-backend}")
+    @Value("${app.jwt.issuer:lambrk-backend}")
     private String jwtIssuer;
 
-    @Value("${app.jwt.audience:reddit-frontend}")
+    @Value("${app.jwt.audience:lambrk-frontend}")
     private String jwtAudience;
 
     private SecretKey key;
@@ -66,41 +66,49 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(Authentication authentication) {
-        return tokenGenerationTimer.recordCallable(() -> {
-            UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
-            Instant now = Instant.now();
-            Instant expiryDate = now.plus(jwtExpirationInSeconds, ChronoUnit.SECONDS);
+        try {
+            return tokenGenerationTimer.recordCallable(() -> {
+                UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
+                Instant now = Instant.now();
+                Instant expiryDate = now.plus(jwtExpirationInSeconds, ChronoUnit.SECONDS);
 
-            return Jwts.builder()
-                .setSubject(userPrincipal.getUsername())
-                .setIssuer(jwtIssuer)
-                .setAudience(jwtAudience)
-                .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(expiryDate))
-                .claim("roles", userPrincipal.getAuthorities().stream()
-                    .map(auth -> auth.getAuthority())
-                    .toList())
-                .claim("tokenType", "access")
-                .signWith(key, SignatureAlgorithm.HS512)
-                .compact();
-        });
+                return Jwts.builder()
+                    .subject(userPrincipal.getUsername())
+                    .issuer(jwtIssuer)
+                    .audience().add(jwtAudience).and()
+                    .issuedAt(Date.from(now))
+                    .expiration(Date.from(expiryDate))
+                    .claim("roles", userPrincipal.getAuthorities().stream()
+                        .map(auth -> auth.getAuthority())
+                        .toList())
+                    .claim("tokenType", "access")
+                    .signWith(key, SignatureAlgorithm.HS512)
+                    .compact();
+            });
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate token", e);
+        }
     }
 
     public String generateRefreshToken(String username) {
-        return tokenGenerationTimer.recordCallable(() -> {
-            Instant now = Instant.now();
-            Instant expiryDate = now.plus(jwtRefreshExpirationInSeconds, ChronoUnit.SECONDS);
+        try {
+            return tokenGenerationTimer.recordCallable(() -> {
+                Instant now = Instant.now();
+                Instant expiryDate = now.plus(jwtRefreshExpirationInSeconds, ChronoUnit.SECONDS);
 
-            return Jwts.builder()
-                .setSubject(username)
-                .setIssuer(jwtIssuer)
-                .setAudience(jwtAudience)
-                .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(expiryDate))
-                .claim("tokenType", "refresh")
-                .signWith(key, SignatureAlgorithm.HS512)
-                .compact();
-        });
+                return Jwts.builder()
+                    .subject(username)
+                    .issuer(jwtIssuer)
+                    .audience().add(jwtAudience).and()
+                    .issuedAt(Date.from(now))
+                    .expiration(Date.from(expiryDate))
+                    .claim("tokenType", "refresh")
+                    .signWith(key, SignatureAlgorithm.HS512)
+                    .compact();
+            });
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate refresh token", e);
+        }
     }
 
     public String getUsernameFromJWT(String token) {
@@ -120,39 +128,44 @@ public class JwtTokenProvider {
     }
 
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = Jwts.parserBuilder()
-            .setSigningKey(key)
+        final Claims claims = Jwts.parser()
+            .verifyWith(key)
             .build()
-            .parseClaimsJws(token)
-            .getBody();
+            .parseSignedClaims(token)
+            .getPayload();
         return claimsResolver.apply(claims);
     }
 
     public boolean validateToken(String token) {
-        return tokenValidationTimer.recordCallable(() -> {
-            try {
-                Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token);
-                return true;
-            } catch (SecurityException ex) {
-                meterRegistry.counter("jwt.validation.error", "type", "security").increment();
-                return false;
-            } catch (MalformedJwtException ex) {
-                meterRegistry.counter("jwt.validation.error", "type", "malformed").increment();
-                return false;
-            } catch (ExpiredJwtException ex) {
-                meterRegistry.counter("jwt.validation.error", "type", "expired").increment();
-                return false;
-            } catch (UnsupportedJwtException ex) {
-                meterRegistry.counter("jwt.validation.error", "type", "unsupported").increment();
-                return false;
-            } catch (IllegalArgumentException ex) {
-                meterRegistry.counter("jwt.validation.error", "type", "illegal").increment();
-                return false;
-            }
-        });
+        try {
+            return tokenValidationTimer.recordCallable(() -> {
+                try {
+                    Jwts.parser()
+                        .verifyWith(key)
+                        .build()
+                        .parseSignedClaims(token);
+                    return true;
+                } catch (SecurityException ex) {
+                    meterRegistry.counter("jwt.validation.error", "type", "security").increment();
+                    return false;
+                } catch (MalformedJwtException ex) {
+                    meterRegistry.counter("jwt.validation.error", "type", "malformed").increment();
+                    return false;
+                } catch (ExpiredJwtException ex) {
+                    meterRegistry.counter("jwt.validation.error", "type", "expired").increment();
+                    return false;
+                } catch (UnsupportedJwtException ex) {
+                    meterRegistry.counter("jwt.validation.error", "type", "unsupported").increment();
+                    return false;
+                } catch (IllegalArgumentException ex) {
+                    meterRegistry.counter("jwt.validation.error", "type", "illegal").increment();
+                    return false;
+                }
+            });
+        } catch (Exception e) {
+            meterRegistry.counter("jwt.validation.error", "type", "runtime").increment();
+            return false;
+        }
     }
 
     public boolean isRefreshToken(String token) {
@@ -193,9 +206,11 @@ public class JwtTokenProvider {
         Instant expiryDate = now.plus(jwtExpirationInSeconds, ChronoUnit.SECONDS);
 
         return Jwts.builder()
-            .setSubject(username)
-            .setIssuedAt(Date.from(now))
-            .setExpiration(Date.from(expiryDate))
+            .subject(username)
+            .issuer(jwtIssuer)
+            .audience().add(jwtAudience).and()
+            .issuedAt(Date.from(now))
+            .expiration(Date.from(expiryDate))
             .claim("tokenType", "access")
             .signWith(key, SignatureAlgorithm.HS512)
             .compact();

@@ -53,7 +53,7 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-    baseline-on-migrate: true
+    baseline-on-migrate: false
     validate-on-migrate: true
   
   cache:
@@ -169,7 +169,7 @@ management:
       show-details: always
       group:
         readiness:
-          include: db,redis,kafka
+          include: db
         liveness:
           include: ping
     metrics:
@@ -289,8 +289,13 @@ spring:
   config:
     activate:
       on-profile: dev
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.mail.MailAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password: ""
@@ -302,15 +307,10 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
-  data:
-    redis:
-      host: localhost
-      port: 6379
-  cloud:
-    stream:
-      kafka:
-        binder:
-          brokers: localhost:9092
+  flyway:
+    enabled: false
+  cache:
+    type: simple
 
 ---
 spring:
@@ -326,6 +326,8 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: false
+  flyway:
+    enabled: false
   data:
     redis:
       host: localhost

@@ -27,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.StructuredTaskScope;
 import java.util.stream.Collectors;
 
 @Service
@@ -64,20 +63,10 @@ public class RecommendationService {
     @CircuitBreaker(name = "userService")
     @Retry(name = "userService")
     public RecommendationResponse getRecommendations(RecommendationRequest request) {
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-            
-            var userFuture = scope.fork(() -> 
-                userRepository.findById(request.userId())
-                    .orElseThrow(() -> new RuntimeException("User not found: " + request.userId())));
-            
-            var userHistoryFuture = scope.fork(() -> 
-                getUserInteractionHistory(request.userId()));
-            
-            scope.join();
-            scope.throwIfFailed();
-            
-            User user = userFuture.get();
-            List<Post> userHistory = userHistoryFuture.get();
+        try {
+            User user = userRepository.findById(request.userId())
+                .orElseThrow(() -> new RuntimeException("User not found: " + request.userId()));
+            List<Post> userHistory = getUserInteractionHistory(request.userId());
             
             return switch (request.type()) {
                 case POSTS -> getPostRecommendations(user, userHistory, request);
@@ -93,23 +82,10 @@ public class RecommendationService {
     }
 
     private RecommendationResponse getPostRecommendations(User user, List<Post> userHistory, RecommendationRequest request) {
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-            
-            var similarPostsFuture = scope.fork(() -> 
-                findSimilarPosts(userHistory, request));
-            
-            var trendingPostsFuture = scope.fork(() -> 
-                findTrendingPosts(user, request));
-            
-            var personalizedFuture = scope.fork(() -> 
-                getAIRecommendations(user, userHistory, "posts", request));
-            
-            scope.join();
-            scope.throwIfFailed();
-            
-            List<Post> similarPosts = similarPostsFuture.get();
-            List<Post> trendingPosts = trendingPostsFuture.get();
-            List<Post> personalized = personalizedFuture.get();
+        try {
+            List<Post> similarPosts = findSimilarPosts(userHistory, request);
+            List<Post> trendingPosts = findTrendingPosts(user, request);
+            List<Post> personalized = getAIRecommendations(user, userHistory, "posts", request);
             
             // Combine and rank recommendations
             List<Post> recommendations = combinePostRecommendations(similarPosts, trendingPosts, personalized, request);
@@ -132,23 +108,10 @@ public class RecommendationService {
     }
 
     private RecommendationResponse getSubredditRecommendations(User user, List<Post> userHistory, RecommendationRequest request) {
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-            
-            var userSubredditsFuture = scope.fork(() -> 
-                getUserSubredditPreferences(user));
-            
-            var similarSubredditsFuture = scope.fork(() -> 
-                findSimilarSubreddits(userSubredditsFuture.get()));
-            
-            var trendingSubredditsFuture = scope.fork(() -> 
-                findTrendingSubreddits(request));
-            
-            scope.join();
-            scope.throwIfFailed();
-            
-            List<Subreddit> userSubreddits = userSubredditsFuture.get();
-            List<Subreddit> similar = similarSubredditsFuture.get();
-            List<Subreddit> trending = trendingSubredditsFuture.get();
+        try {
+            List<Subreddit> userSubreddits = getUserSubredditPreferences(user);
+            List<Subreddit> similar = findSimilarSubreddits(userSubreddits);
+            List<Subreddit> trending = findTrendingSubreddits(request);
             
             // Combine recommendations
             List<Subreddit> recommendations = combineSubredditRecommendations(userSubreddits, similar, trending, request);
@@ -171,19 +134,9 @@ public class RecommendationService {
     }
 
     private RecommendationResponse getUserRecommendations(User user, List<Post> userHistory, RecommendationRequest request) {
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-            
-            var similarUsersFuture = scope.fork(() -> 
-                findSimilarUsers(user, userHistory));
-            
-            var activeUsersFuture = scope.fork(() -> 
-                findActiveUsersInUserSubreddits(user));
-            
-            scope.join();
-            scope.throwIfFailed();
-            
-            List<User> similar = similarUsersFuture.get();
-            List<User> active = activeUsersFuture.get();
+        try {
+            List<User> similar = findSimilarUsers(user, userHistory);
+            List<User> active = findActiveUsersInUserSubreddits(user);
             
             // Combine recommendations
             List<User> recommendations = combineUserRecommendations(similar, active, request);
@@ -206,17 +159,7 @@ public class RecommendationService {
     }
 
     private RecommendationResponse getCommentRecommendations(User user, List<Post> userHistory, RecommendationRequest request) {
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-            
-            var topCommentsFuture = scope.fork(() -> 
-                findTopCommentsInUserSubreddits(user, request));
-            
-            var recentCommentsFuture = scope.fork(() -> 
-                findRecentCommentsFromSimilarUsers(user, request));
-            
-            scope.join();
-            scope.throwIfFailed();
-            
+        try {
             // For comments, we'll return a simplified response since we don't have comment recommendations yet
             String explanation = "Recommended comments based on your activity and interests";
             double confidence = 0.7;

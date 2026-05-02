@@ -129,36 +129,4 @@ public record Comment(
              new HashSet<>(), Instant.now(), Instant.now(), null, null, null);
     }
     
-    public Comment(Long id, String content, String flairText, boolean isEdited, boolean isDeleted,
-                   boolean isRemoved, boolean isCollapsed, boolean isStickied, boolean isOver18,
-                   int score, int upvoteCount, int downvoteCount, int replyCount, int awardCount,
-                   int depthLevel, User author, Post post, Comment parent, Set<Comment> replies,
-                   Set<Vote> votes, Instant createdAt, Instant updatedAt, Instant editedAt,
-                   Instant deletedAt, Instant removedAt) {
-        this.id = id;
-        this.content = content;
-        this.flairText = flairText;
-        this.isEdited = isEdited;
-        this.isDeleted = isDeleted;
-        this.isRemoved = isRemoved;
-        this.isCollapsed = isCollapsed;
-        this.isStickied = isStickied;
-        this.isOver18 = isOver18;
-        this.score = score;
-        this.upvoteCount = upvoteCount;
-        this.downvoteCount = downvoteCount;
-        this.replyCount = replyCount;
-        this.awardCount = awardCount;
-        this.depthLevel = depthLevel;
-        this.author = author;
-        this.post = post;
-        this.parent = parent;
-        this.replies = replies;
-        this.votes = votes;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.editedAt = editedAt;
-        this.deletedAt = deletedAt;
-        this.removedAt = removedAt;
-    }
 }

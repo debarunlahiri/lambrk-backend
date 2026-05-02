@@ -61,6 +61,9 @@ public record Post(
     
     @Column(name = "is_archived", nullable = false)
     boolean isArchived,
+
+    @Column(name = "is_removed", nullable = false)
+    boolean isRemoved,
     
     @Column(name = "is_over_18", nullable = false)
     boolean isOver18,
@@ -116,6 +119,7 @@ public record Post(
         isStickied = false;
         isLocked = false;
         isArchived = false;
+        isRemoved = false;
         isOver18 = false;
         score = 1;
         upvoteCount = 1;
@@ -127,42 +131,8 @@ public record Post(
     
     public Post(String title, String content, String url, PostType postType, User author, Subreddit subreddit) {
         this(null, title, content, url, postType, null, null, null, false, false, false, false, false,
-             1, 1, 0, 0, 0, 0, author, subreddit, new HashSet<>(), new HashSet<>(),
+             false, 1, 1, 0, 0, 0, 0, author, subreddit, new HashSet<>(), new HashSet<>(),
              Instant.now(), Instant.now(), null);
-    }
-    
-    public Post(Long id, String title, String content, String url, PostType postType,
-                String thumbnailUrl, String flairText, String flairCssClass, boolean isSpoiler,
-                boolean isStickied, boolean isLocked, boolean isArchived, boolean isOver18,
-                int score, int upvoteCount, int downvoteCount, int commentCount, int viewCount,
-                int awardCount, User author, Subreddit subreddit, Set<Comment> comments, Set<Vote> votes,
-                Instant createdAt, Instant updatedAt, Instant archivedAt) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        this.url = url;
-        this.postType = postType;
-        this.thumbnailUrl = thumbnailUrl;
-        this.flairText = flairText;
-        this.flairCssClass = flairCssClass;
-        this.isSpoiler = isSpoiler;
-        this.isStickied = isStickied;
-        this.isLocked = isLocked;
-        this.isArchived = isArchived;
-        this.isOver18 = isOver18;
-        this.score = score;
-        this.upvoteCount = upvoteCount;
-        this.downvoteCount = downvoteCount;
-        this.commentCount = commentCount;
-        this.viewCount = viewCount;
-        this.awardCount = awardCount;
-        this.author = author;
-        this.subreddit = subreddit;
-        this.comments = comments;
-        this.votes = votes;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.archivedAt = archivedAt;
     }
     
     public enum PostType {

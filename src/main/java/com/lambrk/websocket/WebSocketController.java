@@ -6,11 +6,11 @@ import com.lambrk.dto.CommentResponse;
 import com.lambrk.service.NotificationService;
 import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
@@ -22,7 +22,6 @@ public class WebSocketController {
     private final SimpMessagingTemplate messagingTemplate;
     private final NotificationService notificationService;
 
-    @Autowired
     public WebSocketController(SimpMessagingTemplate messagingTemplate,
                                NotificationService notificationService) {
         this.messagingTemplate = messagingTemplate;
