@@ -144,3 +144,16 @@ Icon?
 ._*
 .Spotlight-V100
 .Trashes
+
+# Local setup scripts (may contain sensitive info)
+setup.sh
+setup.bat
+run.sh
+run.bat
+stop.sh
+stop.bat
+
+# Generated log and pid files
+setup.log
+app.log
+.lambrk.pid

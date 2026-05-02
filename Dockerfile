@@ -54,8 +54,7 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport \
                -XX:MaxRAMPercentage=75.0 \
                -XX:+OptimizeStringConcat \
                -XX:+UseStringDeduplication \
-               -Djava.security.egd=file:/dev/./urandom \
-               --enable-preview"
+               -Djava.security.egd=file:/dev/./urandom"
 
 # Run the application
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -cp '/app:/app/lib/*' com.example.lambrk.RedditBackendApplication"]

@@ -52,35 +52,35 @@ public class CacheConfig {
     @Bean
     public CaffeineCacheManager postCacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager("posts", "hotPosts", "newPosts", "topPosts");
-        cacheManager.setCaffeineSpec("maximumSize=10000,expireAfterWrite=5m,recordStats");
+        cacheManager.setCaffeineSpec(CaffeineSpec.parse("maximumSize=10000,expireAfterWrite=5m,recordStats"));
         return cacheManager;
     }
 
     @Bean
     public CaffeineCacheManager userCacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager("users", "userProfiles");
-        cacheManager.setCaffeineSpec("maximumSize=5000,expireAfterWrite=10m,recordStats");
+        cacheManager.setCaffeineSpec(CaffeineSpec.parse("maximumSize=5000,expireAfterWrite=10m,recordStats"));
         return cacheManager;
     }
 
     @Bean
     public CaffeineCacheManager subredditCacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager("subreddits", "trendingSubreddits");
-        cacheManager.setCaffeineSpec("maximumSize=2000,expireAfterWrite=15m,recordStats");
+        cacheManager.setCaffeineSpec(CaffeineSpec.parse("maximumSize=2000,expireAfterWrite=15m,recordStats"));
         return cacheManager;
     }
 
     @Bean
     public CaffeineCacheManager commentCacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager("comments", "commentTrees");
-        cacheManager.setCaffeineSpec("maximumSize=20000,expireAfterWrite=3m,recordStats");
+        cacheManager.setCaffeineSpec(CaffeineSpec.parse("maximumSize=20000,expireAfterWrite=3m,recordStats"));
         return cacheManager;
     }
 
     @Bean
     public CaffeineCacheManager searchCacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager("searchResults");
-        cacheManager.setCaffeineSpec("maximumSize=1000,expireAfterWrite=2m,recordStats");
+        cacheManager.setCaffeineSpec(CaffeineSpec.parse("maximumSize=1000,expireAfterWrite=2m,recordStats"));
         return cacheManager;
     }
 }

@@ -283,8 +283,8 @@ Starts: **PostgreSQL**, **Redis**, **Kafka** + Zookeeper, **Prometheus**, **Graf
 
 ```bash
 DATABASE_URL=jdbc:postgresql://localhost:5432/lambrk
-DATABASE_USERNAME=lambrk_user
-DATABASE_PASSWORD=lambrk_password
+DATABASE_USERNAME=debarunlahiri
+DATABASE_PASSWORD=8ivhaah8
 REDIS_HOST=localhost
 REDIS_PORT=6379
 KAFKA_BROKERS=localhost:9092

@@ -74,6 +74,9 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
     @Query("SELECT p FROM Post p WHERE p.subreddit.id = :subredditId AND (p.title LIKE %:query% OR p.content LIKE %:query%) AND p.isArchived = false")
     Page<Post> searchPostsBySubreddit(@Param("subredditId") Long subredditId, @Param("query") String query, Pageable pageable);
 
+    @Query("SELECT p FROM Post p WHERE p.subreddit.name IN :subredditNames AND (p.title LIKE %:query% OR p.content LIKE %:query%) AND p.isArchived = false")
+    Page<Post> searchPostsBySubreddits(@Param("subredditNames") List<String> subredditNames, @Param("query") String query, Pageable pageable);
+
     @Query("SELECT p FROM Post p WHERE p.postType = :postType AND p.isArchived = false ORDER BY p.createdAt DESC")
     Page<Post> findPostsByType(@Param("postType") com.lambrk.domain.Post.PostType postType, Pageable pageable);
 

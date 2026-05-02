@@ -70,8 +70,8 @@ lambrk_votes_cast_total{type="UPVOTE"} 1500
 lambrk_votes_cast_total{type="DOWNVOTE"} 200
 
 # Users
-lambrk_users_registered_total 350
-lambrk_users_login_total{userId="1"} 15
+debarunlahiris_registered_total 350
+debarunlahiris_login_total{userId="1"} 15
 
 # Sublambrks
 lambrk_sublambrks_created_total 12
