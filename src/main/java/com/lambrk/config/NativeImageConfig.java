@@ -19,7 +19,7 @@ public class NativeImageConfig {
                 .registerType(TypeReference.of("com.lambrk.domain.User"))
                 .registerType(TypeReference.of("com.lambrk.domain.Post"))
                 .registerType(TypeReference.of("com.lambrk.domain.Comment"))
-                .registerType(TypeReference.of("com.lambrk.domain.Subreddit"))
+                .registerType(TypeReference.of("com.lambrk.domain.Community"))
                 .registerType(TypeReference.of("com.lambrk.domain.Vote"));
 
             // Register reflection hints for DTOs
@@ -27,7 +27,7 @@ public class NativeImageConfig {
                 .registerType(TypeReference.of("com.lambrk.dto.PostCreateRequest"))
                 .registerType(TypeReference.of("com.lambrk.dto.PostResponse"))
                 .registerType(TypeReference.of("com.lambrk.dto.UserResponse"))
-                .registerType(TypeReference.of("com.lambrk.dto.SubredditResponse"));
+                .registerType(TypeReference.of("com.lambrk.dto.CommunityResponse"));
 
             // Register reflection hints for Spring Security
             hints.reflection()
@@ -82,7 +82,7 @@ public class NativeImageConfig {
                 .registerType(TypeReference.of("com.lambrk.domain.User"))
                 .registerType(TypeReference.of("com.lambrk.domain.Post"))
                 .registerType(TypeReference.of("com.lambrk.domain.Comment"))
-                .registerType(TypeReference.of("com.lambrk.domain.Subreddit"))
+                .registerType(TypeReference.of("com.lambrk.domain.Community"))
                 .registerType(TypeReference.of("com.lambrk.domain.Vote"));
 
             // Register method hints for JPA repositories
@@ -93,7 +93,7 @@ public class NativeImageConfig {
                     MemberCategory.INVOKE_DECLARED_METHODS)
                 .registerType(TypeReference.of("com.lambrk.repository.CommentRepository"), 
                     MemberCategory.INVOKE_DECLARED_METHODS)
-                .registerType(TypeReference.of("com.lambrk.repository.SubredditRepository"), 
+                .registerType(TypeReference.of("com.lambrk.repository.CommunityRepository"), 
                     MemberCategory.INVOKE_DECLARED_METHODS)
                 .registerType(TypeReference.of("com.lambrk.repository.VoteRepository"), 
                     MemberCategory.INVOKE_DECLARED_METHODS);

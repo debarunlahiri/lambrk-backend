@@ -1,153 +1,125 @@
 # Users API
 
-Base URL: `/api/users`
+Base path: `/api/users`. JWT required unless noted.
 
-All endpoints require **JWT authentication** unless noted otherwise.
+### GET `/api/users/{userId}`
 
----
+Get a user by id.
 
-## GET `/api/users/{userId}`
+**Auth:** User
 
-Get a user's public profile by ID.
+**cURL**
 
-### Path Parameters
+```bash
+curl -X GET 'http://localhost:9500/api/users/1' \
+  -H 'Authorization: Bearer <token>'
+```
 
-| Param  | Type | Description |
-|--------|------|-------------|
-| userId | Long | User ID     |
-
-### Response `200 OK`
+**Response**
 
 ```json
-{
-  "id": 2,
-  "username": "john_doe",
-  "displayName": "John Doe",
-  "bio": "Software engineer who loves Spring Boot.",
-  "avatarUrl": "https://cdn.example.com/avatars/john.png",
-  "isActive": true,
-  "isVerified": true,
-  "karma": 1250,
-  "createdAt": "2025-06-15T10:00:00Z",
-  "updatedAt": "2026-02-07T14:00:00Z"
-}
+{"id":1,"username":"johndoe","displayName":"John Doe","bio":"Builder","avatarUrl":"https://example.com/avatar.png","isActive":true,"isVerified":false,"karma":42,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}
+```
+### GET `/api/users/username/{username}`
+
+Get a user by username.
+
+**Auth:** User
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/users/username/johndoe' \
+  -H 'Authorization: Bearer <token>'
 ```
 
-### Error Responses
-
-| Status | Condition      |
-|--------|----------------|
-| 404    | User not found |
-
----
-
-## GET `/api/users/username/{username}`
-
-Get a user's public profile by username.
-
-### Path Parameters
-
-| Param    | Type   | Description |
-|----------|--------|-------------|
-| username | String | Username    |
-
-### Response `200 OK`
-
-Same shape as above.
-
----
-
-## GET `/api/users/me`
-
-Get the currently authenticated user's profile.
-
-### Headers
-
-```
-Authorization: Bearer <access_token>
-```
-
-### Response `200 OK`
-
-Same shape as above, for the token owner.
-
----
-
-## GET `/api/users/top`
-
-Get users with the highest karma.
-
-### Query Parameters
-
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| page  | int  | 0       | Page number |
-| size  | int  | 20      | Page size   |
-
-### Response `200 OK`
-
-Paginated `UserResponse` list sorted by karma descending.
-
----
-
-## GET `/api/users/search`
-
-Search active users by username or display name.
-
-### Query Parameters
-
-| Param | Type   | Default | Description       |
-|-------|--------|---------|-------------------|
-| query | String | —       | Search term (req) |
-| page  | int    | 0       | Page number       |
-| size  | int    | 20      | Page size         |
-
-### Response `200 OK`
-
-Paginated `UserResponse` list.
-
----
-
-## DELETE `/api/users/{userId}`
-
-Delete a user account. **Requires ADMIN role.**
-
-### Headers
-
-```
-Authorization: Bearer <access_token>
-```
-
-### Response `204 No Content`
-
-### Error Responses
-
-| Status | Condition      |
-|--------|----------------|
-| 403    | Not an admin   |
-| 404    | User not found |
-
----
-
-## User Response Schema
+**Response**
 
 ```json
-{
-  "id": "Long",
-  "username": "String",
-  "displayName": "String | null",
-  "bio": "String | null",
-  "avatarUrl": "String | null",
-  "isActive": "boolean",
-  "isVerified": "boolean",
-  "karma": "int",
-  "createdAt": "ISO-8601 Instant",
-  "updatedAt": "ISO-8601 Instant"
-}
+{"id":1,"username":"johndoe","displayName":"John Doe","bio":"Builder","avatarUrl":"https://example.com/avatar.png","isActive":true,"isVerified":false,"karma":42,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}
+```
+### GET `/api/users/me`
+
+Get the authenticated user.
+
+**Auth:** User
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/users/me' \
+  -H 'Authorization: Bearer <token>'
 ```
 
-### Notes
+**Response**
 
-- `email` and `password` are **never** exposed in API responses
-- `karma` is updated automatically when the user's posts/comments are voted on
-- `isVerified` is set by admin actions (not self-service)
+```json
+{"id":1,"username":"johndoe","displayName":"John Doe","bio":"Builder","avatarUrl":"https://example.com/avatar.png","isActive":true,"isVerified":false,"karma":42,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}
+```
+### GET `/api/users/top`
+
+List top users by karma.
+
+**Auth:** User
+
+**Query/path parameters**
+
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/users/top?page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
+
+```json
+{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+```
+### GET `/api/users/search`
+
+Search active users.
+
+**Auth:** User
+
+**Query/path parameters**
+
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
+| `query` | string | yes | - | Search text. |
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/users/search?query=john&page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
+
+```json
+{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+```
+### DELETE `/api/users/{userId}`
+
+Delete a user.
+
+**Auth:** Admin
+
+**cURL**
+
+```bash
+curl -X DELETE 'http://localhost:9500/api/users/1' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
+
+`204 No Content`

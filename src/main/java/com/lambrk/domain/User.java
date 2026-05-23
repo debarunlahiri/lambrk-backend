@@ -11,8 +11,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
+@org.hibernate.annotations.GenericGenerator(name = "uuid7", strategy = "com.lambrk.util.UuidV7Generator")
 @Table(name = "users", indexes = {
     @Index(name = "idx_user_username", columnList = "username"),
     @Index(name = "idx_user_email", columnList = "email"),
@@ -22,8 +24,8 @@ import java.util.Set;
 public record User(
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id,
+    @GeneratedValue(generator = "uuid7")
+    UUID id,
     
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
@@ -69,19 +71,19 @@ public record User(
     
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-        name = "user_subreddit_memberships",
+        name = "user_community_memberships",
         joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "subreddit_id")
+        inverseJoinColumns = @JoinColumn(name = "community_id")
     )
-    Set<Subreddit> subscribedSubreddits,
+    Set<Community> subscribedCommunities,
     
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-        name = "user_subreddit_moderators",
+        name = "user_community_moderators",
         joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "subreddit_id")
+        inverseJoinColumns = @JoinColumn(name = "community_id")
     )
-    Set<Subreddit> moderatedSubreddits,
+    Set<Community> moderatedCommunities,
     
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -96,8 +98,8 @@ public record User(
         if (posts == null) posts = new HashSet<>();
         if (comments == null) comments = new HashSet<>();
         if (votes == null) votes = new HashSet<>();
-        if (subscribedSubreddits == null) subscribedSubreddits = new HashSet<>();
-        if (moderatedSubreddits == null) moderatedSubreddits = new HashSet<>();
+        if (subscribedCommunities == null) subscribedCommunities = new HashSet<>();
+        if (moderatedCommunities == null) moderatedCommunities = new HashSet<>();
         isActive = true;
         isVerified = false;
         karma = 0;

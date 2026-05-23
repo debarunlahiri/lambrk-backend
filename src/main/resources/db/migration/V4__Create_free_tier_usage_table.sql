@@ -5,8 +5,8 @@
 
 -- Free tier usage tracking table
 CREATE TABLE free_tier_usage (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     period_year INTEGER NOT NULL,
     period_month INTEGER NOT NULL,
     storage_bytes_used BIGINT NOT NULL DEFAULT 0,

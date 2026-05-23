@@ -2,6 +2,7 @@ package com.lambrk.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.util.UUID;
 
 public record CommentCreateRequest(
 
@@ -9,7 +10,7 @@ public record CommentCreateRequest(
     @Size(max = 10000, message = "Comment must be less than 10000 characters")
     String content,
 
-    Long postId,
+    UUID postId,
 
-    Long parentCommentId
+    UUID parentCommentId
 ) {}

@@ -2,22 +2,23 @@ package com.lambrk.dto;
 
 import com.lambrk.domain.AdminAction;
 import java.time.Instant;
+import java.util.UUID;
 
 public record AdminActionResponse(
     
-    Long actionId,
-    
+    UUID actionId,
+
     AdminAction.AdminActionType action,
-    
-    Long targetId,
-    
+
+    UUID targetId,
+
     String targetType,
-    
+
     String reason,
-    
+
     String notes,
-    
-    Long performedBy,
+
+    UUID performedBy,
     
     Instant performedAt,
     

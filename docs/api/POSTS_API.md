@@ -1,291 +1,281 @@
 # Posts API
 
-Base URL: `/api/posts`
+Base path: `/api/posts`. JWT required.
 
-All endpoints require **JWT authentication** unless noted otherwise.
+### POST `/api/posts`
 
----
+Create a post.
 
-## POST `/api/posts`
+**Auth:** User
 
-Create a new post.
-
-### Headers
-
-```
-Authorization: Bearer <access_token>
-Content-Type: application/json
-```
-
-### Request Body
+**Request body**
 
 ```json
-{
-  "title": "My first post about Spring Boot 3.5",
-  "content": "Virtual threads are amazing for high-concurrency workloads...",
-  "url": null,
-  "postType": "TEXT",
-  "flairText": "Discussion",
-  "flairCssClass": "discussion",
-  "isSpoiler": false,
-  "isOver18": false,
-  "sublambrkId": 1
-}
+{"title":"My first post","content":"Post body","url":null,"postType":"TEXT","flairText":null,"flairCssClass":null,"isSpoiler":false,"isOver18":false,"communityId":1}
 ```
 
-### Validation Rules
-
-| Field       | Rule                                |
-|-------------|-------------------------------------|
-| title       | Required, max 300 chars             |
-| content     | Optional (TEXT type), max 40000     |
-| url         | Optional (LINK type), max 2000     |
-| postType    | TEXT, LINK, IMAGE, VIDEO, POLL      |
-| sublambrkId | Required, must exist                |
-
-### cURL Example
+**cURL**
 
 ```bash
-curl -X POST http://localhost:9500/api/posts \
-  -H "Authorization: Bearer <access_token>" \
-  -H "Content-Type: application/json" \
+curl -X POST 'http://localhost:9500/api/posts' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
   -d '{
-    "title": "My first post about Spring Boot 3.5",
-    "content": "Virtual threads are amazing for high-concurrency workloads...",
-    "postType": "TEXT",
-    "sublambrkId": 1,
-    "isSpoiler": false,
-    "isOver18": false
-  }'
-```
-
-### Response `200 OK`
-
-```json
-{
-  "id": 1,
-  "title": "My first post about Spring Boot 3.5",
-  "content": "Virtual threads are amazing...",
+  "title": "My first post",
+  "content": "Post body",
   "url": null,
   "postType": "TEXT",
-  "thumbnailUrl": null,
-  "flairText": "Discussion",
-  "flairCssClass": "discussion",
+  "flairText": null,
+  "flairCssClass": null,
   "isSpoiler": false,
-  "isStickied": false,
-  "isLocked": false,
-  "isArchived": false,
   "isOver18": false,
-  "score": 1,
-  "upvoteCount": 1,
-  "downvoteCount": 0,
-  "commentCount": 0,
-  "viewCount": 0,
-  "awardCount": 0,
-  "author": {
-    "id": 1,
-    "username": "john_doe",
-    "displayName": "John Doe",
-    "karma": 10
-  },
-  "sublambrk": {
-    "id": 1,
-    "name": "programming",
-    "title": "Programming"
-  },
-  "createdAt": "2026-02-07T13:30:00Z",
-  "updatedAt": "2026-02-07T13:30:00Z",
-  "archivedAt": null,
-  "userVote": null
-}
+  "communityId": 1
+}'
 ```
 
-### Error Responses
-
-| Status | Condition                          |
-|--------|------------------------------------|
-| 400    | Validation failed                  |
-| 401    | Not authenticated                  |
-| 404    | Sublambrk or user not found        |
-| 422    | Content moderation violation       |
-| 429    | Rate limit exceeded (100/min)      |
-| 503    | Circuit breaker open               |
-
-### Resilience
-
-- **Circuit Breaker**: `postService` — opens at 50% failure rate over 10 calls
-- **Rate Limiter**: `postCreation` — 100 requests per minute
-- **Retry**: 3 attempts with 1s wait on DataAccessException
-- **Bulkhead**: max 10 concurrent calls
-
----
-
-## GET `/api/posts/{postId}`
-
-Get a single post by ID. Increments view count for authenticated users.
-
-### Path Parameters
-
-| Param  | Type | Description |
-|--------|------|-------------|
-| postId | Long | Post ID     |
-
-### Response `200 OK`
-
-Same shape as create response. `userVote` will be `"UPVOTE"`, `"DOWNVOTE"`, or `null`.
-
----
-
-## GET `/api/posts/hot`
-
-Get hot posts sorted by score (descending).
-
-### Query Parameters
-
-| Param | Type | Default | Description       |
-|-------|------|---------|-------------------|
-| page  | int  | 0       | Page number       |
-| size  | int  | 20      | Page size         |
-
-### Response `200 OK`
-
-Paginated `PostResponse` list.
+**Response**
 
 ```json
-{
-  "content": [ ... ],
-  "pageable": { ... },
-  "totalElements": 150,
-  "totalPages": 8,
-  "number": 0,
-  "size": 20
-}
+{"id":1,"title":"My first post","content":"Post body","url":null,"postType":"TEXT","thumbnailUrl":null,"flairText":null,"flairCssClass":null,"isSpoiler":false,"isStickied":false,"isLocked":false,"isArchived":false,"isOver18":false,"score":1,"likeCount":1,"dislikeCount":0,"commentCount":0,"viewCount":0,"awardCount":0,"author":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"community":{"id":1,"name":"programming","title":"Programming","description":"Software","sidebarText":null,"headerImageUrl":null,"iconImageUrl":null,"isPublic":true,"isRestricted":false,"isOver18":false,"memberCount":1,"subscriberCount":1,"activeUserCount":0,"createdBy":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","isUserSubscribed":false,"isUserModerator":false},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","archivedAt":null,"userVote":null}
+```
+### GET `/api/posts/{postId}`
+
+Get one post.
+
+**Auth:** User
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/posts/1' \
+  -H 'Authorization: Bearer <token>'
 ```
 
----
+**Response**
 
-## GET `/api/posts/new`
+```json
+{"id":1,"title":"My first post","content":"Post body","url":null,"postType":"TEXT","thumbnailUrl":null,"flairText":null,"flairCssClass":null,"isSpoiler":false,"isStickied":false,"isLocked":false,"isArchived":false,"isOver18":false,"score":1,"likeCount":1,"dislikeCount":0,"commentCount":0,"viewCount":0,"awardCount":0,"author":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"community":{"id":1,"name":"programming","title":"Programming","description":"Software","sidebarText":null,"headerImageUrl":null,"iconImageUrl":null,"isPublic":true,"isRestricted":false,"isOver18":false,"memberCount":1,"subscriberCount":1,"activeUserCount":0,"createdBy":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","isUserSubscribed":false,"isUserModerator":false},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","archivedAt":null,"userVote":null}
+```
+### GET `/api/posts/hot`
 
-Get newest posts sorted by creation date (descending).
+Get hot posts.
 
-### Query Parameters
+**Auth:** User
 
-Same as `/hot`.
+**Query/path parameters**
 
----
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
 
-## GET `/api/posts/top`
+**cURL**
 
-Get top posts sorted by combined score + comments (descending).
+```bash
+curl -X GET 'http://localhost:9500/api/posts/hot?page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
+```
 
-### Query Parameters
+**Response**
 
-Same as `/hot`.
+```json
+{"content":[{"id":1,"title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
+```
+### GET `/api/posts/new`
 
----
+Get newest posts.
 
-## GET `/api/posts/sublambrk/{sublambrkId}`
+**Auth:** User
 
-Get posts for a specific sublambrk.
+**Query/path parameters**
 
-### Path Parameters
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
 
-| Param       | Type | Description   |
-|-------------|------|---------------|
-| sublambrkId | Long | Sublambrk ID  |
+**cURL**
 
-### Query Parameters
+```bash
+curl -X GET 'http://localhost:9500/api/posts/new?page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
+```
 
-Same as `/hot`.
+**Response**
 
----
+```json
+{"content":[{"id":1,"title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
+```
+### GET `/api/posts/top`
 
-## GET `/api/posts/user/{userId}`
+Get top posts.
 
-Get posts by a specific user.
+**Auth:** User
 
-### Path Parameters
+**Query/path parameters**
 
-| Param  | Type | Description |
-|--------|------|-------------|
-| userId | Long | User ID     |
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
 
-### Query Parameters
+**cURL**
 
-Same as `/hot`.
+```bash
+curl -X GET 'http://localhost:9500/api/posts/top?page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
+```
 
----
+**Response**
 
-## GET `/api/posts/search`
+```json
+{"content":[{"id":1,"title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
+```
+### GET `/api/posts/community/{communityId}`
 
-Full-text search across post titles and content.
+Get posts in a community.
 
-### Query Parameters
+**Auth:** User
 
-| Param | Type   | Default | Description       |
-|-------|--------|---------|-------------------|
-| query | String | —       | Search term (req) |
-| page  | int    | 0       | Page number       |
-| size  | int    | 20      | Page size         |
+**Query/path parameters**
 
----
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
 
-## PUT `/api/posts/{postId}`
+**cURL**
 
-Update an existing post. Only the author can edit.
+```bash
+curl -X GET 'http://localhost:9500/api/posts/community/1?page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
+```
 
-### Request Body
+**Response**
 
-Same shape as create request.
+```json
+{"content":[{"id":1,"title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
+```
+### GET `/api/posts/user/{userId}`
 
-### Error Responses
+Get posts by user.
 
-| Status | Condition                    |
-|--------|------------------------------|
-| 403    | Not the post author          |
-| 404    | Post not found               |
+**Auth:** User
 
----
+**Query/path parameters**
 
-## DELETE `/api/posts/{postId}`
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
 
-Delete a post. Only the author can delete.
+**cURL**
 
-### Response `204 No Content`
+```bash
+curl -X GET 'http://localhost:9500/api/posts/user/1?page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
+```
 
-### Error Responses
+**Response**
 
-| Status | Condition                    |
-|--------|------------------------------|
-| 403    | Not the post author          |
-| 404    | Post not found               |
+```json
+{"content":[{"id":1,"title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
+```
+### GET `/api/posts/search`
 
----
+Search posts.
 
-## GET `/api/posts/stickied`
+**Auth:** User
 
-Get stickied (pinned) posts, optionally filtered by sublambrk.
+**Query/path parameters**
 
-### Query Parameters
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
+| `query` | string | yes | - | Search text. |
 
-| Param       | Type | Required | Description          |
-|-------------|------|----------|----------------------|
-| sublambrkId | Long | No       | Filter by sublambrk  |
+**cURL**
 
-### Response `200 OK`
+```bash
+curl -X GET 'http://localhost:9500/api/posts/search?query=spring&page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
+```
 
-Array of `PostResponse`.
+**Response**
 
----
+```json
+{"content":[{"id":1,"title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
+```
+### PUT `/api/posts/{postId}`
 
-## Caching Behaviour
+Update a post.
 
-| Endpoint          | Cache Name    | TTL   |
-|-------------------|---------------|-------|
-| GET /{postId}     | posts         | 5 min |
-| GET /hot          | hotPosts      | 5 min |
-| GET /new          | newPosts      | 5 min |
-| GET /top          | topPosts      | 5 min |
-| GET /search       | searchPosts   | 5 min |
+**Auth:** User
 
-Creating, updating, or deleting a post evicts all post caches.
+**Request body**
+
+```json
+{"title":"Updated title","content":"Updated body","url":null,"postType":"TEXT","communityId":1}
+```
+
+**cURL**
+
+```bash
+curl -X PUT 'http://localhost:9500/api/posts/1' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "title": "Updated title",
+  "content": "Updated body",
+  "url": null,
+  "postType": "TEXT",
+  "communityId": 1
+}'
+```
+
+**Response**
+
+```json
+{"id":1,"title":"My first post","content":"Post body","url":null,"postType":"TEXT","thumbnailUrl":null,"flairText":null,"flairCssClass":null,"isSpoiler":false,"isStickied":false,"isLocked":false,"isArchived":false,"isOver18":false,"score":1,"likeCount":1,"dislikeCount":0,"commentCount":0,"viewCount":0,"awardCount":0,"author":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"community":{"id":1,"name":"programming","title":"Programming","description":"Software","sidebarText":null,"headerImageUrl":null,"iconImageUrl":null,"isPublic":true,"isRestricted":false,"isOver18":false,"memberCount":1,"subscriberCount":1,"activeUserCount":0,"createdBy":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","isUserSubscribed":false,"isUserModerator":false},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","archivedAt":null,"userVote":null}
+```
+### DELETE `/api/posts/{postId}`
+
+Delete a post.
+
+**Auth:** User
+
+**cURL**
+
+```bash
+curl -X DELETE 'http://localhost:9500/api/posts/1' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
+
+`204 No Content`
+### GET `/api/posts/stickied`
+
+List stickied posts.
+
+**Auth:** User
+
+**Query/path parameters**
+
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `communityId` | long | no | - | Filter by community. |
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/posts/stickied?communityId=1' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
+
+```json
+[]
+```

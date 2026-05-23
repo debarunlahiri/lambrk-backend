@@ -3,9 +3,10 @@ package com.lambrk.dto;
 import com.lambrk.domain.Post.PostType;
 
 import java.util.List;
+import java.util.UUID;
 
 public record FeedRequest(
-    Long userId,
+    UUID userId,
     Integer limit,
     String sortBy,
     List<PostType> postTypes,
@@ -31,7 +32,7 @@ public record FeedRequest(
         }
     }
 
-    public static FeedRequest defaultRequest(Long userId) {
+    public static FeedRequest defaultRequest(UUID userId) {
         return new FeedRequest(userId, 20, "algorithm", null, false, false, 1.0);
     }
 }

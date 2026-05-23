@@ -56,7 +56,8 @@ Full endpoint docs live in the **`docs/api/`** folder:
 | [AUTH_API.md](docs/api/AUTH_API.md) | `POST /api/auth/register`, `/login`, `/refresh` |
 | [POSTS_API.md](docs/api/POSTS_API.md) | `GET/POST/PUT/DELETE /api/posts/*` |
 | [COMMENTS_API.md](docs/api/COMMENTS_API.md) | `GET/POST/PUT/DELETE /api/comments/*` |
-| [SUBREDDITS_API.md](docs/api/SUBREDDITS_API.md) | `GET/POST/PUT /api/subreddits/*` |
+| [COMMUNITIES_API.md](docs/api/COMMUNITIES_API.md) | `GET/POST/PUT /api/communities/*` |
+| [CATEGORIES_API.md](docs/api/CATEGORIES_API.md) | `GET/POST/PUT/DELETE /api/categories/*` |
 | [VOTES_API.md](docs/api/VOTES_API.md) | `POST /api/votes/post`, `/api/votes/comment` |
 | [USERS_API.md](docs/api/USERS_API.md) | `GET/DELETE /api/users/*` |
 | [SEARCH_API.md](docs/api/SEARCH_API.md) | `GET/POST /api/search/*` - Advanced search with filters |
@@ -83,14 +84,14 @@ Additional architecture docs:
 src/main/java/com/example/reddit/
 ├── config/          SecurityConfig, JwtTokenProvider, JpaConfig, VirtualThreadConfig,
 │                    CacheConfig, ObservabilityConfig, ResilienceConfig, NativeImageConfig
-├── controller/      AuthController, PostController, CommentController, SubredditController,
+├── controller/      AuthController, PostController, CommentController, CommunityController,
 │                    VoteController, UserController, SearchController, NotificationController,
 │                    AdminController, RecommendationController, FileUploadController
-├── service/         PostService, CommentService, VoteService, SubredditService, AuthService,
+├── service/         PostService, CommentService, VoteService, CommunityService, AuthService,
 │                    SearchService, NotificationService, AdminService, RecommendationService,
 │                    FileUploadService, KafkaEventService, AIContentModerationService,
 │                    ContentModerationAspect, CustomMetrics
-├── domain/          User, Post, Comment, Subreddit, Vote, Notification, AdminAction, FileUpload
+├── domain/          User, Post, Comment, Community, Vote, Notification, AdminAction, FileUpload
 ├── dto/             Request/Response records for every endpoint
 ├── repository/      Spring Data JPA repositories with custom JPQL queries
 ├── exception/       GlobalExceptionHandler (RFC 7807), custom exceptions
@@ -119,7 +120,7 @@ infra/
 | Topic | Where in code |
 |-------|---------------|
 | **Virtual Threads** | `application.yml` → `spring.threads.virtual.enabled: true`; `VirtualThreadConfig` |
-| **Structured Concurrency** | `PostService.createPost()` — parallel User + Subreddit fetch via `StructuredTaskScope.ShutdownOnFailure` |
+| **Structured Concurrency** | `PostService.createPost()` — parallel User + Community fetch via `StructuredTaskScope.ShutdownOnFailure` |
 | **Structured Concurrency** | `AIContentModerationService.moderateContent()` — parallel moderation + toxicity + spam |
 | **Record-based entities** | All domain classes are Java `record` types |
 | **Pattern matching / switch** | Used in DTOs and service logic |
@@ -132,7 +133,7 @@ infra/
 | **Virtual Threads in Tomcat** | `spring.threads.virtual.enabled=true` |
 | **Spring Security 6 + JWT** | `SecurityConfig`, `JwtTokenProvider`, `JwtAuthenticationFilter` |
 | **OAuth2 Resource Server** | Configured in `SecurityConfig.securityFilterChain()` |
-| **Method Security** | `@PreAuthorize("hasRole('ADMIN')")` on `UserController.deleteUser()`, `SubredditController.updateSubreddit()` |
+| **Method Security** | `@PreAuthorize("hasRole('ADMIN')")` on `UserController.deleteUser()`, `CommunityController.updateCommunity()` |
 | **Spring Data JPA** | 5 repositories with 60+ custom JPQL queries |
 | **Spring Modulith** | `@Modulith` on main class |
 | **Spring Cloud Stream + Kafka** | `KafkaEventService` publishes to 4 topics via `StreamBridge` |
@@ -202,9 +203,9 @@ infra/
 
 | Topic | Where in code |
 |-------|---------------|
-| **Advanced Search** | `SearchService` — Full-text search across posts, comments, users, subreddits |
+| **Advanced Search** | `SearchService` — Full-text search across posts, comments, users, communitys |
 | **Structured Concurrency** | `search()` — Parallel multi-type search with `StructuredTaskScope` |
-| **Filtering** | Time-based, subreddit, flair, score, comment count filters |
+| **Filtering** | Time-based, community, flair, score, comment count filters |
 | **Sorting** | Relevance, new, hot, top, controversial |
 | **Suggestions** | Auto-generated search suggestions |
 | **Caching** | Search results cached with 5-minute TTL |
@@ -224,7 +225,7 @@ infra/
 |-------|---------------|
 | **Notification System** | `NotificationService` — Multi-type notifications |
 | **Real-time Delivery** | WebSocket + Kafka for instant delivery |
-| **Notification Types** | Comment replies, upvotes, mentions, admin actions |
+| **Notification Types** | Comment replies, likes, mentions, admin actions |
 | **Read Management** | Mark as read, bulk operations |
 
 ### Admin & Moderation
@@ -243,16 +244,16 @@ infra/
 |-------|---------------|
 | **Recommendation Engine** | `RecommendationService` — ML-based suggestions |
 | **Spring AI Integration** | ChatClient for personalized explanations |
-| **Multi-type Recommendations** | Posts, subreddits, users, comments |
+| **Multi-type Recommendations** | Posts, communitys, users, comments |
 | **Confidence Scoring** | 0-1 confidence with factor explanations |
-| **Context-aware** | Subreddit/post context for relevant suggestions |
+| **Context-aware** | Community/post context for relevant suggestions |
 
 ### File Management
 
 | Topic | Where in code |
 |-------|---------------|
 | **File Upload** | `FileUploadService` — Multi-type file support |
-| **File Types** | AVATAR, POST_IMAGE, POST_VIDEO, SUBREDDIT_ICON, BANNER |
+| **File Types** | AVATAR, POST_IMAGE, POST_VIDEO, COMMUNITY_ICON, BANNER |
 | **Security** | SHA-256 checksums, MIME type validation |
 | **Storage** | Local filesystem with configurable directory |
 | **Access Control** | Public/private visibility with user permissions |

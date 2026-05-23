@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -36,7 +37,7 @@ public class AdminController {
             @Valid @RequestBody AdminActionRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long adminId = getUserId(userDetails);
+        UUID adminId = getUserId(userDetails);
         AdminActionResponse response = adminService.performAdminAction(request, adminId);
         return ResponseEntity.ok(response);
     }
@@ -60,7 +61,7 @@ public class AdminController {
     @Counted(value = "admin.actions.viewed.by-user")
     @Timed(value = "admin.actions.by-user.duration")
     public ResponseEntity<Page<AdminActionResponse>> getAdminActionsByUser(
-            @PathVariable @SpanTag Long userId,
+            @PathVariable @SpanTag UUID userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -89,7 +90,7 @@ public class AdminController {
     @Counted(value = "admin.ban.user")
     @Timed(value = "admin.ban.user.duration")
     public ResponseEntity<AdminActionResponse> banUser(
-            @PathVariable @SpanTag Long userId,
+            @PathVariable @SpanTag UUID userId,
             @RequestParam String reason,
             @RequestParam(required = false) Long durationDays,
             @RequestParam(defaultValue = "false") boolean permanent,
@@ -106,7 +107,7 @@ public class AdminController {
             notifyUser
         );
         
-        Long adminId = getUserId(userDetails);
+        UUID adminId = getUserId(userDetails);
         AdminActionResponse response = adminService.performAdminAction(request, adminId);
         return ResponseEntity.ok(response);
     }
@@ -116,7 +117,7 @@ public class AdminController {
     @Counted(value = "admin.suspend.user")
     @Timed(value = "admin.suspend.user.duration")
     public ResponseEntity<AdminActionResponse> suspendUser(
-            @PathVariable @SpanTag Long userId,
+            @PathVariable @SpanTag UUID userId,
             @RequestParam String reason,
             @RequestParam Long durationDays,
             @RequestParam(defaultValue = "true") boolean notifyUser,
@@ -132,7 +133,7 @@ public class AdminController {
             notifyUser
         );
         
-        Long adminId = getUserId(userDetails);
+        UUID adminId = getUserId(userDetails);
         AdminActionResponse response = adminService.performAdminAction(request, adminId);
         return ResponseEntity.ok(response);
     }
@@ -142,7 +143,7 @@ public class AdminController {
     @Counted(value = "admin.delete.post")
     @Timed(value = "admin.delete.post.duration")
     public ResponseEntity<AdminActionResponse> deletePost(
-            @PathVariable @SpanTag Long postId,
+            @PathVariable @SpanTag UUID postId,
             @RequestParam String reason,
             @RequestParam(defaultValue = "true") boolean notifyUser,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -157,7 +158,7 @@ public class AdminController {
             notifyUser
         );
         
-        Long adminId = getUserId(userDetails);
+        UUID adminId = getUserId(userDetails);
         AdminActionResponse response = adminService.performAdminAction(request, adminId);
         return ResponseEntity.ok(response);
     }
@@ -167,7 +168,7 @@ public class AdminController {
     @Counted(value = "admin.delete.comment")
     @Timed(value = "admin.delete.comment.duration")
     public ResponseEntity<AdminActionResponse> deleteComment(
-            @PathVariable @SpanTag Long commentId,
+            @PathVariable @SpanTag UUID commentId,
             @RequestParam String reason,
             @RequestParam(defaultValue = "true") boolean notifyUser,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -182,7 +183,7 @@ public class AdminController {
             notifyUser
         );
         
-        Long adminId = getUserId(userDetails);
+        UUID adminId = getUserId(userDetails);
         AdminActionResponse response = adminService.performAdminAction(request, adminId);
         return ResponseEntity.ok(response);
     }
@@ -192,7 +193,7 @@ public class AdminController {
     @Counted(value = "admin.lock.post")
     @Timed(value = "admin.lock.post.duration")
     public ResponseEntity<AdminActionResponse> lockPost(
-            @PathVariable @SpanTag Long postId,
+            @PathVariable @SpanTag UUID postId,
             @RequestParam String reason,
             @RequestParam(required = false) Long durationDays,
             @RequestParam(defaultValue = "false") boolean permanent,
@@ -209,7 +210,7 @@ public class AdminController {
             notifyUser
         );
         
-        Long adminId = getUserId(userDetails);
+        UUID adminId = getUserId(userDetails);
         AdminActionResponse response = adminService.performAdminAction(request, adminId);
         return ResponseEntity.ok(response);
     }
@@ -219,7 +220,7 @@ public class AdminController {
     @Counted(value = "admin.quarantine.post")
     @Timed(value = "admin.quarantine.post.duration")
     public ResponseEntity<AdminActionResponse> quarantinePost(
-            @PathVariable @SpanTag Long postId,
+            @PathVariable @SpanTag UUID postId,
             @RequestParam String reason,
             @RequestParam(defaultValue = "true") boolean notifyUser,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -234,7 +235,7 @@ public class AdminController {
             notifyUser
         );
         
-        Long adminId = getUserId(userDetails);
+        UUID adminId = getUserId(userDetails);
         AdminActionResponse response = adminService.performAdminAction(request, adminId);
         return ResponseEntity.ok(response);
     }
@@ -244,7 +245,7 @@ public class AdminController {
     @Counted(value = "admin.remove.moderator")
     @Timed(value = "admin.remove.moderator.duration")
     public ResponseEntity<AdminActionResponse> removeModerator(
-            @PathVariable @SpanTag Long userId,
+            @PathVariable @SpanTag UUID userId,
             @RequestParam String reason,
             @RequestParam(defaultValue = "true") boolean notifyUser,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -259,13 +260,13 @@ public class AdminController {
             notifyUser
         );
         
-        Long adminId = getUserId(userDetails);
+        UUID adminId = getUserId(userDetails);
         AdminActionResponse response = adminService.performAdminAction(request, adminId);
         return ResponseEntity.ok(response);
     }
 
-    private Long getUserId(UserDetails userDetails) {
+    private UUID getUserId(UserDetails userDetails) {
         // In a real implementation, extract user ID from UserDetails
-        return 1L; // Placeholder for admin user
+        return java.util.UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"); // Placeholder for admin user
     }
 }

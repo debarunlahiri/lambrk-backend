@@ -4,10 +4,10 @@ import com.lambrk.domain.Post;
 import com.lambrk.domain.Comment;
 import com.lambrk.domain.User;
 import com.lambrk.domain.Vote;
-import com.lambrk.domain.Subreddit;
+import com.lambrk.domain.Community;
 import com.lambrk.repository.CommentRepository;
 import com.lambrk.repository.PostRepository;
-import com.lambrk.repository.SubredditRepository;
+import com.lambrk.repository.CommunityRepository;
 import com.lambrk.repository.UserRepository;
 import com.lambrk.repository.VoteRepository;
 import org.slf4j.Logger;
@@ -29,6 +29,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Service
 @Profile("!test")
@@ -42,7 +43,7 @@ public class AIContentModerationService {
     private final CommentRepository commentRepository;
     private final VoteRepository voteRepository;
     private final UserRepository userRepository;
-    private final SubredditRepository subredditRepository;
+    private final CommunityRepository communityRepository;
 
     public AIContentModerationService(
             OpenAiChatModel chatModel,
@@ -51,13 +52,13 @@ public class AIContentModerationService {
             CommentRepository commentRepository,
             VoteRepository voteRepository,
             UserRepository userRepository,
-            SubredditRepository subredditRepository) {
+            CommunityRepository communityRepository) {
         this.customMetrics = customMetrics;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.voteRepository = voteRepository;
         this.userRepository = userRepository;
-        this.subredditRepository = subredditRepository;
+        this.communityRepository = communityRepository;
         
         this.chatClient = ChatClient.builder(chatModel)
             .defaultSystem("""
@@ -181,12 +182,12 @@ public class AIContentModerationService {
     }
 
     @Cacheable(value = "contentRecommendations", key = "#userId + '-' + #limit")
-    public List<Recommendation> getPersonalizedRecommendations(Long userId, int limit) {
+    public List<Recommendation> getPersonalizedRecommendations(UUID userId, int limit) {
         try {
             List<Recommendation> userHistoryRecs = getUserContentHistory(userId, limit);
             List<Recommendation> trendingRecs = getTrendingContent(limit);
             List<Recommendation> similarUsersRecs = getSimilarUsersContent(userId, limit);
-            List<Recommendation> subscribedRecs = getSubscribedSubredditsContent(userId, limit);
+            List<Recommendation> subscribedRecs = getSubscribedCommunitiesContent(userId, limit);
             
             return combineRecommendations(userHistoryRecs, trendingRecs, similarUsersRecs, subscribedRecs, limit);
         } catch (Exception e) {
@@ -196,22 +197,22 @@ public class AIContentModerationService {
         }
     }
 
-    private List<Recommendation> getUserContentHistory(Long userId, int limit) {
+    private List<Recommendation> getUserContentHistory(UUID userId, int limit) {
         Instant thirtyDaysAgo = Instant.now().minus(30, ChronoUnit.DAYS);
         Pageable pageable = PageRequest.of(0, limit);
         
         List<Recommendation> recommendations = new ArrayList<>();
         
         Page<Post> userPosts = postRepository.findUserPostsSince(userId, thirtyDaysAgo, pageable);
-        List<String> interactedSubreddits = getUserInteractedSubreddits(userId);
+        List<String> interactedCommunities = getUserInteractedCommunities(userId);
         
         for (Post post : userPosts.getContent()) {
-            Subreddit subreddit = post.subreddit();
-            if (!interactedSubreddits.contains(subreddit.name())) {
+            Community community = post.community();
+            if (!interactedCommunities.contains(community.name())) {
                 recommendations.add(new Recommendation(
-                    subreddit.id(),
-                    "subreddit",
-                    subreddit.name(),
+                    community.id(),
+                    "community",
+                    community.name(),
                     0.6,
                     "Related to your activity"
                 ));
@@ -228,7 +229,7 @@ public class AIContentModerationService {
                         "post",
                         similarPost.title(),
                         0.7,
-                        "Similar to posts you've upvoted"
+                        "Similar to posts you've liked"
                     ));
                 }
             }
@@ -237,13 +238,13 @@ public class AIContentModerationService {
         return recommendations.stream().limit(limit).toList();
     }
 
-    private List<String> getUserInteractedSubreddits(Long userId) {
+    private List<String> getUserInteractedCommunities(UUID userId) {
         Instant thirtyDaysAgo = Instant.now().minus(30, ChronoUnit.DAYS);
         Pageable pageable = PageRequest.of(0, 50);
         
         Page<Post> posts = postRepository.findUserPostsSince(userId, thirtyDaysAgo, pageable);
         return posts.getContent().stream()
-            .map(post -> post.subreddit().name())
+            .map(post -> post.community().name())
             .distinct()
             .collect(Collectors.toList());
     }
@@ -254,7 +255,7 @@ public class AIContentModerationService {
         String textToAnalyze = (post.title() != null ? post.title() : "") + " " + (post.content() != null ? post.content() : "");
         List<String> keywords = extractKeywords(textToAnalyze);
         
-        return postRepository.findBySubreddit(post.subreddit(), pageable).getContent().stream()
+        return postRepository.findByCommunity(post.community(), pageable).getContent().stream()
             .filter(p -> !p.id().equals(post.id()))
             .filter(p -> keywords.stream().anyMatch(k -> 
                 p.title().toLowerCase().contains(k.toLowerCase()) || 
@@ -300,7 +301,7 @@ public class AIContentModerationService {
         return (timeWeight * 0.4 + scoreWeight * 0.4 + commentWeight * 0.2);
     }
 
-    private List<Recommendation> getSimilarUsersContent(Long userId, int limit) {
+    private List<Recommendation> getSimilarUsersContent(UUID userId, int limit) {
         User currentUser = userRepository.findById(userId).orElse(null);
         if (currentUser == null) return List.of();
         
@@ -311,35 +312,35 @@ public class AIContentModerationService {
         
         if (userVotes.isEmpty()) return List.of();
         
-        Set<Long> upvotedPostIds = userVotes.stream()
-            .filter(v -> v.voteType() == Vote.VoteType.UPVOTE)
+        Set<UUID> likedPostIds = userVotes.stream()
+            .filter(v -> v.voteType() == Vote.VoteType.LIKE)
             .filter(v -> v.post() != null)
             .map(v -> v.post().id())
             .collect(Collectors.toSet());
         
-        if (upvotedPostIds.isEmpty()) return List.of();
+        if (likedPostIds.isEmpty()) return List.of();
         
         List<Post> posts = postRepository.findAll(pageable).getContent();
         List<Recommendation> recommendations = new ArrayList<>();
         
-        Set<Post> upvotedPosts = userVotes.stream()
+        Set<Post> likedPosts = userVotes.stream()
             .filter(v -> v.post() != null)
             .map(Vote::post)
             .collect(Collectors.toSet());
         
         for (Post post : posts) {
-            if (!upvotedPostIds.contains(post.id()) && !post.isArchived()) {
-                long sharedSubreddits = posts.stream()
-                    .filter(p -> upvotedPosts.contains(p) && 
-                                p.subreddit().id().equals(post.subreddit().id()))
+            if (!likedPostIds.contains(post.id()) && !post.isArchived()) {
+                long sharedCommunities = posts.stream()
+                    .filter(p -> likedPosts.contains(p) &&
+                                p.community().id().equals(post.community().id()))
                     .count();
                 
-                if (sharedSubreddits > 0) {
+                if (sharedCommunities > 0) {
                     recommendations.add(new Recommendation(
                         post.id(),
                         "post",
                         post.title(),
-                        Math.min(sharedSubreddits / 5.0, 0.8),
+                        Math.min(sharedCommunities / 5.0, 0.8),
                         "Popular among similar users"
                     ));
                 }
@@ -349,16 +350,16 @@ public class AIContentModerationService {
         return recommendations.stream().limit(limit).toList();
     }
 
-    private List<Recommendation> getSubscribedSubredditsContent(Long userId, int limit) {
+    private List<Recommendation> getSubscribedCommunitiesContent(UUID userId, int limit) {
         User user = userRepository.findById(userId).orElse(null);
-        if (user == null || user.subscribedSubreddits() == null) return List.of();
+        if (user == null || user.subscribedCommunities() == null) return List.of();
         
         Pageable pageable = PageRequest.of(0, limit);
         
         List<Recommendation> recommendations = new ArrayList<>();
         
-        for (Subreddit subreddit : user.subscribedSubreddits()) {
-            Page<Post> posts = postRepository.findBySubredditAndIsArchivedFalse(subreddit, pageable);
+        for (Community community : user.subscribedCommunities()) {
+            Page<Post> posts = postRepository.findByCommunityAndIsArchivedFalse(community, pageable);
             for (Post post : posts.getContent()) {
                 if (!post.isOver18()) {
                     recommendations.add(new Recommendation(
@@ -366,7 +367,7 @@ public class AIContentModerationService {
                         "post",
                         post.title(),
                         0.8,
-                        "From your subscribed subreddit: " + subreddit.name()
+                        "From your subscribed community: " + community.name()
                     ));
                 }
             }
@@ -453,7 +454,7 @@ public class AIContentModerationService {
             return Arrays.stream(content.split(","))
                 .map(s -> s.replace("\"", "").trim())
                 .filter(s -> !s.isEmpty())
-                .toList();
+            .collect(java.util.stream.Collectors.toList());
         }
         return List.of();
     }
@@ -501,7 +502,7 @@ public class AIContentModerationService {
     ) {}
 
     public record Recommendation(
-        Long contentId,
+        UUID contentId,
         String contentType,
         String title,
         double score,

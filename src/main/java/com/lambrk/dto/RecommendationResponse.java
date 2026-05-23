@@ -8,7 +8,7 @@ public record RecommendationResponse(
     
     List<PostResponse> posts,
     
-    List<SubredditResponse> subreddits,
+    List<CommunityResponse> communities,
     
     List<UserResponse> users,
     
@@ -25,8 +25,8 @@ public record RecommendationResponse(
         return new RecommendationResponse(RecommendationRequest.RecommendationType.POSTS, posts, List.of(), List.of(), List.of(), explanation, confidence, factors);
     }
     
-    public static RecommendationResponse ofSubreddits(List<SubredditResponse> subreddits, String explanation, double confidence, List<String> factors) {
-        return new RecommendationResponse(RecommendationRequest.RecommendationType.SUBREDDITS, List.of(), subreddits, List.of(), List.of(), explanation, confidence, factors);
+    public static RecommendationResponse ofCommunities(List<CommunityResponse> communities, String explanation, double confidence, List<String> factors) {
+        return new RecommendationResponse(RecommendationRequest.RecommendationType.COMMUNITIES, List.of(), communities, List.of(), List.of(), explanation, confidence, factors);
     }
     
     public static RecommendationResponse ofUsers(List<UserResponse> users, String explanation, double confidence, List<String> factors) {

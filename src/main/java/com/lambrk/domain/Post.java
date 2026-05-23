@@ -10,11 +10,13 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
+@org.hibernate.annotations.GenericGenerator(name = "uuid7", strategy = "com.lambrk.util.UuidV7Generator")
 @Table(name = "posts", indexes = {
     @Index(name = "idx_post_author", columnList = "author_id"),
-    @Index(name = "idx_post_subreddit", columnList = "subreddit_id"),
+    @Index(name = "idx_post_community", columnList = "community_id"),
     @Index(name = "idx_post_created_at", columnList = "created_at"),
     @Index(name = "idx_post_score", columnList = "score"),
     @Index(name = "idx_post_title", columnList = "title")
@@ -23,8 +25,8 @@ import java.util.Set;
 public record Post(
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id,
+    @GeneratedValue(generator = "uuid7")
+    UUID id,
     
     @NotBlank(message = "Title is required")
     @Size(max = 300, message = "Title must be less than 300 characters")
@@ -71,11 +73,11 @@ public record Post(
     @Column(name = "score", nullable = false)
     int score,
     
-    @Column(name = "upvote_count", nullable = false)
-    int upvoteCount,
+    @Column(name = "like_count", nullable = false)
+    int likeCount,
     
-    @Column(name = "downvote_count", nullable = false)
-    int downvoteCount,
+    @Column(name = "dislike_count", nullable = false)
+    int dislikeCount,
     
     @Column(name = "comment_count", nullable = false)
     int commentCount,
@@ -91,8 +93,8 @@ public record Post(
     User author,
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subreddit_id", nullable = false)
-    Subreddit subreddit,
+    @JoinColumn(name = "community_id", nullable = false)
+    Community community,
     
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     Set<Comment> comments,
@@ -122,16 +124,16 @@ public record Post(
         isRemoved = false;
         isOver18 = false;
         score = 1;
-        upvoteCount = 1;
-        downvoteCount = 0;
+        likeCount = 1;
+        dislikeCount = 0;
         commentCount = 0;
         viewCount = 0;
         awardCount = 0;
     }
     
-    public Post(String title, String content, String url, PostType postType, User author, Subreddit subreddit) {
+    public Post(String title, String content, String url, PostType postType, User author, Community community) {
         this(null, title, content, url, postType, null, null, null, false, false, false, false, false,
-             false, 1, 1, 0, 0, 0, 0, author, subreddit, new HashSet<>(), new HashSet<>(),
+             false, 1, 1, 0, 0, 0, 0, author, community, new HashSet<>(), new HashSet<>(),
              Instant.now(), Instant.now(), null);
     }
     

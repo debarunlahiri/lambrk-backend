@@ -9,9 +9,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface SearchRepository extends JpaRepository<Post, Long> {
+public interface SearchRepository extends JpaRepository<Post, UUID> {
 
     @Query("SELECT p FROM Post p WHERE " +
            "(LOWER(p.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
@@ -21,14 +22,14 @@ public interface SearchRepository extends JpaRepository<Post, Long> {
            "ORDER BY p.score DESC")
     Page<Post> searchPosts(@Param("query") String query, @Param("since") java.time.Instant since, Pageable pageable);
 
-    @Query("SELECT p FROM Post p JOIN p.subreddit s WHERE " +
-           "s.name IN :subreddits AND " +
+    @Query("SELECT p FROM Post p JOIN p.community s WHERE " +
+           "s.name IN :communities AND " +
            "(LOWER(p.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            "LOWER(p.content) LIKE LOWER(CONCAT('%', :query, '%'))) AND " +
            "p.createdAt >= :since AND " +
            "p.isArchived = false " +
            "ORDER BY p.score DESC")
-    Page<Post> searchPostsBySubreddits(@Param("subreddits") List<String> subreddits, 
+    Page<Post> searchPostsByCommunities(@Param("communities") List<String> communities, 
                                            @Param("query") String query, 
                                            @Param("since") java.time.Instant since, 
                                            Pageable pageable);
@@ -88,11 +89,11 @@ public interface SearchRepository extends JpaRepository<Post, Long> {
            "LIMIT 10")
     List<String> findTitleSuggestions(@Param("query") String query);
 
-    @Query("SELECT DISTINCT s.name FROM Subreddit s WHERE " +
+    @Query("SELECT DISTINCT s.name FROM Community s WHERE " +
            "LOWER(s.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
            "ORDER BY LENGTH(s.name) ASC " +
            "LIMIT 10")
-    List<String> findSubredditSuggestions(@Param("query") String query);
+    List<String> findCommunitySuggestions(@Param("query") String query);
 
     @Query("SELECT DISTINCT u.username FROM User u WHERE " +
            "LOWER(u.username) LIKE LOWER(CONCAT('%', :query, '%')) " +

@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Service
 @Profile("!test")
@@ -24,7 +25,7 @@ public class KafkaEventService {
             post.id(),
             post.title(),
             post.author().id(),
-            post.subreddit().id(),
+            post.community().id(),
             post.createdAt(),
             "POST_CREATED"
         );
@@ -36,7 +37,7 @@ public class KafkaEventService {
             post.id(),
             post.title(),
             post.author().id(),
-            post.subreddit().id(),
+            post.community().id(),
             post.updatedAt(),
             "POST_UPDATED"
         );
@@ -70,30 +71,30 @@ public class KafkaEventService {
     }
 
     public record PostEvent(
-        Long postId,
+        UUID postId,
         String title,
-        Long authorId,
-        Long subredditId,
+        UUID authorId,
+        UUID communityId,
         Instant timestamp,
         String eventType
     ) {}
 
     public record CommentEvent(
-        Long commentId,
+        UUID commentId,
         String content,
-        Long authorId,
-        Long postId,
-        Long parentCommentId,
+        UUID authorId,
+        UUID postId,
+        UUID parentCommentId,
         Instant timestamp,
         String eventType
     ) {}
 
     public record VoteEvent(
-        Long voteId,
+        UUID voteId,
         String voteType,
-        Long userId,
-        Long postId,
-        Long commentId,
+        UUID userId,
+        UUID postId,
+        UUID commentId,
         Instant timestamp,
         String eventType
     ) {}

@@ -1,242 +1,189 @@
 # Comments API
 
-Base URL: `/api/comments`
+Base path: `/api/comments`. JWT required.
 
-All endpoints require **JWT authentication** unless noted otherwise.
+### POST `/api/comments`
 
----
+Create a comment or reply.
 
-## POST `/api/comments`
+**Auth:** User
 
-Create a new comment on a post, or reply to an existing comment.
-
-### Headers
-
-```
-Authorization: Bearer <access_token>
-Content-Type: application/json
-```
-
-### Request Body
+**Request body**
 
 ```json
-{
-  "content": "Great post! Virtual threads really simplify concurrency.",
+{"content":"Great post","postId":1,"parentCommentId":null}
+```
+
+**cURL**
+
+```bash
+curl -X POST 'http://localhost:9500/api/comments' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "content": "Great post",
   "postId": 1,
   "parentCommentId": null
-}
+}'
 ```
 
-To reply to a comment, set `parentCommentId`:
+**Response**
 
 ```json
-{
-  "content": "I agree, especially for I/O-bound workloads.",
-  "postId": 1,
-  "parentCommentId": 5
-}
+{"id":1,"content":"Great post","flairText":null,"isEdited":false,"isDeleted":false,"isRemoved":false,"isCollapsed":false,"isStickied":false,"score":1,"likeCount":1,"dislikeCount":0,"replyCount":0,"awardCount":0,"depthLevel":0,"author":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"postId":1,"parentId":null,"replies":[],"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","editedAt":null,"userVote":null}
+```
+### GET `/api/comments/{commentId}`
+
+Get one comment.
+
+**Auth:** User
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/comments/1' \
+  -H 'Authorization: Bearer <token>'
 ```
 
-### Validation Rules
-
-| Field            | Rule                              |
-|------------------|-----------------------------------|
-| content          | Required, max 10 000 chars        |
-| postId           | Required, must exist              |
-| parentCommentId  | Optional, must exist if provided  |
-
-### Response `200 OK`
+**Response**
 
 ```json
-{
-  "id": 10,
-  "content": "Great post! Virtual threads really simplify concurrency.",
-  "flairText": null,
-  "isEdited": false,
-  "isDeleted": false,
-  "isRemoved": false,
-  "isCollapsed": false,
-  "isStickied": false,
-  "score": 1,
-  "upvoteCount": 1,
-  "downvoteCount": 0,
-  "replyCount": 0,
-  "awardCount": 0,
-  "depthLevel": 0,
-  "author": {
-    "id": 2,
-    "username": "john_doe",
-    "displayName": "John Doe",
-    "karma": 15
-  },
-  "postId": 1,
-  "parentId": null,
-  "replies": [],
-  "createdAt": "2026-02-07T14:00:00Z",
-  "updatedAt": "2026-02-07T14:00:00Z",
-  "editedAt": null,
-  "userVote": null
-}
+{"id":1,"content":"Great post","flairText":null,"isEdited":false,"isDeleted":false,"isRemoved":false,"isCollapsed":false,"isStickied":false,"score":1,"likeCount":1,"dislikeCount":0,"replyCount":0,"awardCount":0,"depthLevel":0,"author":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"postId":1,"parentId":null,"replies":[],"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","editedAt":null,"userVote":null}
+```
+### GET `/api/comments/post/{postId}`
+
+Get comments for a post.
+
+**Auth:** User
+
+**Query/path parameters**
+
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/comments/post/1?page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
 ```
 
-### Error Responses
+**Response**
 
-| Status | Condition                           |
-|--------|-------------------------------------|
-| 400    | Validation failed                   |
-| 401    | Not authenticated                   |
-| 403    | Post is locked                      |
-| 404    | Post or parent comment not found    |
-| 422    | Content moderation violation        |
-| 429    | Rate limit exceeded (500/min)       |
-| 503    | Circuit breaker open                |
-
----
-
-## GET `/api/comments/{commentId}`
-
-Get a single comment by ID.
-
-### Path Parameters
-
-| Param     | Type | Description |
-|-----------|------|-------------|
-| commentId | Long | Comment ID  |
-
-### Response `200 OK`
-
-Same shape as create response. `userVote` populated for authenticated users.
-
----
-
-## GET `/api/comments/post/{postId}`
-
-Get top-level comments for a post (paginated, sorted by score).
-
-### Path Parameters
-
-| Param  | Type | Description |
-|--------|------|-------------|
-| postId | Long | Post ID     |
-
-### Query Parameters
-
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| page  | int  | 0       | Page number |
-| size  | int  | 20      | Page size   |
-
-### Response `200 OK`
-
-Paginated `CommentResponse` list. Only top-level comments (no parent).
-
----
-
-## GET `/api/comments/{commentId}/replies`
-
-Get direct replies to a specific comment.
-
-### Path Parameters
-
-| Param     | Type | Description |
-|-----------|------|-------------|
-| commentId | Long | Comment ID  |
-
-### Response `200 OK`
-
-Array of `CommentResponse`.
-
----
-
-## GET `/api/comments/user/{userId}`
-
-Get all comments by a specific user (paginated, newest first).
-
-### Path Parameters
-
-| Param  | Type | Description |
-|--------|------|-------------|
-| userId | Long | User ID     |
-
-### Query Parameters
-
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| page  | int  | 0       | Page number |
-| size  | int  | 20      | Page size   |
-
----
-
-## PUT `/api/comments/{commentId}`
-
-Edit a comment. Only the author can edit. Sets `isEdited = true` and records `editedAt`.
-
-### Request Body
-
-Raw string — the new comment content.
-
-### Response `200 OK`
-
-Updated `CommentResponse`.
-
-### Error Responses
-
-| Status | Condition              |
-|--------|------------------------|
-| 403    | Not the comment author |
-| 404    | Comment not found      |
-
----
-
-## DELETE `/api/comments/{commentId}`
-
-Soft-delete a comment. Content is replaced with `[deleted]` in responses.
-
-### Response `204 No Content`
-
-### Error Responses
-
-| Status | Condition              |
-|--------|------------------------|
-| 403    | Not the comment author |
-| 404    | Comment not found      |
-
----
-
-## GET `/api/comments/search`
-
-Search comments by content.
-
-### Query Parameters
-
-| Param | Type   | Default | Description       |
-|-------|--------|---------|-------------------|
-| query | String | —       | Search term (req) |
-| page  | int    | 0       | Page number       |
-| size  | int    | 20      | Page size         |
-
----
-
-## Comment Threading Model
-
-Comments form a tree structure via `parentId`:
-
+```json
+{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
 ```
-Comment A (depthLevel=0, parentId=null)
-├── Comment B (depthLevel=1, parentId=A)
-│   └── Comment D (depthLevel=2, parentId=B)
-└── Comment C (depthLevel=1, parentId=A)
+### GET `/api/comments/{commentId}/replies`
+
+Get replies for a comment.
+
+**Auth:** User
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/comments/1/replies' \
+  -H 'Authorization: Bearer <token>'
 ```
 
-- `depthLevel` is auto-calculated as `parent.depthLevel + 1`
-- `replyCount` on parent is incremented/decremented automatically
-- Post `commentCount` is updated on create/delete
+**Response**
 
-## Caching Behaviour
+```json
+[]
+```
+### GET `/api/comments/user/{userId}`
 
-| Endpoint               | Cache Name    | TTL   |
-|------------------------|---------------|-------|
-| GET /{commentId}       | comments      | 3 min |
-| GET /post/{postId}     | commentTrees  | 3 min |
+Get comments by user.
 
-Creating, updating, or deleting a comment evicts all comment caches.
+**Auth:** User
+
+**Query/path parameters**
+
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/comments/user/1?page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
+
+```json
+{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+```
+### PUT `/api/comments/{commentId}`
+
+Update comment content. Body is raw text.
+
+**Auth:** User
+
+**Request body**
+
+```text
+Updated comment text
+```
+
+**cURL**
+
+```bash
+curl -X PUT 'http://localhost:9500/api/comments/1' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: text/plain' \
+  -H 'Content-Type: application/json' \
+  -d 'Updated comment text'
+```
+
+**Response**
+
+```json
+{"id":1,"content":"Great post","flairText":null,"isEdited":false,"isDeleted":false,"isRemoved":false,"isCollapsed":false,"isStickied":false,"score":1,"likeCount":1,"dislikeCount":0,"replyCount":0,"awardCount":0,"depthLevel":0,"author":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"postId":1,"parentId":null,"replies":[],"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","editedAt":null,"userVote":null}
+```
+### DELETE `/api/comments/{commentId}`
+
+Delete comment.
+
+**Auth:** User
+
+**cURL**
+
+```bash
+curl -X DELETE 'http://localhost:9500/api/comments/1' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
+
+`204 No Content`
+### GET `/api/comments/search`
+
+Search comments.
+
+**Auth:** User
+
+**Query/path parameters**
+
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
+| `query` | string | yes | - | Search text. |
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/comments/search?query=great&page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
+
+```json
+{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+```

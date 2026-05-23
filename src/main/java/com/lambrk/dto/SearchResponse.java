@@ -10,7 +10,7 @@ public record SearchResponse(
     
     List<UserResponse> users,
     
-    List<SubredditResponse> subreddits,
+    List<CommunityResponse> communities,
     
     SearchMetadata metadata
 ) {
@@ -27,14 +27,14 @@ public record SearchResponse(
         return new SearchResponse(List.of(), List.of(), users, List.of(), metadata);
     }
     
-    public static SearchResponse ofSubreddits(List<SubredditResponse> subreddits, SearchMetadata metadata) {
-        return new SearchResponse(List.of(), List.of(), List.of(), subreddits, metadata);
+    public static SearchResponse ofCommunities(List<CommunityResponse> communities, SearchMetadata metadata) {
+        return new SearchResponse(List.of(), List.of(), List.of(), communities, metadata);
     }
     
     public static SearchResponse ofAll(List<PostResponse> posts, List<CommentResponse> comments,
-                                       List<UserResponse> users, List<SubredditResponse> subreddits,
+                                       List<UserResponse> users, List<CommunityResponse> communities,
                                        SearchMetadata metadata) {
-        return new SearchResponse(posts, comments, users, subreddits, metadata);
+        return new SearchResponse(posts, comments, users, communities, metadata);
     }
     
     public record SearchMetadata(

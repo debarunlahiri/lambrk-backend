@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/feed")
@@ -32,11 +33,11 @@ public class FeedController {
         this.feedService = feedService;
     }
 
-    private Long getUserIdFromUserDetails(UserDetails userDetails) {
+    private UUID getUserIdFromUserDetails(UserDetails userDetails) {
         if (userDetails == null) {
             return null;
         }
-        return 1L; // Placeholder - should extract from JWT
+        return java.util.UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"); // Placeholder - should extract from JWT
     }
 
     @GetMapping
@@ -58,12 +59,12 @@ public class FeedController {
             @RequestParam(defaultValue = "algorithm") String sortBy,
             @Parameter(description = "Include NSFW content (default: false)")
             @RequestParam(defaultValue = "false") Boolean includeNsfw,
-            @Parameter(description = "Only show posts from subscribed subreddits (default: false)")
+            @Parameter(description = "Only show posts from subscribed communities (default: false)")
             @RequestParam(defaultValue = "false") Boolean fromFollowingOnly,
             @Parameter(description = "Time decay factor for freshness (default: 1.0)")
             @RequestParam(defaultValue = "1.0") Double timeDecayFactor
     ) {
-        Long userId = getUserIdFromUserDetails(userDetails);
+        UUID userId = getUserIdFromUserDetails(userDetails);
         logger.info("Generating personalized feed for user: {} with limit: {}", userId, limit);
 
         FeedRequest request = new FeedRequest(
@@ -96,7 +97,7 @@ public class FeedController {
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody FeedRequest request
     ) {
-        Long userId = getUserIdFromUserDetails(userDetails);
+        UUID userId = getUserIdFromUserDetails(userDetails);
         logger.info("Generating personalized feed with filters for user: {}", userId);
 
         // Override the userId from the authenticated user
@@ -124,7 +125,7 @@ public class FeedController {
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(defaultValue = "20") Integer limit
     ) {
-        Long userId = getUserIdFromUserDetails(userDetails);
+        UUID userId = getUserIdFromUserDetails(userDetails);
         logger.info("Generating hot feed for user: {} with limit: {}", userId, limit);
 
         FeedRequest request = new FeedRequest(
@@ -151,7 +152,7 @@ public class FeedController {
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(defaultValue = "20") Integer limit
     ) {
-        Long userId = getUserIdFromUserDetails(userDetails);
+        UUID userId = getUserIdFromUserDetails(userDetails);
         logger.info("Generating new feed for user: {} with limit: {}", userId, limit);
 
         FeedRequest request = new FeedRequest(
@@ -179,7 +180,7 @@ public class FeedController {
             @RequestParam(defaultValue = "20") Integer limit,
             @RequestParam(defaultValue = "all") String timePeriod
     ) {
-        Long userId = getUserIdFromUserDetails(userDetails);
+        UUID userId = getUserIdFromUserDetails(userDetails);
         logger.info("Generating top feed for user: {} with limit: {} and timePeriod: {}",
             userId, limit, timePeriod);
 
@@ -201,13 +202,13 @@ public class FeedController {
     @PreAuthorize("hasRole('USER')")
     @Operation(
         summary = "Discover new content",
-        description = "Returns posts from subreddits the user doesn't follow to discover new content."
+        description = "Returns posts from communities the user doesn't follow to discover new content."
     )
     public ResponseEntity<FeedResponse> getDiscoverFeed(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(defaultValue = "20") Integer limit
     ) {
-        Long userId = getUserIdFromUserDetails(userDetails);
+        UUID userId = getUserIdFromUserDetails(userDetails);
         logger.info("Generating discover feed for user: {} with limit: {}", userId, limit);
 
         FeedRequest request = new FeedRequest(

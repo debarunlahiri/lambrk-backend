@@ -70,7 +70,7 @@ public class LoggingService {
     public void logRequestResponse(HttpServletRequest request, HttpServletResponse response,
                                    ContentCachingRequestWrapper requestWrapper,
                                    ContentCachingResponseWrapper responseWrapper,
-                                   Long userId, String username, boolean isAuthenticated,
+                                   UUID userId, String username, boolean isAuthenticated,
                                    Long startTime, Throwable exception) {
         if (!loggingEnabled) {
             return;
@@ -94,7 +94,7 @@ public class LoggingService {
     private LogEntry buildLogEntry(HttpServletRequest request, HttpServletResponse response,
                                    ContentCachingRequestWrapper requestWrapper,
                                    ContentCachingResponseWrapper responseWrapper,
-                                   Long userId, String username, boolean isAuthenticated,
+                                   UUID userId, String username, boolean isAuthenticated,
                                    Long startTime, Throwable exception) {
 
         Long responseTimeMs = System.currentTimeMillis() - startTime;
@@ -264,7 +264,7 @@ public class LoggingService {
         return logRepository.findByOrderByTimestampDesc(pageable);
     }
 
-    public Page<LogEntry> getLogsByUser(Long userId, Pageable pageable) {
+    public Page<LogEntry> getLogsByUser(UUID userId, Pageable pageable) {
         return logRepository.findByUserIdOrderByTimestampDesc(userId, pageable);
     }
 

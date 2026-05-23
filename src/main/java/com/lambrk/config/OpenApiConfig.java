@@ -80,10 +80,10 @@ public class OpenApiConfig {
     }
 
     @Bean
-    public GroupedOpenApi subredditsApi() {
+    public GroupedOpenApi communitiesApi() {
         return GroupedOpenApi.builder()
-            .group("subreddits")
-            .pathsToMatch("/api/subreddits/**")
+            .group("communities")
+            .pathsToMatch("/api/communities/**")
             .build();
     }
 

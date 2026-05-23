@@ -4,14 +4,14 @@ import com.lambrk.domain.AdminAction;
 import com.lambrk.domain.User;
 import com.lambrk.domain.Post;
 import com.lambrk.domain.Comment;
-import com.lambrk.domain.Subreddit;
+import com.lambrk.domain.Community;
 import com.lambrk.dto.AdminActionRequest;
 import com.lambrk.dto.AdminActionResponse;
 import com.lambrk.repository.AdminActionRepository;
 import com.lambrk.repository.UserRepository;
 import com.lambrk.repository.PostRepository;
 import com.lambrk.repository.CommentRepository;
-import com.lambrk.repository.SubredditRepository;
+import com.lambrk.repository.CommunityRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.cache.annotation.CacheEvict;
@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -35,7 +36,7 @@ public class AdminService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-    private final SubredditRepository subredditRepository;
+    private final CommunityRepository communityRepository;
     private final NotificationService notificationService;
     private final KafkaTemplate kafkaTemplate;
     private final CustomMetrics customMetrics;
@@ -44,7 +45,7 @@ public class AdminService {
                          UserRepository userRepository,
                          PostRepository postRepository,
                          CommentRepository commentRepository,
-                         SubredditRepository subredditRepository,
+                         CommunityRepository communityRepository,
                          NotificationService notificationService,
                          KafkaTemplate kafkaTemplate,
                          CustomMetrics customMetrics) {
@@ -52,16 +53,16 @@ public class AdminService {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
-        this.subredditRepository = subredditRepository;
+        this.communityRepository = communityRepository;
         this.notificationService = notificationService;
         this.kafkaTemplate = kafkaTemplate;
         this.customMetrics = customMetrics;
     }
 
-    @CacheEvict(value = {"users", "posts", "comments", "subreddits"}, allEntries = true)
+    @CacheEvict(value = {"users", "posts", "comments", "communities"}, allEntries = true)
     @CircuitBreaker(name = "userService")
     @Retry(name = "userService")
-    public AdminActionResponse performAdminAction(AdminActionRequest request, Long adminId) {
+    public AdminActionResponse performAdminAction(AdminActionRequest request, UUID adminId) {
         User admin = userRepository.findById(adminId)
             .orElseThrow(() -> new RuntimeException("Admin not found: " + adminId));
 
@@ -94,13 +95,13 @@ public class AdminService {
             case LOCK_COMMENT -> lockComment(request.targetId(), request.reason(), expiresAt, admin, now);
             case REMOVE_MODERATOR -> removeModerator(request.targetId(), request.reason(), admin, now);
             case ADD_MODERATOR -> addModerator(request.targetId(), request.reason(), admin, now);
-            case BAN_SUBREDDIT -> banSubreddit(request.targetId(), request.reason(), expiresAt, admin, now);
+            case BAN_COMMUNITY -> banCommunity(request.targetId(), request.reason(), expiresAt, admin, now);
             case QUARANTINE_POST -> quarantinePost(request.targetId(), request.reason(), admin, now);
             case QUARANTINE_COMMENT -> quarantineComment(request.targetId(), request.reason(), admin, now);
         };
     }
 
-    private AdminAction banUser(Long userId, String reason, Instant expiresAt, User admin, Instant now) {
+    private AdminAction banUser(UUID userId, String reason, Instant expiresAt, User admin, Instant now) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
@@ -109,7 +110,7 @@ public class AdminService {
             user.displayName(), user.bio(), user.avatarUrl(),
             false, user.isVerified(), user.karma(),
             user.posts(), user.comments(), user.votes(),
-            user.subscribedSubreddits(), user.moderatedSubreddits(),
+            user.subscribedCommunities(), user.moderatedCommunities(),
             user.createdAt(), now
         );
 
@@ -121,7 +122,7 @@ public class AdminService {
         );
     }
 
-    private AdminAction suspendUser(Long userId, String reason, Instant expiresAt, User admin, Instant now) {
+    private AdminAction suspendUser(UUID userId, String reason, Instant expiresAt, User admin, Instant now) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
@@ -134,7 +135,7 @@ public class AdminService {
         );
     }
 
-    private AdminAction deletePost(Long postId, String reason, User admin, Instant now) {
+    private AdminAction deletePost(UUID postId, String reason, User admin, Instant now) {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("Post not found: " + postId));
 
@@ -144,8 +145,8 @@ public class AdminService {
             post.thumbnailUrl(), post.flairText(), post.flairCssClass(),
             post.isSpoiler(), post.isStickied(), post.isLocked(), post.isArchived(),
             post.isOver18(), true, // Mark as removed
-            post.score(), post.upvoteCount(), post.downvoteCount(), post.commentCount(),
-            post.viewCount(), post.awardCount(), post.author(), post.subreddit(),
+            post.score(), post.likeCount(), post.dislikeCount(), post.commentCount(),
+            post.viewCount(), post.awardCount(), post.author(), post.community(),
             post.comments(), post.votes(), post.createdAt(), now, post.archivedAt()
         );
 
@@ -157,7 +158,7 @@ public class AdminService {
         );
     }
 
-    private AdminAction deleteComment(Long commentId, String reason, User admin, Instant now) {
+    private AdminAction deleteComment(UUID commentId, String reason, User admin, Instant now) {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new RuntimeException("Comment not found: " + commentId));
 
@@ -166,7 +167,7 @@ public class AdminService {
             comment.id(), comment.content(), comment.flairText(), comment.isEdited(),
             comment.isDeleted(), true, // Mark as removed
             comment.isCollapsed(), comment.isStickied(), comment.isOver18(),
-            comment.score(), comment.upvoteCount(), comment.downvoteCount(),
+            comment.score(), comment.likeCount(), comment.dislikeCount(),
             comment.replyCount(), comment.awardCount(), comment.depthLevel(),
             comment.author(), comment.post(), comment.parent(), comment.replies(),
             comment.votes(), comment.createdAt(), now, comment.editedAt(),
@@ -181,7 +182,7 @@ public class AdminService {
         );
     }
 
-    private AdminAction lockPost(Long postId, String reason, Instant expiresAt, User admin, Instant now) {
+    private AdminAction lockPost(UUID postId, String reason, Instant expiresAt, User admin, Instant now) {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("Post not found: " + postId));
 
@@ -190,8 +191,8 @@ public class AdminService {
             post.thumbnailUrl(), post.flairText(), post.flairCssClass(),
             post.isSpoiler(), post.isStickied(), true, // Lock the post
             post.isArchived(), post.isOver18(), post.isRemoved(),
-            post.score(), post.upvoteCount(), post.downvoteCount(), post.commentCount(),
-            post.viewCount(), post.awardCount(), post.author(), post.subreddit(),
+            post.score(), post.likeCount(), post.dislikeCount(), post.commentCount(),
+            post.viewCount(), post.awardCount(), post.author(), post.community(),
             post.comments(), post.votes(), post.createdAt(), now, post.archivedAt()
         );
 
@@ -203,7 +204,7 @@ public class AdminService {
         );
     }
 
-    private AdminAction lockComment(Long commentId, String reason, Instant expiresAt, User admin, Instant now) {
+    private AdminAction lockComment(UUID commentId, String reason, Instant expiresAt, User admin, Instant now) {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new RuntimeException("Comment not found: " + commentId));
 
@@ -211,7 +212,7 @@ public class AdminService {
             comment.id(), comment.content(), comment.flairText(), comment.isEdited(),
             comment.isDeleted(), comment.isRemoved(), comment.isCollapsed(),
             true, // Lock the comment
-            comment.isOver18(), comment.score(), comment.upvoteCount(), comment.downvoteCount(),
+            comment.isOver18(), comment.score(), comment.likeCount(), comment.dislikeCount(),
             comment.replyCount(), comment.awardCount(), comment.depthLevel(),
             comment.author(), comment.post(), comment.parent(), comment.replies(),
             comment.votes(), comment.createdAt(), now, comment.editedAt(),
@@ -226,17 +227,17 @@ public class AdminService {
         );
     }
 
-    private AdminAction removeModerator(Long userId, String reason, User admin, Instant now) {
+    private AdminAction removeModerator(UUID userId, String reason, User admin, Instant now) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
-        // Remove from all moderated subreddits
+        // Remove from all moderated communities
         User updated = new User(
             user.id(), user.username(), user.email(), user.password(),
             user.displayName(), user.bio(), user.avatarUrl(),
             user.isActive(), user.isVerified(), user.karma(),
             user.posts(), user.comments(), user.votes(),
-            user.subscribedSubreddits(), Set.of(), // Clear moderated subreddits
+            user.subscribedCommunities(), Set.of(), // Clear moderated communities
             user.createdAt(), now
         );
 
@@ -248,11 +249,11 @@ public class AdminService {
         );
     }
 
-    private AdminAction addModerator(Long userId, String reason, User admin, Instant now) {
+    private AdminAction addModerator(UUID userId, String reason, User admin, Instant now) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
-        // In a real implementation, you'd need to specify which subreddit to add as moderator
+        // In a real implementation, you'd need to specify which community to add as moderator
         // For now, we'll just create the action record
 
         return new AdminAction(
@@ -261,20 +262,20 @@ public class AdminService {
         );
     }
 
-    private AdminAction banSubreddit(Long subredditId, String reason, Instant expiresAt, User admin, Instant now) {
-        Subreddit subreddit = subredditRepository.findById(subredditId)
-            .orElseThrow(() -> new RuntimeException("Subreddit not found: " + subredditId));
+    private AdminAction banCommunity(UUID communityId, String reason, Instant expiresAt, User admin, Instant now) {
+        Community community = communityRepository.findById(communityId)
+            .orElseThrow(() -> new RuntimeException("Community not found: " + communityId));
 
         // In a real implementation, you'd have a banned field
         // For now, we'll just create the action record
 
         return new AdminAction(
-            null, AdminAction.AdminActionType.BAN_SUBREDDIT, subredditId, "Subreddit",
-            reason, null, admin.id(), now, expiresAt, expiresAt == null, "Subreddit banned"
+            null, AdminAction.AdminActionType.BAN_COMMUNITY, communityId, "Community",
+            reason, null, admin.id(), now, expiresAt, expiresAt == null, "Community banned"
         );
     }
 
-    private AdminAction quarantinePost(Long postId, String reason, User admin, Instant now) {
+    private AdminAction quarantinePost(UUID postId, String reason, User admin, Instant now) {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("Post not found: " + postId));
 
@@ -284,9 +285,9 @@ public class AdminService {
             post.thumbnailUrl(), post.flairText(), post.flairCssClass(),
             post.isSpoiler(), post.isStickied(), post.isLocked(), post.isArchived(),
             true, // Mark as over18/quarantined
-            post.isRemoved(), post.score(), post.upvoteCount(), post.downvoteCount(),
+            post.isRemoved(), post.score(), post.likeCount(), post.dislikeCount(),
             post.commentCount(), post.viewCount(), post.awardCount(), post.author(),
-            post.subreddit(), post.comments(), post.votes(), post.createdAt(), now,
+            post.community(), post.comments(), post.votes(), post.createdAt(), now,
             post.archivedAt()
         );
 
@@ -298,7 +299,7 @@ public class AdminService {
         );
     }
 
-    private AdminAction quarantineComment(Long commentId, String reason, User admin, Instant now) {
+    private AdminAction quarantineComment(UUID commentId, String reason, User admin, Instant now) {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new RuntimeException("Comment not found: " + commentId));
 
@@ -307,7 +308,7 @@ public class AdminService {
             comment.id(), comment.content(), comment.flairText(), comment.isEdited(),
             comment.isDeleted(), comment.isRemoved(), comment.isCollapsed(),
             comment.isStickied(), true, // Mark as over18/quarantined
-            comment.score(), comment.upvoteCount(), comment.downvoteCount(),
+            comment.score(), comment.likeCount(), comment.dislikeCount(),
             comment.replyCount(), comment.awardCount(), comment.depthLevel(),
             comment.author(), comment.post(), comment.parent(), comment.replies(),
             comment.votes(), comment.createdAt(), now, comment.editedAt(),
@@ -327,7 +328,7 @@ public class AdminService {
         return actions.map(AdminActionResponse::from);
     }
 
-    public Page<AdminActionResponse> getAdminActionsByUser(Long userId, Pageable pageable) {
+    public Page<AdminActionResponse> getAdminActionsByUser(UUID userId, Pageable pageable) {
         Page<AdminAction> actions = adminActionRepository.findByPerformedByOrderByCreatedAtDesc(userId, pageable);
         return actions.map(AdminActionResponse::from);
     }
@@ -348,7 +349,7 @@ public class AdminService {
                 case LOCK_COMMENT -> "Comment Locked";
                 case REMOVE_MODERATOR -> "Moderator Privileges Removed";
                 case ADD_MODERATOR -> "Moderator Privileges Granted";
-                case BAN_SUBREDDIT -> "Community Action Taken";
+                case BAN_COMMUNITY -> "Community Action Taken";
                 case QUARANTINE_POST -> "Post Quarantined";
                 case QUARANTINE_COMMENT -> "Comment Quarantined";
             };

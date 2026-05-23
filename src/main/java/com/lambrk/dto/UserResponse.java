@@ -3,10 +3,11 @@ package com.lambrk.dto;
 import com.lambrk.domain.User;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record UserResponse(
     
-    Long id,
+    UUID id,
     
     String username,
     

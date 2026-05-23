@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/comments")
@@ -36,7 +37,7 @@ public class CommentController {
     public ResponseEntity<CommentResponse> createComment(
             @Valid @RequestBody CommentCreateRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        Long authorId = getUserId(userDetails);
+        UUID authorId = getUserId(userDetails);
         return ResponseEntity.ok(commentService.createComment(request, authorId));
     }
 
@@ -44,7 +45,7 @@ public class CommentController {
     @NewSpan("get-comment")
     @Timed(value = "comments.get.duration")
     public ResponseEntity<CommentResponse> getComment(
-            @PathVariable @SpanTag Long commentId,
+            @PathVariable @SpanTag UUID commentId,
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(commentService.getComment(commentId, getUserId(userDetails)));
     }
@@ -53,7 +54,7 @@ public class CommentController {
     @NewSpan("get-post-comments")
     @Timed(value = "comments.post.duration")
     public ResponseEntity<Page<CommentResponse>> getCommentsByPost(
-            @PathVariable @SpanTag Long postId,
+            @PathVariable @SpanTag UUID postId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -65,7 +66,7 @@ public class CommentController {
     @NewSpan("get-comment-replies")
     @Timed(value = "comments.replies.duration")
     public ResponseEntity<List<CommentResponse>> getReplies(
-            @PathVariable @SpanTag Long commentId,
+            @PathVariable @SpanTag UUID commentId,
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(commentService.getReplies(commentId, getUserId(userDetails)));
     }
@@ -74,7 +75,7 @@ public class CommentController {
     @NewSpan("get-user-comments")
     @Timed(value = "comments.user.duration")
     public ResponseEntity<Page<CommentResponse>> getCommentsByUser(
-            @PathVariable @SpanTag Long userId,
+            @PathVariable @SpanTag UUID userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -86,7 +87,7 @@ public class CommentController {
     @NewSpan("update-comment")
     @Timed(value = "comments.update.duration")
     public ResponseEntity<CommentResponse> updateComment(
-            @PathVariable @SpanTag Long commentId,
+            @PathVariable @SpanTag UUID commentId,
             @RequestBody String newContent,
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(commentService.updateComment(commentId, newContent, getUserId(userDetails)));
@@ -96,7 +97,7 @@ public class CommentController {
     @NewSpan("delete-comment")
     @Timed(value = "comments.delete.duration")
     public ResponseEntity<Void> deleteComment(
-            @PathVariable @SpanTag Long commentId,
+            @PathVariable @SpanTag UUID commentId,
             @AuthenticationPrincipal UserDetails userDetails) {
         commentService.deleteComment(commentId, getUserId(userDetails));
         return ResponseEntity.noContent().build();
@@ -114,7 +115,7 @@ public class CommentController {
         return ResponseEntity.ok(commentService.searchComments(query, pageable, getUserId(userDetails)));
     }
 
-    private Long getUserId(UserDetails userDetails) {
-        return userDetails != null ? 1L : null; // Replace with actual user ID extraction
+    private UUID getUserId(UserDetails userDetails) {
+        return userDetails != null ? java.util.UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11") : null; // Replace with actual user ID extraction
     }
 }

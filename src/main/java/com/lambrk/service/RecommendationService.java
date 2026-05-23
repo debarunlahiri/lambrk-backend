@@ -6,15 +6,15 @@ import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.openai.OpenAiChatModel;
 import com.lambrk.domain.Post;
 import com.lambrk.domain.User;
-import com.lambrk.domain.Subreddit;
+import com.lambrk.domain.Community;
 import com.lambrk.dto.PostResponse;
 import com.lambrk.dto.RecommendationRequest;
 import com.lambrk.dto.RecommendationResponse;
-import com.lambrk.dto.SubredditResponse;
+import com.lambrk.dto.CommunityResponse;
 import com.lambrk.dto.UserResponse;
 import com.lambrk.repository.PostRepository;
 import com.lambrk.repository.UserRepository;
-import com.lambrk.repository.SubredditRepository;
+import com.lambrk.repository.CommunityRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.cache.annotation.Cacheable;
@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
@@ -35,24 +36,24 @@ public class RecommendationService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final SubredditRepository subredditRepository;
+    private final CommunityRepository communityRepository;
     private final ChatClient chatClient;
     private final CustomMetrics customMetrics;
 
     public RecommendationService(PostRepository postRepository,
                                UserRepository userRepository,
-                               SubredditRepository subredditRepository,
+                               CommunityRepository communityRepository,
                                OpenAiChatModel chatModel,
                                CustomMetrics customMetrics) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
-        this.subredditRepository = subredditRepository;
+        this.communityRepository = communityRepository;
         this.customMetrics = customMetrics;
         this.chatClient = ChatClient.builder(chatModel)
             .defaultSystem("""
                 You are a recommendation engine for a Reddit-like platform. 
                 Analyze user behavior and suggest relevant content.
-                Consider user's interaction history, subreddit preferences, and content similarity.
+                Consider user's interaction history, community preferences, and content similarity.
                 Provide personalized recommendations with explanations.
                 """)
             .defaultAdvisors(new MessageChatMemoryAdvisor(new InMemoryChatMemory()))
@@ -70,7 +71,7 @@ public class RecommendationService {
             
             return switch (request.type()) {
                 case POSTS -> getPostRecommendations(user, userHistory, request);
-                case SUBREDDITS -> getSubredditRecommendations(user, userHistory, request);
+                case COMMUNITIES -> getCommunityRecommendations(user, userHistory, request);
                 case USERS -> getUserRecommendations(user, userHistory, request);
                 case COMMENTS -> getCommentRecommendations(user, userHistory, request);
             };
@@ -92,7 +93,7 @@ public class RecommendationService {
             
             String explanation = generateExplanation(user, "posts", recommendations.size());
             double confidence = calculateConfidence(userHistory.size(), recommendations.size());
-            List<String> factors = List.of("User interaction history", "Subreddit preferences", "Content similarity", "Trending topics");
+            List<String> factors = List.of("User interaction history", "Community preferences", "Content similarity", "Trending topics");
             
             return RecommendationResponse.ofPosts(
                 recommendations.stream().map(PostResponse::from).toList(),
@@ -107,21 +108,21 @@ public class RecommendationService {
         }
     }
 
-    private RecommendationResponse getSubredditRecommendations(User user, List<Post> userHistory, RecommendationRequest request) {
+    private RecommendationResponse getCommunityRecommendations(User user, List<Post> userHistory, RecommendationRequest request) {
         try {
-            List<Subreddit> userSubreddits = getUserSubredditPreferences(user);
-            List<Subreddit> similar = findSimilarSubreddits(userSubreddits);
-            List<Subreddit> trending = findTrendingSubreddits(request);
+            List<Community> userCommunities = getUserCommunityPreferences(user);
+            List<Community> similar = findSimilarCommunities(userCommunities);
+            List<Community> trending = findTrendingCommunities(request);
             
             // Combine recommendations
-            List<Subreddit> recommendations = combineSubredditRecommendations(userSubreddits, similar, trending, request);
+            List<Community> recommendations = combineCommunityRecommendations(userCommunities, similar, trending, request);
             
-            String explanation = generateExplanation(user, "subreddits", recommendations.size());
+            String explanation = generateExplanation(user, "communities", recommendations.size());
             double confidence = calculateConfidence(userHistory.size(), recommendations.size());
             List<String> factors = List.of("User subscriptions", "Similar communities", "Trending communities", "Content preferences");
             
-            return RecommendationResponse.ofSubreddits(
-                recommendations.stream().map(SubredditResponse::from).toList(),
+            return RecommendationResponse.ofCommunities(
+                recommendations.stream().map(CommunityResponse::from).toList(),
                 explanation,
                 confidence,
                 factors
@@ -129,14 +130,14 @@ public class RecommendationService {
             
         } catch (Exception e) {
             customMetrics.recordRecommendationError();
-            throw new RuntimeException("Subreddit recommendation failed", e);
+            throw new RuntimeException("Community recommendation failed", e);
         }
     }
 
     private RecommendationResponse getUserRecommendations(User user, List<Post> userHistory, RecommendationRequest request) {
         try {
             List<User> similar = findSimilarUsers(user, userHistory);
-            List<User> active = findActiveUsersInUserSubreddits(user);
+            List<User> active = findActiveUsersInUserCommunities(user);
             
             // Combine recommendations
             List<User> recommendations = combineUserRecommendations(similar, active, request);
@@ -163,7 +164,7 @@ public class RecommendationService {
             // For comments, we'll return a simplified response since we don't have comment recommendations yet
             String explanation = "Recommended comments based on your activity and interests";
             double confidence = 0.7;
-            List<String> factors = List.of("User activity patterns", "Subreddit engagement", "Comment quality");
+            List<String> factors = List.of("User activity patterns", "Community engagement", "Comment quality");
             
             return RecommendationResponse.ofComments(
                 List.of(), // Placeholder - would implement actual comment recommendations
@@ -178,7 +179,7 @@ public class RecommendationService {
         }
     }
 
-    private List<Post> getUserInteractionHistory(Long userId) {
+    private List<Post> getUserInteractionHistory(UUID userId) {
         Pageable pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "createdAt"));
         return postRepository.findAll(pageable).getContent();
     }
@@ -192,9 +193,9 @@ public class RecommendationService {
     }
 
     private List<Post> findTrendingPosts(User user, RecommendationRequest request) {
-        List<Subreddit> userSubreddits = getUserSubredditPreferences(user);
-        List<String> subredditNames = userSubreddits.stream()
-            .map(Subreddit::name)
+        List<Community> userCommunities = getUserCommunityPreferences(user);
+        List<String> communityNames = userCommunities.stream()
+            .map(Community::name)
             .toList();
         
         Pageable pageable = PageRequest.of(0, request.limit(), Sort.by(Sort.Direction.DESC, "score"));
@@ -212,7 +213,7 @@ public class RecommendationService {
                 %s
                 
                 Recommend %d posts that would be most relevant to this user.
-                Consider their subreddit preferences, content themes, and engagement patterns.
+                Consider their community preferences, content themes, and engagement patterns.
                 Return a list of post IDs and brief reasoning.
                 """, 
                 formatUserHistory(userHistory),
@@ -225,7 +226,7 @@ public class RecommendationService {
                 .content();
             
             // Parse AI response to extract post IDs
-            List<Long> recommendedIds = parseAIPostRecommendations(response);
+            List<UUID> recommendedIds = parseAIPostRecommendations(response);
             
             return recommendedIds.stream()
                 .limit(request.limit())
@@ -239,22 +240,22 @@ public class RecommendationService {
         }
     }
 
-    private List<Subreddit> getUserSubredditPreferences(User user) {
-        Set<Subreddit> subreddits = subredditRepository.findSubscribedSubredditsByUser(user.id());
-        return subreddits != null ? subreddits.stream().toList() : List.of();
+    private List<Community> getUserCommunityPreferences(User user) {
+        Set<Community> communities = communityRepository.findSubscribedCommunitiesByUser(user.id());
+        return communities != null ? communities.stream().toList() : List.of();
     }
 
-    private List<Subreddit> findSimilarSubreddits(List<Subreddit> userSubreddits) {
-        if (userSubreddits.isEmpty()) {
+    private List<Community> findSimilarCommunities(List<Community> userCommunities) {
+        if (userCommunities.isEmpty()) {
             return List.of();
         }
         Pageable pageable = PageRequest.of(0, 20);
-        return subredditRepository.findAll(pageable).getContent();
+        return communityRepository.findAll(pageable).getContent();
     }
 
-    private List<Subreddit> findTrendingSubreddits(RecommendationRequest request) {
+    private List<Community> findTrendingCommunities(RecommendationRequest request) {
         Pageable pageable = PageRequest.of(0, request.limit());
-        return subredditRepository.findAll(pageable).getContent();
+        return communityRepository.findAll(pageable).getContent();
     }
 
     private List<User> findSimilarUsers(User user, List<Post> userHistory) {
@@ -262,13 +263,13 @@ public class RecommendationService {
         return userRepository.findAll(pageable).getContent();
     }
 
-    private List<User> findActiveUsersInUserSubreddits(User user) {
-        List<Subreddit> userSubreddits = getUserSubredditPreferences(user);
+    private List<User> findActiveUsersInUserCommunities(User user) {
+        List<Community> userCommunities = getUserCommunityPreferences(user);
         Pageable pageable = PageRequest.of(0, 20);
         return userRepository.findAll(pageable).getContent();
     }
 
-    private List<Post> findTopCommentsInUserSubreddits(User user, RecommendationRequest request) {
+    private List<Post> findTopCommentsInUserCommunities(User user, RecommendationRequest request) {
         return List.of();
     }
 
@@ -286,9 +287,9 @@ public class RecommendationService {
         return combined;
     }
 
-    private List<Subreddit> combineSubredditRecommendations(List<Subreddit> userSubreddits, List<Subreddit> similar, List<Subreddit> trending, RecommendationRequest request) {
+    private List<Community> combineCommunityRecommendations(List<Community> userCommunities, List<Community> similar, List<Community> trending, RecommendationRequest request) {
         // Exclude user's current subscriptions
-        List<Long> excludeIds = userSubreddits.stream().map(Subreddit::id).toList();
+        List<UUID> excludeIds = userCommunities.stream().map(Community::id).toList();
         
         return java.util.stream.Stream.concat(similar.stream(), trending.stream())
             .filter(sub -> !excludeIds.contains(sub.id()))
@@ -308,7 +309,7 @@ public class RecommendationService {
     private String generateExplanation(User user, String type, int count) {
         return String.format("Based on your activity in %d communities and %d interactions, " +
             "we've selected %d %s that match your interests and engagement patterns.",
-            getUserSubredditPreferences(user).size(),
+            getUserCommunityPreferences(user).size(),
             getUserInteractionHistory(user.id()).size(),
             count,
             type
@@ -328,11 +329,11 @@ public class RecommendationService {
         return userHistory.stream()
             .limit(10)
             .map(post -> String.format("Post in %s: %s (score: %d)", 
-                post.subreddit().name(), post.title(), post.score()))
+                post.community().name(), post.title(), post.score()))
             .collect(java.util.stream.Collectors.joining("\n"));
     }
 
-    private List<Long> parseAIPostRecommendations(String response) {
+    private List<UUID> parseAIPostRecommendations(String response) {
         // Simple parsing - in production, use more robust JSON parsing
         return List.of(); // Placeholder
     }

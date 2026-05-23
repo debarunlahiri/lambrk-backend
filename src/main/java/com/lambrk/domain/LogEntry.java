@@ -5,8 +5,10 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
+@org.hibernate.annotations.GenericGenerator(name = "uuid7", strategy = "com.lambrk.util.UuidV7Generator")
 @Table(name = "api_logs", indexes = {
     @Index(name = "idx_api_logs_timestamp", columnList = "timestamp"),
     @Index(name = "idx_api_logs_user_id", columnList = "user_id"),
@@ -22,8 +24,8 @@ import java.time.Instant;
 public record LogEntry(
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id,
+    @GeneratedValue(generator = "uuid7")
+    UUID id,
 
     @Column(name = "correlation_id", length = 100)
     String correlationId,
@@ -71,7 +73,7 @@ public record LogEntry(
     String userAgent,
 
     @Column(name = "user_id")
-    Long userId,
+    UUID userId,
 
     @Column(name = "username", length = 100)
     String username,
@@ -100,7 +102,7 @@ public record LogEntry(
                     String endpoint, String fullUrl, String queryString, String requestHeaders,
                     String requestBody, String responseHeaders, String responseBody,
                     Integer statusCode, Long responseTimeMs, String ipAddress, String userAgent,
-                    Long userId, String username, boolean isAuthenticated, String exceptionMessage,
+                    UUID userId, String username, boolean isAuthenticated, String exceptionMessage,
                     String exceptionStackTrace, String source, String serviceName, Instant createdAt) {
         this(null, correlationId, timestamp, logLevel, method, endpoint, fullUrl, queryString,
              requestHeaders, requestBody, responseHeaders, responseBody, statusCode, responseTimeMs,
@@ -139,7 +141,7 @@ public record LogEntry(
         private Long responseTimeMs;
         private String ipAddress;
         private String userAgent;
-        private Long userId;
+        private UUID userId;
         private String username;
         private boolean isAuthenticated;
         private String exceptionMessage;
@@ -223,7 +225,7 @@ public record LogEntry(
             return this;
         }
 
-        public LogEntryBuilder userId(Long userId) {
+        public LogEntryBuilder userId(UUID userId) {
             this.userId = userId;
             return this;
         }

@@ -7,8 +7,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.time.YearMonth;
+import java.util.UUID;
 
 @Entity
+@org.hibernate.annotations.GenericGenerator(name = "uuid7", strategy = "com.lambrk.util.UuidV7Generator")
 @Table(name = "free_tier_usage", indexes = {
     @Index(name = "idx_free_tier_user_id", columnList = "user_id"),
     @Index(name = "idx_free_tier_period", columnList = "period_year, period_month"),
@@ -18,11 +20,11 @@ import java.time.YearMonth;
 public record FreeTierUsage(
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id,
+    @GeneratedValue(generator = "uuid7")
+    UUID id,
 
     @Column(name = "user_id", nullable = false)
-    Long userId,
+    UUID userId,
 
     @Column(name = "period_year", nullable = false)
     int periodYear,
@@ -51,7 +53,7 @@ public record FreeTierUsage(
     Instant updatedAt
 ) {
 
-    public FreeTierUsage(Long userId, int periodYear, int periodMonth, long storageBytesUsed,
+    public FreeTierUsage(UUID userId, int periodYear, int periodMonth, long storageBytesUsed,
                          int uploadsCount, long bandwidthBytes, boolean isFreeTier,
                          Instant createdAt, Instant updatedAt) {
         this(null, userId, periodYear, periodMonth, storageBytesUsed, uploadsCount,
@@ -86,7 +88,7 @@ public record FreeTierUsage(
         );
     }
 
-    public static FreeTierUsage createForUser(Long userId, boolean isFreeTier) {
+    public static FreeTierUsage createForUser(UUID userId, boolean isFreeTier) {
         YearMonth currentMonth = YearMonth.now();
         return new FreeTierUsage(
             userId,

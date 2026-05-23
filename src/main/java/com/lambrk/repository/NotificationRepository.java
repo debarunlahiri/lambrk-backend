@@ -10,24 +10,25 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface NotificationRepository extends JpaRepository<Notification, Long> {
+public interface NotificationRepository extends JpaRepository<Notification, UUID> {
 
-    Page<Notification> findByRecipientIdOrderByCreatedAtDesc(Long recipientId, Pageable pageable);
+    Page<Notification> findByRecipientIdOrderByCreatedAtDesc(UUID recipientId, Pageable pageable);
 
     @Query("SELECT n FROM Notification n WHERE n.recipient.id = :userId AND n.isRead = :isRead ORDER BY n.createdAt DESC")
-    Page<Notification> findByRecipientIdAndIsReadOrderByCreatedAtDesc(@Param("userId") Long userId, @Param("isRead") boolean isRead, Pageable pageable);
+    Page<Notification> findByRecipientIdAndIsReadOrderByCreatedAtDesc(@Param("userId") UUID userId, @Param("isRead") boolean isRead, Pageable pageable);
 
-    List<Notification> findByRecipientIdAndIsRead(Long recipientId, boolean isRead);
+    List<Notification> findByRecipientIdAndIsRead(UUID recipientId, boolean isRead);
 
-    List<Notification> findByRecipientId(Long recipientId);
+    List<Notification> findByRecipientId(UUID recipientId);
 
     @Query("SELECT n FROM Notification n WHERE n.recipient.id = :userId AND n.type = :type ORDER BY n.createdAt DESC")
-    Page<Notification> findByRecipientIdAndTypeOrderByCreatedAtDesc(@Param("userId") Long userId, @Param("type") Notification.NotificationType type, Pageable pageable);
+    Page<Notification> findByRecipientIdAndTypeOrderByCreatedAtDesc(@Param("userId") UUID userId, @Param("type") Notification.NotificationType type, Pageable pageable);
 
     @Query("SELECT COUNT(n) FROM Notification n WHERE n.recipient.id = :userId AND n.isRead = false")
-    long countUnreadNotifications(@Param("userId") Long userId);
+    long countUnreadNotifications(@Param("userId") UUID userId);
 
     @Query("SELECT n FROM Notification n WHERE n.createdAt < :before ORDER BY n.createdAt DESC")
     List<Notification> findOldNotifications(@Param("before") Instant before);

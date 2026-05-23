@@ -10,18 +10,19 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface AdminActionRepository extends JpaRepository<AdminAction, Long> {
+public interface AdminActionRepository extends JpaRepository<AdminAction, UUID> {
 
     @Query("SELECT a FROM AdminAction a ORDER BY a.createdAt DESC")
     Page<AdminAction> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     @Query("SELECT a FROM AdminAction a WHERE a.performedBy = :adminId ORDER BY a.createdAt DESC")
-    Page<AdminAction> findByPerformedByOrderByCreatedAtDesc(@Param("adminId") Long adminId, Pageable pageable);
+    Page<AdminAction> findByPerformedByOrderByCreatedAtDesc(@Param("adminId") UUID adminId, Pageable pageable);
 
     @Query("SELECT a FROM AdminAction a WHERE a.targetId = :targetId AND a.targetType = :targetType ORDER BY a.createdAt DESC")
-    Page<AdminAction> findByTargetIdAndTargetTypeOrderByCreatedAtDesc(@Param("targetId") Long targetId, @Param("targetType") String targetType, Pageable pageable);
+    Page<AdminAction> findByTargetIdAndTargetTypeOrderByCreatedAtDesc(@Param("targetId") UUID targetId, @Param("targetType") String targetType, Pageable pageable);
 
     @Query("SELECT a FROM AdminAction a WHERE a.isActive = true ORDER BY a.createdAt DESC")
     Page<AdminAction> findByIsActiveOrderByCreatedAtDesc(@Param("isActive") boolean isActive, Pageable pageable);
@@ -36,7 +37,7 @@ public interface AdminActionRepository extends JpaRepository<AdminAction, Long> 
     List<AdminAction> findExpiredActions(@Param("before") Instant before);
 
     @Query("SELECT COUNT(a) FROM AdminAction a WHERE a.performedBy = :adminId AND a.createdAt >= :since")
-    long countActionsByAdminSince(@Param("adminId") Long adminId, @Param("since") Instant since);
+    long countActionsByAdminSince(@Param("adminId") UUID adminId, @Param("since") Instant since);
 
     @Query("SELECT COUNT(a) FROM AdminAction a WHERE a.type = :type AND a.createdAt >= :since")
     long countActionsByTypeSince(@Param("type") AdminAction.AdminActionType type, @Param("since") Instant since);

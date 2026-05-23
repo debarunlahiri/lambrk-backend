@@ -4,7 +4,7 @@
 
 -- API Logs table for request/response logging
 CREATE TABLE api_logs (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     correlation_id VARCHAR(100),
     timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     log_level VARCHAR(20) NOT NULL DEFAULT 'INFO',
@@ -20,7 +20,7 @@ CREATE TABLE api_logs (
     response_time_ms BIGINT,
     ip_address VARCHAR(45),
     user_agent VARCHAR(500),
-    user_id BIGINT,
+    user_id UUID,
     username VARCHAR(100),
     is_authenticated BOOLEAN NOT NULL DEFAULT FALSE,
     exception_message VARCHAR(1000),

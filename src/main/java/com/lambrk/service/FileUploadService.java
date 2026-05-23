@@ -93,7 +93,7 @@ public class FileUploadService {
     @CacheEvict(value = "fileUploads", allEntries = true)
     @CircuitBreaker(name = "userService")
     @Retry(name = "userService")
-    public FileUploadResponse uploadFile(MultipartFile file, FileUploadRequest request, Long userId) {
+    public FileUploadResponse uploadFile(MultipartFile file, FileUploadRequest request, UUID userId) {
         validateFile(file, request);
 
         // Check free tier limits before upload
@@ -155,7 +155,7 @@ public class FileUploadService {
     }
 
     @Cacheable(value = "fileUploads", key = "#fileId")
-    public FileUploadResponse getFile(Long fileId, Long userId) {
+    public FileUploadResponse getFile(UUID fileId, UUID userId) {
         FileUpload fileUpload = fileUploadRepository.findById(fileId)
             .orElseThrow(() -> new RuntimeException(String.format(ERROR_FILE_NOT_FOUND, fileId)));
         
@@ -168,7 +168,7 @@ public class FileUploadService {
     }
 
     @Cacheable(value = "fileUploads", key = "#userId + '-' + #page")
-    public Page<FileUploadResponse> getUserFiles(Long userId, Pageable pageable) {
+    public Page<FileUploadResponse> getUserFiles(UUID userId, Pageable pageable) {
         Page<FileUpload> files = fileUploadRepository.findByUploadedByOrderByCreatedAtDesc(userId, pageable);
         return files.map(FileUploadResponse::from);
     }
@@ -181,7 +181,7 @@ public class FileUploadService {
     }
 
     @CacheEvict(value = "fileUploads", allEntries = true)
-    public void deleteFile(Long fileId, Long userId) {
+    public void deleteFile(UUID fileId, UUID userId) {
         FileUpload fileUpload = fileUploadRepository.findById(fileId)
             .orElseThrow(() -> new RuntimeException(String.format(ERROR_FILE_NOT_FOUND, fileId)));
 
@@ -212,7 +212,7 @@ public class FileUploadService {
     }
 
     @CacheEvict(value = "fileUploads", allEntries = true)
-    public FileUploadResponse updateFileMetadata(Long fileId, FileUploadRequest request, Long userId) {
+    public FileUploadResponse updateFileMetadata(UUID fileId, FileUploadRequest request, UUID userId) {
         FileUpload fileUpload = fileUploadRepository.findById(fileId)
             .orElseThrow(() -> new RuntimeException(String.format(ERROR_FILE_NOT_FOUND, fileId)));
         
@@ -243,7 +243,7 @@ public class FileUploadService {
         return FileUploadResponse.from(saved);
     }
 
-    public byte[] getFileContent(String filename, Long userId) throws IOException {
+    public byte[] getFileContent(String filename, UUID userId) throws IOException {
         FileUpload fileUpload = fileUploadRepository.findByFileName(filename)
             .orElseThrow(() -> new RuntimeException(String.format(ERROR_FILE_NOT_FOUND, filename)));
 
@@ -341,13 +341,13 @@ public class FileUploadService {
             case AVATAR -> "avatars";
             case POST_IMAGE -> "posts/images";
             case POST_VIDEO -> "posts/videos";
-            case SUBREDDIT_ICON -> "subreddits/icons";
-            case SUBREDDIT_HEADER -> "subreddits/headers";
+            case COMMUNITY_ICON -> "communities/icons";
+            case COMMUNITY_HEADER -> "communities/headers";
             case BANNER -> "banners";
         };
     }
 
-    public FreeTierLimitService.FreeTierStatus getUserFreeTierStatus(Long userId) {
+    public FreeTierLimitService.FreeTierStatus getUserFreeTierStatus(UUID userId) {
         return freeTierLimitService.getUserStatus(userId);
     }
 }

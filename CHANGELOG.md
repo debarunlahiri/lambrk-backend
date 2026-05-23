@@ -13,24 +13,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **User Management**: Registration, authentication, JWT tokens, refresh tokens, role-based access (USER, MODERATOR, ADMIN)
 - **Posts**: Create, read, update, delete posts with rich text support
 - **Comments**: Nested comment threads with depth tracking
-- **Voting**: Upvote/downvote system with score calculation
-- **Subreddits**: Community creation, subscription, moderation
+- **Voting**: Like/dislike system with score calculation
+- **Communitys**: Community creation, subscription, moderation
 
 #### Advanced Search
-- Full-text search across posts, comments, users, subreddits
-- Advanced filtering (time, subreddit, flair, score thresholds)
+- Full-text search across posts, comments, users, communitys
+- Advanced filtering (time, community, flair, score thresholds)
 - Multiple sorting options (relevance, hot, new, top, controversial)
 - Auto-generated search suggestions
 - Structured concurrency for parallel multi-type search
 
 #### Real-Time Features
 - WebSocket support with STOMP protocol
-- Real-time notifications for replies, upvotes, mentions
+- Real-time notifications for replies, likes, mentions
 - Live post and comment updates
 - Connection management and event tracking
 
 #### Notifications
-- Multi-type notification system (comment replies, upvotes, mentions, admin actions)
+- Multi-type notification system (comment replies, likes, mentions, admin actions)
 - WebSocket + Kafka real-time delivery
 - Email notifications via Spring Mail + Thymeleaf
 - Read/unread status management
@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### ML Recommendations
 - Personalized content recommendations using Spring AI
-- Post, subreddit, user, and comment recommendations
+- Post, community, user, and comment recommendations
 - Confidence scoring with explanation factors
 - Context-aware suggestions
 
@@ -106,7 +106,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Database Schema
 
-- 8 domain tables: users, subreddits, posts, comments, votes, notifications, admin_actions, file_uploads
+- 8 domain tables: users, communitys, posts, comments, votes, notifications, admin_actions, file_uploads
 - Proper indexing for performance
 - Audit columns (created_at, updated_at)
 - Soft delete support
@@ -116,7 +116,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `/api/auth/*` - Authentication
 - `/api/posts/*` - Post management
 - `/api/comments/*` - Comment management
-- `/api/subreddits/*` - Community management
+- `/api/communitys/*` - Community management
 - `/api/votes/*` - Voting
 - `/api/users/*` - User profiles
 - `/api/search/*` - Advanced search

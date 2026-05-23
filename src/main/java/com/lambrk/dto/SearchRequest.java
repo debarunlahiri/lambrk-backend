@@ -16,7 +16,7 @@ public record SearchRequest(
     
     TimeFilter timeFilter,
     
-    List<String> subreddits,
+    List<String> communities,
     
     List<String> flairs,
     
@@ -39,14 +39,14 @@ public record SearchRequest(
         type = type != null ? type : SearchType.ALL;
         sort = sort != null ? sort : SortBy.RELEVANCE;
         timeFilter = timeFilter != null ? timeFilter : TimeFilter.ALL;
-        subreddits = subreddits != null ? subreddits : List.of();
+        communities = communities != null ? communities : List.of();
         flairs = flairs != null ? flairs : List.of();
         page = page != null ? page : 0;
         size = size != null ? size : 20;
     }
     
     public enum SearchType {
-        ALL, POSTS, COMMENTS, USERS, SUBREDDITS
+        ALL, POSTS, COMMENTS, USERS, COMMUNITIES
     }
     
     public enum SortBy {

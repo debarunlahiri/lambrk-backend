@@ -11,13 +11,14 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface LogRepository extends JpaRepository<LogEntry, Long> {
+public interface LogRepository extends JpaRepository<LogEntry, UUID> {
 
     Page<LogEntry> findByOrderByTimestampDesc(Pageable pageable);
 
-    Page<LogEntry> findByUserIdOrderByTimestampDesc(Long userId, Pageable pageable);
+    Page<LogEntry> findByUserIdOrderByTimestampDesc(UUID userId, Pageable pageable);
 
     Page<LogEntry> findByEndpointContainingIgnoreCaseOrderByTimestampDesc(String endpoint, Pageable pageable);
 
@@ -33,7 +34,7 @@ public interface LogRepository extends JpaRepository<LogEntry, Long> {
     Page<LogEntry> findByTimestampBetween(@Param("start") Instant start, @Param("end") Instant end, Pageable pageable);
 
     @Query("SELECT l FROM LogEntry l WHERE l.userId = :userId AND l.timestamp BETWEEN :start AND :end ORDER BY l.timestamp DESC")
-    Page<LogEntry> findByUserIdAndTimestampBetween(@Param("userId") Long userId, @Param("start") Instant start, @Param("end") Instant end, Pageable pageable);
+    Page<LogEntry> findByUserIdAndTimestampBetween(@Param("userId") UUID userId, @Param("start") Instant start, @Param("end") Instant end, Pageable pageable);
 
     @Query("SELECT l FROM LogEntry l WHERE l.endpoint LIKE %:endpoint% AND l.timestamp BETWEEN :start AND :end ORDER BY l.timestamp DESC")
     Page<LogEntry> findByEndpointContainingAndTimestampBetween(@Param("endpoint") String endpoint, @Param("start") Instant start, @Param("end") Instant end, Pageable pageable);

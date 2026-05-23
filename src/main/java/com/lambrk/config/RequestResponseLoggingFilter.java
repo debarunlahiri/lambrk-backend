@@ -15,6 +15,7 @@ import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
@@ -51,7 +52,7 @@ public class RequestResponseLoggingFilter extends OncePerRequestFilter {
         } finally {
             // Get user details from security context
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            Long userId = null;
+            UUID userId = null;
             String username = null;
             boolean isAuthenticated = false;
 

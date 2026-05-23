@@ -8,8 +8,10 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
+@org.hibernate.annotations.GenericGenerator(name = "uuid7", strategy = "com.lambrk.util.UuidV7Generator")
 @Table(name = "notifications", indexes = {
     @Index(name = "idx_notification_recipient", columnList = "recipient_id"),
     @Index(name = "idx_notification_type", columnList = "type"),
@@ -20,8 +22,8 @@ import java.time.Instant;
 public record Notification(
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id,
+    @GeneratedValue(generator = "uuid7")
+    UUID id,
     
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
@@ -42,13 +44,13 @@ public record Notification(
     String message,
     
     @Column(name = "related_post_id")
-    Long relatedPostId,
+    UUID relatedPostId,
     
     @Column(name = "related_comment_id")
-    Long relatedCommentId,
+    UUID relatedCommentId,
     
     @Column(name = "related_user_id")
-    Long relatedUserId,
+    UUID relatedUserId,
     
     @Column(name = "action_url", length = 500)
     String actionUrl,
@@ -72,7 +74,7 @@ public record Notification(
 ) {
 
     public Notification(NotificationType type, User recipient, String title, String message,
-                      Long relatedPostId, Long relatedCommentId, Long relatedUserId,
+                      UUID relatedPostId, UUID relatedCommentId, UUID relatedUserId,
                       String actionUrl, String actionText, boolean isRead, Instant createdAt,
                       Instant updatedAt, Instant readAt) {
         this(null, type, recipient, title, message, relatedPostId, relatedCommentId, relatedUserId,
@@ -80,7 +82,7 @@ public record Notification(
     }
     
     public enum NotificationType {
-        COMMENT_REPLY, POST_UPVOTE, COMMENT_UPVOTE, POST_MENTION, COMMENT_MENTION,
-        SUBREDDIT_INVITE, MODERATOR_ACTION, SYSTEM_ANNOUNCEMENT, CONTENT_MODERATION
+        COMMENT_REPLY, POST_LIKE, COMMENT_LIKE, POST_MENTION, COMMENT_MENTION,
+        COMMUNITY_INVITE, MODERATOR_ACTION, SYSTEM_ANNOUNCEMENT, CONTENT_MODERATION
     }
 }

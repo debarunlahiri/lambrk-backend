@@ -10,20 +10,21 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface FileUploadRepository extends JpaRepository<FileUpload, Long> {
+public interface FileUploadRepository extends JpaRepository<FileUpload, UUID> {
 
     Optional<FileUpload> findByFileName(String fileName);
 
     @Query("SELECT f FROM FileUpload f WHERE f.uploadedBy.id = :userId ORDER BY f.uploadedAt DESC")
-    Page<FileUpload> findByUploadedByOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
+    Page<FileUpload> findByUploadedByOrderByCreatedAtDesc(@Param("userId") UUID userId, Pageable pageable);
 
     @Query("SELECT f FROM FileUpload f WHERE f.type = :type AND f.isPublic = :isPublic ORDER BY f.uploadedAt DESC")
     Page<FileUpload> findByTypeAndIsPublicOrderByCreatedAtDesc(@Param("type") FileUpload.FileUploadType type, @Param("isPublic") boolean isPublic, Pageable pageable);
 
     @Query("SELECT f FROM FileUpload f WHERE f.uploadedBy.id = :userId AND f.type = :type ORDER BY f.uploadedAt DESC")
-    Page<FileUpload> findByUploadedByAndTypeOrderByCreatedAtDesc(@Param("userId") Long userId, @Param("type") FileUpload.FileUploadType type, Pageable pageable);
+    Page<FileUpload> findByUploadedByAndTypeOrderByCreatedAtDesc(@Param("userId") UUID userId, @Param("type") FileUpload.FileUploadType type, Pageable pageable);
 
     @Query("SELECT f FROM FileUpload f WHERE f.isPublic = true ORDER BY f.uploadedAt DESC")
     Page<FileUpload> findPublicFilesOrderByCreatedAtDesc(Pageable pageable);
@@ -32,19 +33,19 @@ public interface FileUploadRepository extends JpaRepository<FileUpload, Long> {
     Page<FileUpload> findPublicNSFWFilesOrderByCreatedAtDesc(@Param("isNSFW") boolean isNSFW, Pageable pageable);
 
     @Query("SELECT f FROM FileUpload f WHERE f.uploadedBy.id = :userId AND f.isPublic = :isPublic ORDER BY f.uploadedAt DESC")
-    Page<FileUpload> findByUploadedByAndIsPublicOrderByCreatedAtDesc(@Param("userId") Long userId, @Param("isPublic") boolean isPublic, Pageable pageable);
+    Page<FileUpload> findByUploadedByAndIsPublicOrderByCreatedAtDesc(@Param("userId") UUID userId, @Param("isPublic") boolean isPublic, Pageable pageable);
 
     @Query("SELECT COUNT(f) FROM FileUpload f WHERE f.uploadedBy.id = :userId")
-    long countFilesByUser(@Param("userId") Long userId);
+    long countFilesByUser(@Param("userId") UUID userId);
 
     @Query("SELECT COUNT(f) FROM FileUpload f WHERE f.uploadedBy.id = :userId AND f.type = :type")
-    long countFilesByUserAndType(@Param("userId") Long userId, @Param("type") FileUpload.FileUploadType type);
+    long countFilesByUserAndType(@Param("userId") UUID userId, @Param("type") FileUpload.FileUploadType type);
 
     @Query("SELECT SUM(f.fileSize) FROM FileUpload f WHERE f.uploadedBy.id = :userId")
-    Long getTotalFileSizeByUser(@Param("userId") Long userId);
+    Long getTotalFileSizeByUser(@Param("userId") UUID userId);
 
     @Query("SELECT f.type, COUNT(f) FROM FileUpload f WHERE f.uploadedBy.id = :userId GROUP BY f.type")
-    List<Object[]> getFileTypeStatsByUser(@Param("userId") Long userId);
+    List<Object[]> getFileTypeStatsByUser(@Param("userId") UUID userId);
 
     @Query("SELECT f.uploadedBy.id, COUNT(f) FROM FileUpload f GROUP BY f.uploadedBy.id ORDER BY COUNT(f) DESC")
     List<Object[]> getTopUploaders();

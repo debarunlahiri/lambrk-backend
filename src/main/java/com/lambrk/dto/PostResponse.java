@@ -2,13 +2,14 @@ package com.lambrk.dto;
 
 import com.lambrk.domain.Post;
 import com.lambrk.domain.User;
-import com.lambrk.domain.Subreddit;
+import com.lambrk.domain.Community;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record PostResponse(
     
-    Long id,
+    UUID id,
     
     String title,
     
@@ -36,9 +37,9 @@ public record PostResponse(
     
     int score,
     
-    int upvoteCount,
+    int likeCount,
     
-    int downvoteCount,
+    int dislikeCount,
     
     int commentCount,
     
@@ -48,7 +49,7 @@ public record PostResponse(
     
     UserResponse author,
     
-    SubredditResponse subreddit,
+    CommunityResponse community,
     
     Instant createdAt,
     
@@ -56,7 +57,7 @@ public record PostResponse(
     
     Instant archivedAt,
     
-    String userVote // UPVOTE, DOWNVOTE, or null
+    String userVote // LIKE, DISLIKE, or null
 ) {
     
     public static PostResponse from(Post post, String userVote) {
@@ -75,13 +76,13 @@ public record PostResponse(
             post.isArchived(),
             post.isOver18(),
             post.score(),
-            post.upvoteCount(),
-            post.downvoteCount(),
+            post.likeCount(),
+            post.dislikeCount(),
             post.commentCount(),
             post.viewCount(),
             post.awardCount(),
             UserResponse.from(post.author()),
-            SubredditResponse.from(post.subreddit()),
+            CommunityResponse.from(post.community()),
             post.createdAt(),
             post.updatedAt(),
             post.archivedAt(),

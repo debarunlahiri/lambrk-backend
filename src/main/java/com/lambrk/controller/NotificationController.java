@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -47,7 +48,7 @@ public class NotificationController {
             @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserId(userDetails);
+        UUID userId = getUserId(userDetails);
         Pageable pageable = PageRequest.of(page, size);
         Page<NotificationResponse> notifications = notificationService.getUserNotifications(userId, pageable);
         return ResponseEntity.ok(notifications);
@@ -62,7 +63,7 @@ public class NotificationController {
             @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserId(userDetails);
+        UUID userId = getUserId(userDetails);
         Pageable pageable = PageRequest.of(page, size);
         Page<NotificationResponse> notifications = notificationService.getUnreadNotifications(userId, pageable);
         return ResponseEntity.ok(notifications);
@@ -73,10 +74,10 @@ public class NotificationController {
     @Counted(value = "notifications.read")
     @Timed(value = "notifications.read.duration")
     public ResponseEntity<Void> markNotificationAsRead(
-            @PathVariable @SpanTag Long notificationId,
+            @PathVariable @SpanTag UUID notificationId,
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserId(userDetails);
+        UUID userId = getUserId(userDetails);
         notificationService.markNotificationAsRead(notificationId, userId);
         return ResponseEntity.ok().build();
     }
@@ -88,7 +89,7 @@ public class NotificationController {
     public ResponseEntity<Void> markAllNotificationsAsRead(
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserId(userDetails);
+        UUID userId = getUserId(userDetails);
         notificationService.markAllNotificationsAsRead(userId);
         return ResponseEntity.ok().build();
     }
@@ -98,10 +99,10 @@ public class NotificationController {
     @Counted(value = "notifications.deleted")
     @Timed(value = "notifications.delete.duration")
     public ResponseEntity<Void> deleteNotification(
-            @PathVariable @SpanTag Long notificationId,
+            @PathVariable @SpanTag UUID notificationId,
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserId(userDetails);
+        UUID userId = getUserId(userDetails);
         notificationService.deleteNotification(notificationId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -113,7 +114,7 @@ public class NotificationController {
     public ResponseEntity<Void> deleteAllNotifications(
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserId(userDetails);
+        UUID userId = getUserId(userDetails);
         notificationService.deleteAllNotifications(userId);
         return ResponseEntity.noContent().build();
     }
@@ -125,7 +126,7 @@ public class NotificationController {
     public ResponseEntity<Long> getUnreadNotificationCount(
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserId(userDetails);
+        UUID userId = getUserId(userDetails);
         Pageable pageable = PageRequest.of(0, 1);
         Page<NotificationResponse> unreadNotifications = notificationService.getUnreadNotifications(userId, pageable);
         long count = unreadNotifications.getTotalElements();
@@ -149,8 +150,8 @@ public class NotificationController {
         return ResponseEntity.ok(notifications);
     }
 
-    private Long getUserId(UserDetails userDetails) {
+    private UUID getUserId(UserDetails userDetails) {
         // In a real implementation, extract user ID from UserDetails
-        return 1L; // Placeholder
+        return java.util.UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"); // Placeholder
     }
 }

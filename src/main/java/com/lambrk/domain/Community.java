@@ -11,23 +11,25 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
-@Table(name = "subreddits", indexes = {
-    @Index(name = "idx_subreddit_name", columnList = "name"),
-    @Index(name = "idx_subreddit_created_at", columnList = "created_at"),
-    @Index(name = "idx_subreddit_member_count", columnList = "member_count")
+@org.hibernate.annotations.GenericGenerator(name = "uuid7", strategy = "com.lambrk.util.UuidV7Generator")
+@Table(name = "communities", indexes = {
+    @Index(name = "idx_community_name", columnList = "name"),
+    @Index(name = "idx_community_created_at", columnList = "created_at"),
+    @Index(name = "idx_community_member_count", columnList = "member_count")
 })
 @EntityListeners(AuditingEntityListener.class)
-public record Subreddit(
+public record Community(
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id,
+    @GeneratedValue(generator = "uuid7")
+    UUID id,
     
-    @NotBlank(message = "Subreddit name is required")
-    @Size(min = 3, max = 21, message = "Subreddit name must be between 3 and 21 characters")
-    @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Subreddit name can only contain letters, numbers, and underscores")
+    @NotBlank(message = "Community name is required")
+    @Size(min = 3, max = 21, message = "Community name must be between 3 and 21 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Community name can only contain letters, numbers, and underscores")
     @Column(unique = true, nullable = false, length = 21)
     String name,
     
@@ -66,15 +68,23 @@ public record Subreddit(
     @Column(name = "active_user_count", nullable = false)
     int activeUserCount,
     
-    @OneToMany(mappedBy = "subreddit", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     Set<Post> posts,
     
-    @ManyToMany(mappedBy = "subscribedSubreddits", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "subscribedCommunities", fetch = FetchType.LAZY)
     Set<User> members,
-    
-    @ManyToMany(mappedBy = "moderatedSubreddits", fetch = FetchType.LAZY)
+
+    @ManyToMany(mappedBy = "moderatedCommunities", fetch = FetchType.LAZY)
     Set<User> moderators,
-    
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "community_categories",
+        joinColumns = @JoinColumn(name = "community_id"),
+        inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    Set<Category> categories,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     User createdBy,
@@ -88,10 +98,11 @@ public record Subreddit(
     Instant updatedAt
 ) {
     
-    public Subreddit {
+    public Community {
         if (posts == null) posts = new HashSet<>();
         if (members == null) members = new HashSet<>();
         if (moderators == null) moderators = new HashSet<>();
+        if (categories == null) categories = new HashSet<>();
         isPublic = true;
         isRestricted = false;
         isOver18 = false;
@@ -99,10 +110,10 @@ public record Subreddit(
         subscriberCount = 0;
         activeUserCount = 0;
     }
-    
-    public Subreddit(String name, String title, User createdBy) {
+
+    public Community(String name, String title, User createdBy) {
         this(null, name, title, null, null, null, null, true, false, false, 0, 0, 0,
-             new HashSet<>(), new HashSet<>(), new HashSet<>(), createdBy, Instant.now(), Instant.now());
+             new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), createdBy, Instant.now(), Instant.now());
     }
     
 }

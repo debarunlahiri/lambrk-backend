@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -87,19 +88,19 @@ public class NotificationService {
     }
 
     @Cacheable(value = "notifications", key = "#userId")
-    public Page<NotificationResponse> getUserNotifications(Long userId, Pageable pageable) {
+    public Page<NotificationResponse> getUserNotifications(UUID userId, Pageable pageable) {
         Page<Notification> notifications = notificationRepository.findByRecipientIdOrderByCreatedAtDesc(userId, pageable);
         return notifications.map(this::convertToResponse);
     }
 
     @Cacheable(value = "notifications", key = "#userId + '-unread'")
-    public Page<NotificationResponse> getUnreadNotifications(Long userId, Pageable pageable) {
+    public Page<NotificationResponse> getUnreadNotifications(UUID userId, Pageable pageable) {
         Page<Notification> notifications = notificationRepository.findByRecipientIdAndIsReadOrderByCreatedAtDesc(userId, false, pageable);
         return notifications.map(this::convertToResponse);
     }
 
     @CacheEvict(value = "notifications", allEntries = true)
-    public void markNotificationAsRead(Long notificationId, Long userId) {
+    public void markNotificationAsRead(UUID notificationId, UUID userId) {
         Notification notification = notificationRepository.findById(notificationId)
             .orElseThrow(() -> new RuntimeException("Notification not found: " + notificationId));
         
@@ -128,7 +129,7 @@ public class NotificationService {
     }
 
     @CacheEvict(value = "notifications", key = "#userId")
-    public void markAllNotificationsAsRead(Long userId) {
+    public void markAllNotificationsAsRead(UUID userId) {
         List<Notification> unreadNotifications = notificationRepository.findByRecipientIdAndIsRead(userId, false);
         
         for (Notification notification : unreadNotifications) {
@@ -153,7 +154,7 @@ public class NotificationService {
     }
 
     @CacheEvict(value = "notifications", key = "#userId")
-    public void deleteNotification(Long notificationId, Long userId) {
+    public void deleteNotification(UUID notificationId, UUID userId) {
         Notification notification = notificationRepository.findById(notificationId)
             .orElseThrow(() -> new RuntimeException("Notification not found: " + notificationId));
         
@@ -165,12 +166,12 @@ public class NotificationService {
     }
 
     @CacheEvict(value = "notifications", key = "#userId")
-    public void deleteAllNotifications(Long userId) {
+    public void deleteAllNotifications(UUID userId) {
         List<Notification> notifications = notificationRepository.findByRecipientId(userId);
         notificationRepository.deleteAll(notifications);
     }
 
-    public void createCommentReplyNotification(Long commentId, Long postId, Long authorId) {
+    public void createCommentReplyNotification(UUID commentId, UUID postId, UUID authorId) {
         try {
             Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Comment not found: " + commentId));
@@ -184,7 +185,7 @@ public class NotificationService {
                 return;
             }
             
-            Long recipientId = comment.parent() != null ? comment.parent().author().id() : post.author().id();
+            UUID recipientId = comment.parent() != null ? comment.parent().author().id() : post.author().id();
             
             NotificationRequest notification = new NotificationRequest(
                 NotificationRequest.NotificationType.COMMENT_REPLY,
@@ -208,22 +209,22 @@ public class NotificationService {
         }
     }
 
-    public void createUpvoteNotification(Long postId, Long voterId, Long authorId) {
+    public void createLikeNotification(UUID postId, UUID voterId, UUID authorId) {
         if (voterId.equals(authorId)) {
             return; // Don't notify for self-votes
         }
-        
+
         try {
             Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found: " + postId));
             User voter = userRepository.findById(voterId)
                 .orElseThrow(() -> new RuntimeException("Voter not found: " + voterId));
-            
+
             NotificationRequest notification = new NotificationRequest(
-                NotificationRequest.NotificationType.POST_UPVOTE,
+                NotificationRequest.NotificationType.POST_LIKE,
                 authorId,
-                "Your post received an upvote",
-                String.format("%s upvoted your post \"%s\"", voter.username(), post.title()),
+                "Your post received a like",
+                String.format("%s liked your post \"%s\"", voter.username(), post.title()),
                 postId,
                 null,
                 voterId,
@@ -231,15 +232,15 @@ public class NotificationService {
                 "View post",
                 false
             );
-            
+
             createNotification(notification);
-            
+
         } catch (Exception e) {
-            System.err.println("Failed to create upvote notification: " + e.getMessage());
+            System.err.println("Failed to create like notification: " + e.getMessage());
         }
     }
 
-    public void createMentionNotification(String content, Long postId, Long commentId, Long mentionedUserId, Long authorId) {
+    public void createMentionNotification(String content, UUID postId, UUID commentId, UUID mentionedUserId, UUID authorId) {
         if (mentionedUserId.equals(authorId)) {
             return; // Don't notify for self-mentions
         }
@@ -303,19 +304,19 @@ public class NotificationService {
         );
     }
 
-    private String getPostTitle(Long postId) {
+    private String getPostTitle(UUID postId) {
         return postRepository.findById(postId)
             .map(Post::title)
             .orElse(null);
     }
 
-    private String getCommentPreview(Long commentId) {
+    private String getCommentPreview(UUID commentId) {
         return commentRepository.findById(commentId)
             .map(c -> c.content().length() > 100 ? c.content().substring(0, 100) + "..." : c.content())
             .orElse(null);
     }
 
-    private String getUsername(Long userId) {
+    private String getUsername(UUID userId) {
         return userRepository.findById(userId)
             .map(User::username)
             .orElse(null);

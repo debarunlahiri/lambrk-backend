@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -41,7 +42,7 @@ public class VoteService {
 
     @RateLimiter(name = "voteCasting")
     @CacheEvict(value = {"posts", "comments", "hotPosts", "topPosts"}, allEntries = true)
-    public void voteOnPost(VoteRequest request, Long userId) {
+    public void voteOnPost(VoteRequest request, UUID userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
         Post post = postRepository.findById(request.postId())
@@ -54,29 +55,29 @@ public class VoteService {
             if (old.voteType() == request.voteType()) {
                 // Remove vote (toggle off)
                 voteRepository.delete(old);
-                int scoreDelta = request.voteType() == Vote.VoteType.UPVOTE ? -1 : 1;
-                int upDelta = request.voteType() == Vote.VoteType.UPVOTE ? -1 : 0;
-                int downDelta = request.voteType() == Vote.VoteType.DOWNVOTE ? -1 : 0;
-                postRepository.updatePostScore(post.id(), scoreDelta, upDelta, downDelta);
+                int scoreDelta = request.voteType() == Vote.VoteType.LIKE ? -1 : 1;
+                int likeDelta = request.voteType() == Vote.VoteType.LIKE ? -1 : 0;
+                int dislikeDelta = request.voteType() == Vote.VoteType.DISLIKE ? -1 : 0;
+                postRepository.updatePostScore(post.id(), scoreDelta, likeDelta, dislikeDelta);
                 userRepository.updateUserKarma(post.author().id(), scoreDelta);
             } else {
                 // Flip vote
                 Vote flipped = new Vote(old.id(), request.voteType(), user, post, null,
                     old.ipAddress(), old.userAgent(), old.createdAt(), java.time.Instant.now());
                 voteRepository.save(flipped);
-                int scoreDelta = request.voteType() == Vote.VoteType.UPVOTE ? 2 : -2;
-                int upDelta = request.voteType() == Vote.VoteType.UPVOTE ? 1 : -1;
-                int downDelta = request.voteType() == Vote.VoteType.DOWNVOTE ? 1 : -1;
-                postRepository.updatePostScore(post.id(), scoreDelta, upDelta, downDelta);
+                int scoreDelta = request.voteType() == Vote.VoteType.LIKE ? 2 : -2;
+                int likeDelta = request.voteType() == Vote.VoteType.LIKE ? 1 : -1;
+                int dislikeDelta = request.voteType() == Vote.VoteType.DISLIKE ? 1 : -1;
+                postRepository.updatePostScore(post.id(), scoreDelta, likeDelta, dislikeDelta);
                 userRepository.updateUserKarma(post.author().id(), scoreDelta);
             }
         } else {
             Vote vote = new Vote(request.voteType(), user, post, null);
             Vote saved = voteRepository.save(vote);
-            int scoreDelta = request.voteType() == Vote.VoteType.UPVOTE ? 1 : -1;
-            int upDelta = request.voteType() == Vote.VoteType.UPVOTE ? 1 : 0;
-            int downDelta = request.voteType() == Vote.VoteType.DOWNVOTE ? 1 : 0;
-            postRepository.updatePostScore(post.id(), scoreDelta, upDelta, downDelta);
+            int scoreDelta = request.voteType() == Vote.VoteType.LIKE ? 1 : -1;
+            int likeDelta = request.voteType() == Vote.VoteType.LIKE ? 1 : 0;
+            int dislikeDelta = request.voteType() == Vote.VoteType.DISLIKE ? 1 : 0;
+            postRepository.updatePostScore(post.id(), scoreDelta, likeDelta, dislikeDelta);
             userRepository.updateUserKarma(post.author().id(), scoreDelta);
             kafkaEventService.sendVoteCastEvent(saved);
         }
@@ -86,7 +87,7 @@ public class VoteService {
 
     @RateLimiter(name = "voteCasting")
     @CacheEvict(value = {"comments", "commentTrees"}, allEntries = true)
-    public void voteOnComment(VoteRequest request, Long userId) {
+    public void voteOnComment(VoteRequest request, UUID userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
         Comment comment = commentRepository.findById(request.commentId())
@@ -98,28 +99,28 @@ public class VoteService {
             Vote old = existingVote.get();
             if (old.voteType() == request.voteType()) {
                 voteRepository.delete(old);
-                int scoreDelta = request.voteType() == Vote.VoteType.UPVOTE ? -1 : 1;
-                int upDelta = request.voteType() == Vote.VoteType.UPVOTE ? -1 : 0;
-                int downDelta = request.voteType() == Vote.VoteType.DOWNVOTE ? -1 : 0;
-                commentRepository.updateCommentScore(comment.id(), scoreDelta, upDelta, downDelta);
+                int scoreDelta = request.voteType() == Vote.VoteType.LIKE ? -1 : 1;
+                int likeDelta = request.voteType() == Vote.VoteType.LIKE ? -1 : 0;
+                int dislikeDelta = request.voteType() == Vote.VoteType.DISLIKE ? -1 : 0;
+                commentRepository.updateCommentScore(comment.id(), scoreDelta, likeDelta, dislikeDelta);
                 userRepository.updateUserKarma(comment.author().id(), scoreDelta);
             } else {
                 Vote flipped = new Vote(old.id(), request.voteType(), user, null, comment,
                     old.ipAddress(), old.userAgent(), old.createdAt(), java.time.Instant.now());
                 voteRepository.save(flipped);
-                int scoreDelta = request.voteType() == Vote.VoteType.UPVOTE ? 2 : -2;
-                int upDelta = request.voteType() == Vote.VoteType.UPVOTE ? 1 : -1;
-                int downDelta = request.voteType() == Vote.VoteType.DOWNVOTE ? 1 : -1;
-                commentRepository.updateCommentScore(comment.id(), scoreDelta, upDelta, downDelta);
+                int scoreDelta = request.voteType() == Vote.VoteType.LIKE ? 2 : -2;
+                int likeDelta = request.voteType() == Vote.VoteType.LIKE ? 1 : -1;
+                int dislikeDelta = request.voteType() == Vote.VoteType.DISLIKE ? 1 : -1;
+                commentRepository.updateCommentScore(comment.id(), scoreDelta, likeDelta, dislikeDelta);
                 userRepository.updateUserKarma(comment.author().id(), scoreDelta);
             }
         } else {
             Vote vote = new Vote(request.voteType(), user, null, comment);
             Vote saved = voteRepository.save(vote);
-            int scoreDelta = request.voteType() == Vote.VoteType.UPVOTE ? 1 : -1;
-            int upDelta = request.voteType() == Vote.VoteType.UPVOTE ? 1 : 0;
-            int downDelta = request.voteType() == Vote.VoteType.DOWNVOTE ? 1 : 0;
-            commentRepository.updateCommentScore(comment.id(), scoreDelta, upDelta, downDelta);
+            int scoreDelta = request.voteType() == Vote.VoteType.LIKE ? 1 : -1;
+            int likeDelta = request.voteType() == Vote.VoteType.LIKE ? 1 : 0;
+            int dislikeDelta = request.voteType() == Vote.VoteType.DISLIKE ? 1 : 0;
+            commentRepository.updateCommentScore(comment.id(), scoreDelta, likeDelta, dislikeDelta);
             userRepository.updateUserKarma(comment.author().id(), scoreDelta);
             kafkaEventService.sendVoteCastEvent(saved);
         }

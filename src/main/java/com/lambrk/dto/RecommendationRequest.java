@@ -2,17 +2,18 @@ package com.lambrk.dto;
 
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
+import java.util.UUID;
 
 public record RecommendationRequest(
     
     @NotNull
-    Long userId,
+    UUID userId,
     
     RecommendationType type,
     
     Integer limit,
     
-    List<String> excludeSubreddits,
+    List<String> excludeCommunities,
     
     List<String> excludeUsers,
     
@@ -20,7 +21,7 @@ public record RecommendationRequest(
     
     boolean includeOver18,
     
-    String contextSubredditId,
+    String contextCommunityId,
     
     String contextPostId
 ) {
@@ -28,11 +29,11 @@ public record RecommendationRequest(
     public RecommendationRequest {
         type = type != null ? type : RecommendationType.POSTS;
         limit = limit != null ? limit : 20;
-        excludeSubreddits = excludeSubreddits != null ? excludeSubreddits : List.of();
+        excludeCommunities = excludeCommunities != null ? excludeCommunities : List.of();
         excludeUsers = excludeUsers != null ? excludeUsers : List.of();
     }
     
     public enum RecommendationType {
-        POSTS, SUBREDDITS, USERS, COMMENTS
+        POSTS, COMMUNITIES, USERS, COMMENTS
     }
 }

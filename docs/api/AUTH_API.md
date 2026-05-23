@@ -1,159 +1,87 @@
-# Authentication API
+# Auth API
 
-Base URL: `/api/auth`
+Base path: `/api/auth`. These endpoints are public.
 
-All authentication endpoints are **public** (no JWT required).
+### POST `/api/auth/register`
 
----
+Register a new account and return JWT tokens.
 
-## POST `/api/auth/register`
+**Auth:** Public
 
-Register a new user account.
-
-### Request Body
+**Request body**
 
 ```json
-{
-  "username": "john_doe",
+{"username":"johndoe","email":"john@example.com","password":"securePassword123","displayName":"John Doe"}
+```
+
+**cURL**
+
+```bash
+curl -X POST 'http://localhost:9500/api/auth/register' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "username": "johndoe",
   "email": "john@example.com",
   "password": "securePassword123",
   "displayName": "John Doe"
-}
+}'
 ```
 
-### Validation Rules
+**Response**
 
-| Field       | Rule                                      |
-|-------------|-------------------------------------------|
-| username    | Required, 3–50 chars                      |
-| email       | Required, valid email format               |
-| password    | Required, min 8 chars                      |
-| displayName | Optional                                   |
+```json
+{"accessToken":"<jwt>","refreshToken":"<jwt>","tokenType":"Bearer","expiresIn":86400,"user":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":0,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}}
+```
+### POST `/api/auth/login`
 
-### cURL Example
+Authenticate with username and password.
+
+**Auth:** Public
+
+**Request body**
+
+```json
+{"username":"johndoe","password":"securePassword123"}
+```
+
+**cURL**
 
 ```bash
-curl -X POST http://localhost:9500/api/auth/register \
-  -H "Content-Type: application/json" \
+curl -X POST 'http://localhost:9500/api/auth/login' \
+  -H 'Content-Type: application/json' \
   -d '{
-    "username": "john_doe",
-    "email": "john@example.com",
-    "password": "securePassword123",
-    "displayName": "John Doe"
-  }'
-```
-
-### Response `200 OK`
-
-```json
-{
-  "accessToken": "eyJhbGciOiJIUzUxMiJ9...",
-  "refreshToken": "eyJhbGciOiJIUzUxMiJ9...",
-  "tokenType": "Bearer",
-  "expiresIn": 86400,
-  "user": {
-    "id": 4,
-    "username": "john_doe",
-    "displayName": "John Doe",
-    "bio": null,
-    "avatarUrl": null,
-    "isActive": true,
-    "isVerified": false,
-    "karma": 0,
-    "createdAt": "2026-02-07T13:30:00Z",
-    "updatedAt": "2026-02-07T13:30:00Z"
-  }
-}
-```
-
-### Error Responses
-
-| Status | Condition                        |
-|--------|----------------------------------|
-| 400    | Validation failed                |
-| 409    | Username or email already exists |
-| 429    | Rate limit exceeded (10/min)     |
-
----
-
-## POST `/api/auth/login`
-
-Authenticate an existing user.
-
-### Request Body
-
-```json
-{
-  "username": "john_doe",
+  "username": "johndoe",
   "password": "securePassword123"
-}
+}'
 ```
 
-### Response `200 OK`
-
-Same shape as register response.
-
-### Error Responses
-
-| Status | Condition           |
-|--------|---------------------|
-| 400    | Validation failed   |
-| 401    | Invalid credentials |
-
-### cURL Example
-
-```bash
-curl -X POST http://localhost:9500/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "john_doe",
-    "password": "securePassword123"
-  }'
-```
-
----
-
-## POST `/api/auth/refresh`
-
-Exchange a refresh token for a new access + refresh token pair.
-
-### Request Body
-
-Raw string — the refresh token.
-
-```
-eyJhbGciOiJIUzUxMiJ9...
-```
-
-### Response `200 OK`
-
-Same shape as login response with new tokens.
-
-### Error Responses
-
-| Status | Condition              |
-|--------|------------------------|
-| 401    | Invalid refresh token  |
-
----
-
-## Token Details
-
-| Property        | Value                |
-|-----------------|----------------------|
-| Algorithm       | HS512                |
-| Access TTL      | 24 hours (86 400 s)  |
-| Refresh TTL     | 7 days (604 800 s)   |
-| Header          | `Authorization: Bearer <token>` |
-
-### JWT Claims
+**Response**
 
 ```json
-{
-  "sub": "john_doe",
-  "iat": 1738934400,
-  "exp": 1739020800,
-  "roles": ["ROLE_USER"],
-  "tokenType": "access"
-}
+{"accessToken":"<jwt>","refreshToken":"<jwt>","tokenType":"Bearer","expiresIn":86400,"user":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":0,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}}
+```
+### POST `/api/auth/refresh`
+
+Refresh tokens using the raw refresh-token string.
+
+**Auth:** Public
+
+**Request body**
+
+```text
+eyJhbGciOi...
+```
+
+**cURL**
+
+```bash
+curl -X POST 'http://localhost:9500/api/auth/refresh' \
+  -H 'Content-Type: text/plain' \
+  -d 'eyJhbGciOi...'
+```
+
+**Response**
+
+```json
+{"accessToken":"<jwt>","refreshToken":"<jwt>","tokenType":"Bearer","expiresIn":86400,"user":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":0,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}}
 ```

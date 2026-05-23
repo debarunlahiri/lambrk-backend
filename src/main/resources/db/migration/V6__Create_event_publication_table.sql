@@ -1,6 +1,6 @@
 -- Spring Modulith event publication table
 CREATE TABLE IF NOT EXISTS event_publication (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id UUID PRIMARY KEY,
     application_name VARCHAR(255) NOT NULL,
     module VARCHAR(255) NOT NULL,
     event_type VARCHAR(255) NOT NULL,

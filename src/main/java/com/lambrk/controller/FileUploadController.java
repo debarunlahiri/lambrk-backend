@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/files")
@@ -44,7 +45,7 @@ public class FileUploadController {
             @Valid @ModelAttribute FileUploadRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserId(userDetails);
+        UUID userId = getUserId(userDetails);
         FileUploadResponse response = fileUploadService.uploadFile(file, request, userId);
         return ResponseEntity.ok(response);
     }
@@ -54,10 +55,10 @@ public class FileUploadController {
     @Counted(value = "files.metadata.viewed")
     @Timed(value = "files.metadata.duration")
     public ResponseEntity<FileUploadResponse> getFileMetadata(
-            @PathVariable @SpanTag Long fileId,
+            @PathVariable @SpanTag UUID fileId,
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserId(userDetails);
+        UUID userId = getUserId(userDetails);
         FileUploadResponse response = fileUploadService.getFile(fileId, userId);
         return ResponseEntity.ok(response);
     }
@@ -67,10 +68,10 @@ public class FileUploadController {
     @Counted(value = "files.downloaded")
     @Timed(value = "files.download.duration")
     public ResponseEntity<Resource> downloadFile(
-            @PathVariable @SpanTag Long fileId,
+            @PathVariable @SpanTag UUID fileId,
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserId(userDetails);
+        UUID userId = getUserId(userDetails);
         
         try {
             FileUploadResponse metadata = fileUploadService.getFile(fileId, userId);
@@ -102,7 +103,7 @@ public class FileUploadController {
             @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserId(userDetails);
+        UUID userId = getUserId(userDetails);
         Pageable pageable = PageRequest.of(page, size);
         Page<FileUploadResponse> files = fileUploadService.getUserFiles(userId, pageable);
         return ResponseEntity.ok(files);
@@ -142,11 +143,11 @@ public class FileUploadController {
     @Counted(value = "files.updated")
     @Timed(value = "files.update.duration")
     public ResponseEntity<FileUploadResponse> updateFileMetadata(
-            @PathVariable @SpanTag Long fileId,
+            @PathVariable @SpanTag UUID fileId,
             @Valid @RequestBody FileUploadRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserId(userDetails);
+        UUID userId = getUserId(userDetails);
         FileUploadResponse response = fileUploadService.updateFileMetadata(fileId, request, userId);
         return ResponseEntity.ok(response);
     }
@@ -156,10 +157,10 @@ public class FileUploadController {
     @Counted(value = "files.deleted")
     @Timed(value = "files.delete.duration")
     public ResponseEntity<Void> deleteFile(
-            @PathVariable @SpanTag Long fileId,
+            @PathVariable @SpanTag UUID fileId,
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserId(userDetails);
+        UUID userId = getUserId(userDetails);
         fileUploadService.deleteFile(fileId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -171,7 +172,7 @@ public class FileUploadController {
     public ResponseEntity<Object> getFileStats(
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        Long userId = getUserId(userDetails);
+        UUID userId = getUserId(userDetails);
         
         // This would need to be implemented in FileUploadService
         Object stats = new Object() {
@@ -212,8 +213,8 @@ public class FileUploadController {
         return ResponseEntity.ok(results);
     }
 
-    private Long getUserId(UserDetails userDetails) {
+    private UUID getUserId(UserDetails userDetails) {
         // In a real implementation, extract user ID from UserDetails
-        return 1L; // Placeholder
+        return java.util.UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"); // Placeholder
     }
 }

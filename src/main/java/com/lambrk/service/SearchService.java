@@ -5,15 +5,15 @@ import com.lambrk.dto.SearchResponse;
 import com.lambrk.dto.PostResponse;
 import com.lambrk.dto.CommentResponse;
 import com.lambrk.dto.UserResponse;
-import com.lambrk.dto.SubredditResponse;
+import com.lambrk.dto.CommunityResponse;
 import com.lambrk.domain.Post;
 import com.lambrk.domain.Comment;
 import com.lambrk.domain.User;
-import com.lambrk.domain.Subreddit;
+import com.lambrk.domain.Community;
 import com.lambrk.repository.PostRepository;
 import com.lambrk.repository.CommentRepository;
 import com.lambrk.repository.UserRepository;
-import com.lambrk.repository.SubredditRepository;
+import com.lambrk.repository.CommunityRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -35,16 +35,16 @@ public class SearchService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
-    private final SubredditRepository subredditRepository;
+    private final CommunityRepository communityRepository;
     private final CustomMetrics customMetrics;
 
     public SearchService(PostRepository postRepository, CommentRepository commentRepository,
-                         UserRepository userRepository, SubredditRepository subredditRepository,
+                         UserRepository userRepository, CommunityRepository communityRepository,
                          CustomMetrics customMetrics) {
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
-        this.subredditRepository = subredditRepository;
+        this.communityRepository = communityRepository;
         this.customMetrics = customMetrics;
     }
 
@@ -68,12 +68,12 @@ public class SearchService {
                 request.type() == SearchRequest.SearchType.ALL || request.type() == SearchRequest.SearchType.USERS
                     ? searchUsers(request)
                     : List.of();
-            List<SubredditResponse> subreddits =
-                request.type() == SearchRequest.SearchType.ALL || request.type() == SearchRequest.SearchType.SUBREDDITS
-                    ? searchSubreddits(request)
+            List<CommunityResponse> communities =
+                request.type() == SearchRequest.SearchType.ALL || request.type() == SearchRequest.SearchType.COMMUNITIES
+                    ? searchCommunities(request)
                     : List.of();
             
-            int totalResults = posts.size() + comments.size() + users.size() + subreddits.size();
+            int totalResults = posts.size() + comments.size() + users.size() + communities.size();
             
             SearchResponse.SearchMetadata metadata = new SearchResponse.SearchMetadata(
                 request.query(),
@@ -88,7 +88,7 @@ public class SearchService {
                 generateSuggestions(request.query())
             );
             
-            return SearchResponse.ofAll(posts, comments, users, subreddits, metadata);
+            return SearchResponse.ofAll(posts, comments, users, communities, metadata);
             
         } catch (Exception e) {
             customMetrics.recordSearchQuery("error");
@@ -101,9 +101,9 @@ public class SearchService {
         Pageable pageable = createPageable(request);
         
         Page<Post> posts;
-        if (!request.subreddits().isEmpty()) {
-            // Search within specific subreddits
-            posts = postRepository.searchPostsBySubreddits(request.subreddits(), request.query(), pageable);
+        if (!request.communities().isEmpty()) {
+            // Search within specific communities
+            posts = postRepository.searchPostsByCommunities(request.communities(), request.query(), pageable);
         } else {
             // Global search
             posts = postRepository.searchPosts(request.query(), pageable);
@@ -147,15 +147,15 @@ public class SearchService {
             .toList();
     }
 
-    private List<SubredditResponse> searchSubreddits(SearchRequest request) {
+    private List<CommunityResponse> searchCommunities(SearchRequest request) {
         Pageable pageable = createPageable(request);
         
-        Page<Subreddit> subreddits = subredditRepository.searchSubreddits(request.query(), pageable);
+        Page<Community> communities = communityRepository.searchCommunities(request.query(), pageable);
         
-        return subreddits.stream()
-            .filter(subreddit -> request.includeNSFW() || !subreddit.isOver18())
-            .filter(subreddit -> request.includeOver18() || !subreddit.isOver18())
-            .map(SubredditResponse::from)
+        return communities.stream()
+            .filter(community -> request.includeNSFW() || !community.isOver18())
+            .filter(community -> request.includeOver18() || !community.isOver18())
+            .map(CommunityResponse::from)
             .toList();
     }
 
@@ -177,7 +177,7 @@ public class SearchService {
             case NEW -> Sort.by(Sort.Direction.DESC, "createdAt");
             case HOT -> Sort.by(Sort.Direction.DESC, "score");
             case TOP -> Sort.by(Sort.Direction.DESC, "score");
-            case CONTROVERSIAL -> Sort.by(Sort.Direction.DESC, "upvoteCount").and(Sort.by(Sort.Direction.ASC, "downvoteCount"));
+            case CONTROVERSIAL -> Sort.by(Sort.Direction.DESC, "likeCount").and(Sort.by(Sort.Direction.ASC, "dislikeCount"));
         };
         
         return PageRequest.of(request.page(), request.size(), sort);

@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -52,7 +53,7 @@ public class CommentService {
     @Retry(name = "commentService")
     @CacheEvict(value = {"comments", "commentTrees"}, allEntries = true)
     @ModerateContent(contentType = "comment")
-    public CommentResponse createComment(CommentCreateRequest request, Long authorId) {
+    public CommentResponse createComment(CommentCreateRequest request, UUID authorId) {
         User author = userRepository.findById(authorId)
             .orElseThrow(() -> new ResourceNotFoundException("User", "id", authorId));
 
@@ -78,7 +79,7 @@ public class CommentService {
         }
         userRepository.updateUserKarma(authorId, 1);
 
-        customMetrics.recordCommentCreated(post.subreddit().name());
+        customMetrics.recordCommentCreated(post.community().name());
         kafkaEventService.sendCommentCreatedEvent(saved);
 
         return CommentResponse.from(saved);
@@ -86,7 +87,7 @@ public class CommentService {
 
     @Cacheable(value = "comments", key = "#commentId")
     @Transactional(readOnly = true)
-    public CommentResponse getComment(Long commentId, Long currentUserId) {
+    public CommentResponse getComment(UUID commentId, UUID currentUserId) {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
         String userVote = getUserVote(comment, currentUserId);
@@ -95,7 +96,7 @@ public class CommentService {
 
     @Cacheable(value = "commentTrees", key = "#postId + '-' + #pageable.pageNumber")
     @Transactional(readOnly = true)
-    public Page<CommentResponse> getCommentsByPost(Long postId, Pageable pageable, Long currentUserId) {
+    public Page<CommentResponse> getCommentsByPost(UUID postId, Pageable pageable, UUID currentUserId) {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new ResourceNotFoundException("Post", "id", postId));
         return commentRepository.findByPostAndParentIsNull(post, pageable)
@@ -103,7 +104,7 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public List<CommentResponse> getReplies(Long commentId, Long currentUserId) {
+    public List<CommentResponse> getReplies(UUID commentId, UUID currentUserId) {
         Comment parent = commentRepository.findById(commentId)
             .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
         return commentRepository.findByParent(parent).stream()
@@ -112,7 +113,7 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CommentResponse> getCommentsByUser(Long userId, Pageable pageable, Long currentUserId) {
+    public Page<CommentResponse> getCommentsByUser(UUID userId, Pageable pageable, UUID currentUserId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
         return commentRepository.findByAuthor(user, pageable)
@@ -120,7 +121,7 @@ public class CommentService {
     }
 
     @CacheEvict(value = {"comments", "commentTrees"}, allEntries = true)
-    public CommentResponse updateComment(Long commentId, String newContent, Long currentUserId) {
+    public CommentResponse updateComment(UUID commentId, String newContent, UUID currentUserId) {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
 
@@ -131,7 +132,7 @@ public class CommentService {
         Comment updated = new Comment(
             comment.id(), newContent, comment.flairText(), true, comment.isDeleted(),
             comment.isRemoved(), comment.isCollapsed(), comment.isStickied(), comment.isOver18(),
-            comment.score(), comment.upvoteCount(), comment.downvoteCount(), comment.replyCount(),
+            comment.score(), comment.likeCount(), comment.dislikeCount(), comment.replyCount(),
             comment.awardCount(), comment.depthLevel(), comment.author(), comment.post(), comment.parent(),
             comment.replies(), comment.votes(), comment.createdAt(), Instant.now(), Instant.now(),
             comment.deletedAt(), comment.removedAt()
@@ -141,7 +142,7 @@ public class CommentService {
     }
 
     @CacheEvict(value = {"comments", "commentTrees"}, allEntries = true)
-    public void deleteComment(Long commentId, Long currentUserId) {
+    public void deleteComment(UUID commentId, UUID currentUserId) {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
 
@@ -154,12 +155,12 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CommentResponse> searchComments(String query, Pageable pageable, Long currentUserId) {
+    public Page<CommentResponse> searchComments(String query, Pageable pageable, UUID currentUserId) {
         return commentRepository.searchComments(query, pageable)
             .map(c -> CommentResponse.from(c, getUserVote(c, currentUserId)));
     }
 
-    private String getUserVote(Comment comment, Long currentUserId) {
+    private String getUserVote(Comment comment, UUID currentUserId) {
         if (currentUserId == null) return null;
         User user = userRepository.findById(currentUserId).orElse(null);
         if (user == null) return null;

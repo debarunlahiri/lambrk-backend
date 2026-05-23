@@ -1,395 +1,267 @@
 # Admin API
 
-Base URL: `/api/admin`
+Base path: `/api/admin`. JWT required with `ADMIN` role.
 
-All endpoints require **ADMIN role** (`@PreAuthorize("hasRole('ADMIN')")`).
+### POST `/api/admin/actions`
 
----
+Perform generic admin action.
 
-## POST `/api/admin/actions`
+**Auth:** Admin
 
-Perform any administrative action on the platform.
-
-### Headers
-
-```
-Authorization: Bearer <admin_access_token>
-Content-Type: application/json
-```
-
-### Request Body
+**Request body**
 
 ```json
-{
-  "action": "DELETE_POST",
-  "targetId": 1,
-  "reason": "Violation of community guidelines",
-  "notes": "Spam content with multiple violations",
-  "durationDays": null,
+{"action":"BAN_USER","targetId":42,"reason":"Spam","notes":"Repeated reports","durationDays":7,"permanent":false,"notifyUser":true}
+```
+
+**cURL**
+
+```bash
+curl -X POST 'http://localhost:9500/api/admin/actions' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "action": "BAN_USER",
+  "targetId": 42,
+  "reason": "Spam",
+  "notes": "Repeated reports",
+  "durationDays": 7,
   "permanent": false,
   "notifyUser": true
-}
+}'
 ```
 
-### Action Types
-
-| Action            | Target Type | Description                              |
-|--------------------|-------------|------------------------------------------|
-| BAN_USER          | User        | Permanently or temporarily ban user       |
-| SUSPEND_USER       | User        | Temporary suspension                      |
-| DELETE_POST       | Post        | Remove post (soft delete)                |
-| DELETE_COMMENT     | Comment     | Remove comment (soft delete)             |
-| LOCK_POST          | Post        | Prevent new comments on post             |
-| LOCK_COMMENT       | Comment     | Prevent replies to comment              |
-| REMOVE_MODERATOR   | User        | Remove moderator privileges             |
-| ADD_MODERATOR      | User        | Grant moderator privileges              |
-| BAN_SUBREDDIT      | Sublambrk   | Ban entire sublambrk                     |
-| QUARANTINE_POST    | Post        | Mark post as quarantined (18+)           |
-| QUARANTINE_COMMENT | Comment     | Mark comment as quarantined (18+)        |
-
-### Validation Rules
-
-| Field       | Rule                                                    |
-|-------------|---------------------------------------------------------|
-| action      | Required, valid action type                            |
-| targetId    | Required, must exist                                    |
-| reason      | Required, max 1000 chars                                |
-| notes       | Optional, max 1000 chars                               |
-| durationDays| Optional for temporary actions                      |
-| permanent   | Boolean, default false                                 |
-| notifyUser  | Boolean, default true                                  |
-
-### Response `200 OK`
+**Response**
 
 ```json
-{
-  "actionId": 1001,
-  "action": "DELETE_POST",
-  "targetId": 1,
-  "targetType": "Post",
-  "reason": "Violation of community guidelines",
-  "notes": "Spam content with multiple violations",
-  "performedBy": 1,
-  "performedAt": "2026-02-07T15:00:00Z",
-  "expiresAt": null,
-  "isActive": true,
-  "result": "Post deleted successfully"
-}
+{"actionId":1,"action":"BAN_USER","targetId":42,"targetType":"USER","reason":"Spam","notes":null,"performedBy":1,"performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+```
+### GET `/api/admin/actions`
+
+List admin actions.
+
+**Auth:** Admin
+
+**Query/path parameters**
+
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/admin/actions?page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
 ```
 
----
-
-## POST `/api/admin/ban-user/{userId}`
-
-Ban a user permanently or temporarily.
-
-### Path Parameters
-
-| Param | Type | Description |
-|-------|------|-------------|
-| userId | Long | User ID to ban |
-
-### Query Parameters
-
-| Param       | Type    | Default | Description |
-|-------------|---------|---------|-------------|
-| reason      | String  | —       | Ban reason (req) |
-| durationDays| Integer | —       | Days for temp ban |
-| permanent   | boolean | false   | Permanent ban |
-| notifyUser  | boolean | true    | Notify user |
-
-### Response `200 OK`
+**Response**
 
 ```json
-{
-  "actionId": 1002,
-  "action": "BAN_USER",
-  "targetId": 1,
-  "targetType": "User",
-  "reason": "Repeated policy violations",
-  "performedBy": 1,
-  "performedAt": "2026-02-07T15:05:00Z",
-  "expiresAt": "2026-03-09T15:05:00Z",
-  "isActive": true,
-  "result": "User banned successfully"
-}
+{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+```
+### GET `/api/admin/actions/user/{userId}`
+
+List actions by user.
+
+**Auth:** Admin
+
+**Query/path parameters**
+
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/admin/actions/user/42?page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
 ```
 
----
-
-## POST `/api/admin/suspend-user/{userId}`
-
-Suspend a user temporarily.
-
-### Path Parameters
-
-| Param | Type | Description |
-|-------|------|-------------|
-| userId | Long | User ID to suspend |
-
-### Query Parameters
-
-| Param       | Type   | Default | Description |
-|-------------|--------|---------|-------------|
-| reason      | String | —       | Suspension reason (req) |
-| durationDays| int    | —       | Suspension duration (req) |
-| notifyUser  | boolean| true    | Notify user |
-
----
-
-## POST `/api/admin/delete-post/{postId}`
-
-Delete a post (soft delete).
-
-### Path Parameters
-
-| Param  | Type | Description |
-|--------|------|-------------|
-| postId | Long | Post ID to delete |
-
-### Query Parameters
-
-| Param     | Type   | Default | Description |
-|-----------|--------|---------|-------------|
-| reason    | String | —       | Deletion reason (req) |
-| notifyUser| boolean| true    | Notify post author |
-
----
-
-## POST `/api/admin/delete-comment/{commentId}`
-
-Delete a comment (soft delete).
-
-### Path Parameters
-
-| Param     | Type | Description |
-|-----------|------|-------------|
-| commentId | Long | Comment ID to delete |
-
-### Query Parameters
-
-| Param     | Type   | Default | Description |
-|-----------|--------|---------|-------------|
-| reason    | String | —       | Deletion reason (req) |
-| notifyUser| boolean| true    | Notify comment author |
-
----
-
-## POST `/api/admin/lock-post/{postId}`
-
-Lock a post to prevent new comments.
-
-### Path Parameters
-
-| Param  | Type | Description |
-|--------|------|-------------|
-| postId | Long | Post ID to lock |
-
-### Query Parameters
-
-| Param       | Type    | Default | Description |
-|-------------|---------|---------|-------------|
-| reason      | String  | —       | Lock reason (req) |
-| durationDays| Integer | —       | Lock duration |
-| permanent   | boolean | false   | Permanent lock |
-| notifyUser  | boolean | true    | Notify post author |
-
----
-
-## POST `/api/admin/quarantine-post/{postId}`
-
-Quarantine a post (mark as 18+ content).
-
-### Path Parameters
-
-| Param  | Type | Description |
-|--------|------|-------------|
-| postId | Long | Post ID to quarantine |
-
-### Query Parameters
-
-| Param     | Type   | Default | Description |
-|-----------|--------|---------|-------------|
-| reason    | String | —       | Quarantine reason (req) |
-| notifyUser| boolean| true    | Notify post author |
-
----
-
-## POST `/api/admin/remove-moderator/{userId}`
-
-Remove moderator privileges from a user.
-
-### Path Parameters
-
-| Param | Type | Description |
-|-------|------|-------------|
-| userId | Long | User ID to remove moderator status |
-
-### Query Parameters
-
-| Param     | Type   | Default | Description |
-|-----------|--------|---------|-------------|
-| reason    | String | —       | Removal reason (req) |
-| notifyUser| boolean| true    | Notify user |
-
----
-
-## GET `/api/admin/actions`
-
-Get all admin actions (paginated).
-
-### Query Parameters
-
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| page  | int  | 0       | Page number |
-| size  | int  | 20      | Page size   |
-
-### Response `200 OK`
+**Response**
 
 ```json
-{
-  "content": [
-    {
-      "actionId": 1001,
-      "action": "DELETE_POST",
-      "targetId": 1,
-      "targetType": "Post",
-      "reason": "Violation of community guidelines",
-      "performedBy": 1,
-      "performedAt": "2026-02-07T15:00:00Z",
-      "isActive": true
-    }
-  ],
-  "pageable": {
-    "pageNumber": 0,
-    "pageSize": 20,
-    "totalElements": 1,
-    "totalPages": 1
-  }
-}
+{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+```
+### GET `/api/admin/actions/active`
+
+List active actions.
+
+**Auth:** Admin
+
+**Query/path parameters**
+
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/admin/actions/active?page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
 ```
 
----
-
-## GET `/api/admin/actions/user/{userId}`
-
-Get admin actions performed by a specific admin.
-
-### Path Parameters
-
-| Param | Type | Description |
-|-------|------|-------------|
-| userId | Long | Admin user ID |
-
-### Query Parameters
-
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| page  | int  | 0       | Page number |
-| size  | int  | 20      | Page size   |
-
----
-
-## GET `/api/admin/actions/active`
-
-Get currently active admin actions (not expired).
-
-### Query Parameters
-
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| page  | int  | 0       | Page number |
-| size  | int  | 20      | Page size   |
-
----
-
-## Admin Action Effects
-
-### User Actions
-
-| Action        | Effect on User                                  |
-|---------------|------------------------------------------------|
-| BAN_USER      | `isActive = false`, cannot login               |
-| SUSPEND_USER  | Temporary suspension, can login but limited    |
-| REMOVE_MODERATOR| Cleared moderatedSublambrks set              |
-
-### Post Actions
-
-| Action        | Effect on Post                                   |
-|---------------|------------------------------------------------|
-| DELETE_POST   | `isRemoved = true`, content hidden              |
-| LOCK_POST     | `isLocked = true`, new comments prevented     |
-| QUARANTINE_POST| `isOver18 = true`, age-restricted content      |
-
-### Comment Actions
-
-| Action            | Effect on Comment                                |
-|-------------------|--------------------------------------------------|
-| DELETE_COMMENT     | `isRemoved = true`, content hidden                |
-| LOCK_COMMENT       | `isLocked = true`, replies prevented            |
-| QUARANTINE_COMMENT | `isOver18 = true`, age-restricted content       |
-
----
-
-## Audit Trail
-
-All admin actions are automatically:
-
-1. **Logged** to the `admin_actions` table
-2. **Audited** via Kafka topic `admin-actions`
-3. **Notified** to affected users (if enabled)
-4. **Tracked** with metrics for monitoring
-
-### Kafka Event Schema
+**Response**
 
 ```json
-{
-  "actionId": 1001,
-  "action": "DELETE_POST",
-  "targetId": 1,
-  "targetType": "Post",
-  "reason": "Violation of community guidelines",
-  "performedBy": 1,
-  "performedAt": "2026-02-07T15:00:00Z",
-  "expiresAt": null,
-  "isActive": true,
-  "result": "Post deleted successfully"
-}
+{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+```
+### POST `/api/admin/ban-user/{userId}`
+
+Perform ban user action.
+
+**Auth:** Admin
+
+**Query/path parameters**
+
+Query string: `reason=Spam&durationDays=7&permanent=false&notifyUser=true`.
+
+**cURL**
+
+```bash
+curl -X POST 'http://localhost:9500/api/admin/ban-user/1?reason=Spam&durationDays=7&permanent=false&notifyUser=true' \
+  -H 'Authorization: Bearer <token>'
 ```
 
----
+**Response**
 
-## Performance & Limits
+```json
+{"actionId":1,"action":"BAN_USER","targetId":42,"targetType":"USER","reason":"Spam","notes":null,"performedBy":1,"performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+```
+### POST `/api/admin/suspend-user/{userId}`
 
-- **Rate Limiting**: 100 admin actions per minute
-- **Caching**: Action lists cached for 5 minutes
-- **Bulk Operations**: Batch processing for multiple actions
-- **Audit Retention**: Actions retained for 1 year
+Perform suspend user action.
 
----
+**Auth:** Admin
 
-## Error Handling
+**Query/path parameters**
 
-| Status | Condition                      |
-|--------|--------------------------------|
-| 400    | Invalid action parameters      |
-| 401    | Not authenticated              |
-| 403    | Not an admin                   |
-| 404    | Target not found              |
-| 429    | Rate limit exceeded            |
-| 503    | Admin service unavailable     |
+Query string: `reason=Abuse&durationDays=3&notifyUser=true`.
 
----
+**cURL**
 
-## Metrics
+```bash
+curl -X POST 'http://localhost:9500/api/admin/suspend-user/1?reason=Abuse&durationDays=3&notifyUser=true' \
+  -H 'Authorization: Bearer <token>'
+```
 
-All admin endpoints emit these metrics:
+**Response**
 
-- `admin.actions.performed` - Actions performed by type
-- `admin.ban.user` - User bans
-- `admin.delete.post` - Post deletions
-- `admin.delete.comment` - Comment deletions
-- `admin.lock.post` - Post locks
-- `admin.quarantine.post` - Post quarantines
-- `admin.remove.moderator` - Moderator removals
+```json
+{"actionId":1,"action":"BAN_USER","targetId":42,"targetType":"USER","reason":"Spam","notes":null,"performedBy":1,"performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+```
+### POST `/api/admin/delete-post/{postId}`
+
+Perform delete post action.
+
+**Auth:** Admin
+
+**Query/path parameters**
+
+Query string: `reason=Rule%20violation&notifyUser=true`.
+
+**cURL**
+
+```bash
+curl -X POST 'http://localhost:9500/api/admin/delete-post/1?reason=Rule%20violation&notifyUser=true' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
+
+```json
+{"actionId":1,"action":"BAN_USER","targetId":42,"targetType":"USER","reason":"Spam","notes":null,"performedBy":1,"performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+```
+### POST `/api/admin/delete-comment/{commentId}`
+
+Perform delete comment action.
+
+**Auth:** Admin
+
+**Query/path parameters**
+
+Query string: `reason=Rule%20violation&notifyUser=true`.
+
+**cURL**
+
+```bash
+curl -X POST 'http://localhost:9500/api/admin/delete-comment/1?reason=Rule%20violation&notifyUser=true' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
+
+```json
+{"actionId":1,"action":"BAN_USER","targetId":42,"targetType":"USER","reason":"Spam","notes":null,"performedBy":1,"performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+```
+### POST `/api/admin/lock-post/{postId}`
+
+Perform lock post action.
+
+**Auth:** Admin
+
+**Query/path parameters**
+
+Query string: `reason=Heated&durationDays=1&permanent=false&notifyUser=true`.
+
+**cURL**
+
+```bash
+curl -X POST 'http://localhost:9500/api/admin/lock-post/1?reason=Heated&durationDays=1&permanent=false&notifyUser=true' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
+
+```json
+{"actionId":1,"action":"BAN_USER","targetId":42,"targetType":"USER","reason":"Spam","notes":null,"performedBy":1,"performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+```
+### POST `/api/admin/quarantine-post/{postId}`
+
+Perform quarantine post action.
+
+**Auth:** Admin
+
+**Query/path parameters**
+
+Query string: `reason=Review&notifyUser=true`.
+
+**cURL**
+
+```bash
+curl -X POST 'http://localhost:9500/api/admin/quarantine-post/1?reason=Review&notifyUser=true' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
+
+```json
+{"actionId":1,"action":"BAN_USER","targetId":42,"targetType":"USER","reason":"Spam","notes":null,"performedBy":1,"performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+```
+### POST `/api/admin/remove-moderator/{userId}`
+
+Perform remove moderator action.
+
+**Auth:** Admin
+
+**Query/path parameters**
+
+Query string: `reason=Policy&notifyUser=true`.
+
+**cURL**
+
+```bash
+curl -X POST 'http://localhost:9500/api/admin/remove-moderator/1?reason=Policy&notifyUser=true' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
+
+```json
+{"actionId":1,"action":"BAN_USER","targetId":42,"targetType":"USER","reason":"Spam","notes":null,"performedBy":1,"performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+```

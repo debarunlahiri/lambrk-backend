@@ -5,14 +5,14 @@
 
 -- Notifications table
 CREATE TABLE notifications (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     type VARCHAR(30) NOT NULL,
-    recipient_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    recipient_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(500) NOT NULL,
     message TEXT NOT NULL,
-    related_post_id BIGINT,
-    related_comment_id BIGINT,
-    related_user_id BIGINT,
+    related_post_id UUID,
+    related_comment_id UUID,
+    related_user_id UUID,
     action_url VARCHAR(500),
     action_text VARCHAR(100),
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
@@ -32,13 +32,13 @@ CREATE TRIGGER update_notifications_updated_at BEFORE UPDATE ON notifications
 
 -- Admin actions audit table
 CREATE TABLE admin_actions (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     type VARCHAR(30) NOT NULL,
-    target_id BIGINT NOT NULL,
+    target_id UUID NOT NULL,
     target_type VARCHAR(50) NOT NULL,
     reason TEXT NOT NULL,
     notes TEXT,
-    performed_by BIGINT NOT NULL REFERENCES users(id),
+    performed_by UUID NOT NULL REFERENCES users(id),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -54,7 +54,7 @@ CREATE INDEX idx_admin_action_expires_at ON admin_actions(expires_at) WHERE expi
 
 -- File uploads table
 CREATE TABLE file_uploads (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     file_name VARCHAR(255) NOT NULL UNIQUE,
     original_file_name VARCHAR(255) NOT NULL,
     file_url VARCHAR(500) NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE file_uploads (
     is_public BOOLEAN NOT NULL DEFAULT FALSE,
     is_nsfw BOOLEAN NOT NULL DEFAULT FALSE,
     alt_text VARCHAR(500),
-    uploaded_by BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    uploaded_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     checksum VARCHAR(64) NOT NULL
@@ -91,18 +91,18 @@ UPDATE users SET role = 'ADMIN' WHERE username = 'admin';
 UPDATE users SET role = 'USER' WHERE username IN ('john_doe', 'jane_smith');
 
 -- Add sample posts for search testing
-INSERT INTO posts (title, content, post_type, author_id, sublambrk_id) VALUES
-('Getting Started with Spring Boot 3.5', 'Spring Boot 3.5 introduces virtual threads, structured concurrency, and many new features for modern Java development.', 'TEXT', 2, 1),
-('Virtual Threads in Production', 'After running virtual threads in production for 3 months, here are our findings and best practices.', 'TEXT', 3, 1),
-('Java 25 Pattern Matching Deep Dive', 'Pattern matching in Java 25 has reached its final form. Let us explore all the features.', 'TEXT', 2, 1),
-('Best Gaming Monitors 2026', 'A comprehensive guide to the best gaming monitors available this year.', 'TEXT', 3, 2),
-('AI in Software Development', 'How AI is transforming the way we write, test, and deploy software.', 'TEXT', 2, 3);
+INSERT INTO posts (id, title, content, post_type, author_id, community_id) VALUES
+('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Getting Started with Spring Boot 3.5', 'Spring Boot 3.5 introduces virtual threads, structured concurrency, and many new features for modern Java development.', 'TEXT', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Virtual Threads in Production', 'After running virtual threads in production for 3 months, here are our findings and best practices.', 'TEXT', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'Java 25 Pattern Matching Deep Dive', 'Pattern matching in Java 25 has reached its final form. Let us explore all the features.', 'TEXT', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'Best Gaming Monitors 2026', 'A comprehensive guide to the best gaming monitors available this year.', 'TEXT', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12'),
+('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'AI in Software Development', 'How AI is transforming the way we write, test, and deploy software.', 'TEXT', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13');
 
 -- Add sample comments
-INSERT INTO comments (content, author_id, post_id) VALUES
-('Great article! Virtual threads have been a game changer for our team.', 3, 1),
-('Can you share some benchmarks comparing virtual threads vs platform threads?', 2, 2),
-('Pattern matching makes switch expressions so much cleaner.', 3, 3);
+INSERT INTO comments (id, content, author_id, post_id) VALUES
+('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Great article! Virtual threads have been a game changer for our team.', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Can you share some benchmarks comparing virtual threads vs platform threads?', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12'),
+('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'Pattern matching makes switch expressions so much cleaner.', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13');
 
 -- Update post comment counts
 UPDATE posts SET comment_count = (
@@ -110,12 +110,12 @@ UPDATE posts SET comment_count = (
 );
 
 -- Add sample votes
-INSERT INTO votes (vote_type, user_id, post_id) VALUES
-('UPVOTE', 2, 1), ('UPVOTE', 3, 1),
-('UPVOTE', 2, 2), ('UPVOTE', 3, 2),
-('UPVOTE', 2, 3),
-('UPVOTE', 3, 4),
-('UPVOTE', 2, 5), ('UPVOTE', 3, 5);
+INSERT INTO votes (id, vote_type, user_id, post_id) VALUES
+('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'UPVOTE', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'), ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'UPVOTE', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'UPVOTE', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12'), ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'UPVOTE', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12'),
+('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'UPVOTE', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13'),
+('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16', 'UPVOTE', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14'),
+('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17', 'UPVOTE', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15'), ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a18', 'UPVOTE', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15');
 
 -- Update post scores
 UPDATE posts SET score = (

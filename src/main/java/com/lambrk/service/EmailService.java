@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import java.util.UUID;
 
 @Service
 @Profile({"dev"})
@@ -22,12 +23,12 @@ public class EmailService {
     }
 
     @Async
-    public void sendNotificationEmail(Long userId, NotificationRequest notification) {
+    public void sendNotificationEmail(UUID userId, NotificationRequest notification) {
         logger.info("Email notification skipped in dev mode for user: {}", userId);
     }
 
     @Async
-    public void sendWelcomeEmail(Long userId) {
+    public void sendWelcomeEmail(UUID userId) {
         logger.info("Welcome email skipped in dev mode for user: {}", userId);
     }
 
@@ -37,7 +38,7 @@ public class EmailService {
     }
 
     @Async
-    public void sendWeeklyDigest(Long userId) {
+    public void sendWeeklyDigest(UUID userId) {
         logger.info("Weekly digest skipped in dev mode for user: {}", userId);
     }
 }

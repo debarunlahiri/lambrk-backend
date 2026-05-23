@@ -47,7 +47,7 @@ public class SearchController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "RELEVANCE") SearchRequest.SortBy sort,
             @RequestParam(defaultValue = "ALL") SearchRequest.TimeFilter timeFilter,
-            @RequestParam(required = false) List<String> subreddits,
+            @RequestParam(required = false) List<String> communities,
             @RequestParam(required = false) List<String> flairs,
             @RequestParam(defaultValue = "false") boolean includeNSFW,
             @RequestParam(defaultValue = "false") boolean includeOver18,
@@ -60,7 +60,7 @@ public class SearchController {
             SearchRequest.SearchType.POSTS,
             sort,
             timeFilter,
-            subreddits,
+            communities,
             flairs,
             includeNSFW,
             includeOver18,
@@ -142,11 +142,11 @@ public class SearchController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/subreddits")
-    @NewSpan("search-subreddits")
-    @Counted(value = "search.subreddits")
-    @Timed(value = "search.subreddits.duration")
-    public ResponseEntity<SearchResponse> searchSubreddits(
+    @GetMapping("/communities")
+    @NewSpan("search-communities")
+    @Counted(value = "search.communities")
+    @Timed(value = "search.communities.duration")
+    public ResponseEntity<SearchResponse> searchCommunities(
             @RequestParam @SpanTag String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -157,7 +157,7 @@ public class SearchController {
         
         SearchRequest request = new SearchRequest(
             query,
-            SearchRequest.SearchType.SUBREDDITS,
+            SearchRequest.SearchType.COMMUNITIES,
             sort,
             SearchRequest.TimeFilter.ALL,
             List.of(),
@@ -185,7 +185,7 @@ public class SearchController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "RELEVANCE") SearchRequest.SortBy sort,
             @RequestParam(defaultValue = "ALL") SearchRequest.TimeFilter timeFilter,
-            @RequestParam(required = false) List<String> subreddits,
+            @RequestParam(required = false) List<String> communities,
             @RequestParam(required = false) List<String> flairs,
             @RequestParam(defaultValue = "false") boolean includeNSFW,
             @RequestParam(defaultValue = "false") boolean includeOver18,
@@ -198,7 +198,7 @@ public class SearchController {
             SearchRequest.SearchType.ALL,
             sort,
             timeFilter,
-            subreddits,
+            communities,
             flairs,
             includeNSFW,
             includeOver18,
@@ -229,7 +229,7 @@ public class SearchController {
                 query + " examples",
                 query + " best practices"
             );
-            case "subreddits" -> List.of(
+            case "communities" -> List.of(
                 "r/" + query.toLowerCase(),
                 "r/" + query.toLowerCase() + "discussion",
                 "r/" + query.toLowerCase() + "help"

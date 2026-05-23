@@ -47,12 +47,9 @@ public class JpaConfig {
             hibernateProperties.put("hibernate.generate_statistics", "false");
             hibernateProperties.put("hibernate.session.events.log.LOG_QUERIES_SLOWER_THAN_MS", "100");
             
-            // Cache configuration
-            hibernateProperties.put("hibernate.cache.use_second_level_cache", "true");
-            hibernateProperties.put("hibernate.cache.use_query_cache", "true");
-            hibernateProperties.put("hibernate.cache.region.factory_class", "org.hibernate.cache.jcache.JCacheRegionFactory");
-            hibernateProperties.put("hibernate.javax.cache.provider", "org.ehcache.jsr107.EhcacheCachingProvider");
-            hibernateProperties.put("hibernate.javax.cache.uri", "classpath:ehcache.xml");
+            // Disable second-level cache to reduce memory footprint
+            hibernateProperties.put("hibernate.cache.use_second_level_cache", "false");
+            hibernateProperties.put("hibernate.cache.use_query_cache", "false");
         };
     }
     

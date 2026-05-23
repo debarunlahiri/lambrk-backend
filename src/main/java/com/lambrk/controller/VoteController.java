@@ -2,6 +2,7 @@ package com.lambrk.controller;
 
 import com.lambrk.dto.VoteRequest;
 import com.lambrk.service.VoteService;
+import java.util.UUID;
 import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.tracing.annotation.NewSpan;
@@ -22,9 +23,9 @@ public class VoteController {
     }
 
     @PostMapping("/post")
-    @NewSpan("vote-on-post")
-    @Counted(value = "votes.post.cast")
-    @Timed(value = "votes.post.duration")
+    @NewSpan("like-on-post")
+    @Counted(value = "likes.post.cast")
+    @Timed(value = "likes.post.duration")
     public ResponseEntity<Void> voteOnPost(
             @Valid @RequestBody VoteRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -33,9 +34,9 @@ public class VoteController {
     }
 
     @PostMapping("/comment")
-    @NewSpan("vote-on-comment")
-    @Counted(value = "votes.comment.cast")
-    @Timed(value = "votes.comment.duration")
+    @NewSpan("like-on-comment")
+    @Counted(value = "likes.comment.cast")
+    @Timed(value = "likes.comment.duration")
     public ResponseEntity<Void> voteOnComment(
             @Valid @RequestBody VoteRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -43,7 +44,7 @@ public class VoteController {
         return ResponseEntity.ok().build();
     }
 
-    private Long getUserId(UserDetails userDetails) {
-        return userDetails != null ? 1L : null;
+    private UUID getUserId(UserDetails userDetails) {
+        return userDetails != null ? java.util.UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11") : null;
     }
 }

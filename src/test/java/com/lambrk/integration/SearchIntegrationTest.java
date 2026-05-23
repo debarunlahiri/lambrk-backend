@@ -96,7 +96,7 @@ class SearchIntegrationTest {
     void shouldSearchWithFilters() throws Exception {
         mockMvc.perform(get("/api/search/posts")
                 .param("query", "programming")
-                .param("subreddits", "programming,java")
+                .param("communities", "programming,java")
                 .param("flairs", "tutorial,guide")
                 .param("minScore", "10")
                 .param("includeNSFW", "false"))
@@ -124,13 +124,13 @@ class SearchIntegrationTest {
     }
 
     @Test
-    void shouldSearchSubreddits() throws Exception {
-        mockMvc.perform(get("/api/search/subreddits")
+    void shouldSearchCommunities() throws Exception {
+        mockMvc.perform(get("/api/search/communities")
                 .param("query", "technology")
                 .param("page", "0")
                 .param("size", "10"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.subreddits").isArray());
+            .andExpect(jsonPath("$.communities").isArray());
     }
 
     @Test

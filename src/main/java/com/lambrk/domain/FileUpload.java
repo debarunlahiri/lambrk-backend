@@ -8,8 +8,10 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
+@org.hibernate.annotations.GenericGenerator(name = "uuid7", strategy = "com.lambrk.util.UuidV7Generator")
 @Table(name = "file_uploads", indexes = {
     @Index(name = "idx_file_upload_type", columnList = "type"),
     @Index(name = "idx_file_upload_uploaded_by", columnList = "uploaded_by"),
@@ -21,8 +23,8 @@ import java.time.Instant;
 public record FileUpload(
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id,
+    @GeneratedValue(generator = "uuid7")
+    UUID id,
     
     @NotBlank(message = "File name is required")
     @Size(max = 255, message = "File name must be less than 255 characters")
@@ -93,6 +95,6 @@ public record FileUpload(
     }
     
     public enum FileUploadType {
-        AVATAR, POST_IMAGE, POST_VIDEO, SUBREDDIT_ICON, SUBREDDIT_HEADER, BANNER
+        AVATAR, POST_IMAGE, POST_VIDEO, COMMUNITY_ICON, COMMUNITY_HEADER, BANNER
     }
 }

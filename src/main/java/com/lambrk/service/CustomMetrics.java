@@ -16,12 +16,12 @@ public class CustomMetrics {
         this.meterRegistry = meterRegistry;
     }
 
-    public void recordPostCreated(String subreddit) {
-        meterRegistry.counter("reddit.posts.created", "subreddit", subreddit).increment();
+    public void recordPostCreated(String community) {
+        meterRegistry.counter("reddit.posts.created", "community", community).increment();
     }
 
-    public void recordCommentCreated(String subreddit) {
-        meterRegistry.counter("reddit.comments.created", "subreddit", subreddit).increment();
+    public void recordCommentCreated(String community) {
+        meterRegistry.counter("reddit.comments.created", "community", community).increment();
     }
 
     public void recordVoteCast(String voteType) {
@@ -58,12 +58,12 @@ public class CustomMetrics {
         meterRegistry.counter("lambrk.feed.error").increment();
     }
 
-    public void recordSubredditCreated() {
-        meterRegistry.counter("reddit.subreddits.created").increment();
+    public void recordCommunityCreated() {
+        meterRegistry.counter("reddit.communities.created").increment();
     }
 
-    public void recordSubredditSubscription(boolean subscribed) {
-        meterRegistry.counter("reddit.subreddits.subscription",
+    public void recordCommunitySubscription(boolean subscribed) {
+        meterRegistry.counter("reddit.communities.subscription",
             "action", subscribed ? "subscribe" : "unsubscribe").increment();
     }
 

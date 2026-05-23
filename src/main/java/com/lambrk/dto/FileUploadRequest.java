@@ -22,6 +22,6 @@ public record FileUploadRequest(
 ) {
     
     public enum FileType {
-        AVATAR, POST_IMAGE, POST_VIDEO, SUBREDDIT_ICON, SUBREDDIT_HEADER, BANNER
+        AVATAR, POST_IMAGE, POST_VIDEO, COMMUNITY_ICON, COMMUNITY_HEADER, BANNER
     }
 }

@@ -27,7 +27,7 @@
     "allPublicFields": true
   },
   {
-    "name": "com.lambrk.domain.Subreddit",
+    "name": "com.lambrk.domain.Community",
     "allDeclaredConstructors": true,
     "allPublicConstructors": true,
     "allDeclaredMethods": true,
@@ -72,7 +72,7 @@
     "allPublicFields": true
   },
   {
-    "name": "com.lambrk.dto.SubredditResponse",
+    "name": "com.lambrk.dto.CommunityResponse",
     "allDeclaredConstructors": true,
     "allPublicConstructors": true,
     "allDeclaredMethods": true,

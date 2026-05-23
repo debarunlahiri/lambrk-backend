@@ -2,11 +2,11 @@ package com.lambrk.service;
 
 import com.lambrk.domain.Post;
 import com.lambrk.domain.User;
-import com.lambrk.domain.Subreddit;
+import com.lambrk.domain.Community;
 import com.lambrk.dto.PostCreateRequest;
 import com.lambrk.dto.PostResponse;
 import com.lambrk.repository.PostRepository;
-import com.lambrk.repository.SubredditRepository;
+import com.lambrk.repository.CommunityRepository;
 import com.lambrk.repository.UserRepository;
 import com.lambrk.repository.VoteRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -31,16 +32,16 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final SubredditRepository subredditRepository;
+    private final CommunityRepository communityRepository;
     private final VoteRepository voteRepository;
     private final KafkaEventService kafkaEventService;
 
     public PostService(PostRepository postRepository, UserRepository userRepository,
-                      SubredditRepository subredditRepository, VoteRepository voteRepository,
+                      CommunityRepository communityRepository, VoteRepository voteRepository,
                       KafkaEventService kafkaEventService) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
-        this.subredditRepository = subredditRepository;
+        this.communityRepository = communityRepository;
         this.voteRepository = voteRepository;
         this.kafkaEventService = kafkaEventService;
     }
@@ -51,12 +52,12 @@ public class PostService {
     @Bulkhead(name = "postService")
     @CacheEvict(value = {"posts", "hotPosts", "newPosts"}, allEntries = true)
     @ModerateContent(contentType = "post")
-    public PostResponse createPost(PostCreateRequest request, Long authorId) {
+    public PostResponse createPost(PostCreateRequest request, UUID authorId) {
         try {
             User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-            Subreddit subreddit = subredditRepository.findById(request.subredditId())
-                .orElseThrow(() -> new RuntimeException("Subreddit not found"));
+            Community community = communityRepository.findById(request.communityId())
+                .orElseThrow(() -> new RuntimeException("Community not found"));
 
             Post post = new Post(
                 request.title(),
@@ -64,7 +65,7 @@ public class PostService {
                 request.url(),
                 request.postType(),
                 author,
-                subreddit
+                community
             );
 
             post = new Post(
@@ -82,14 +83,14 @@ public class PostService {
                 post.isArchived(),
                 post.isRemoved(),
                 request.isOver18(),
-                post.score(),
-                post.upvoteCount(),
-                post.downvoteCount(),
+            post.score(),
+            post.likeCount(),
+            post.dislikeCount(),
                 post.commentCount(),
                 post.viewCount(),
                 post.awardCount(),
                 author,
-                subreddit,
+                community,
                 post.comments(),
                 post.votes(),
                 post.createdAt(),
@@ -113,7 +114,7 @@ public class PostService {
 
     @Cacheable(value = "posts", key = "#postId")
     @Transactional(readOnly = true)
-    public PostResponse getPost(Long postId, Long currentUserId) {
+    public PostResponse getPost(UUID postId, UUID currentUserId) {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("Post not found"));
 
@@ -137,7 +138,7 @@ public class PostService {
 
     @Cacheable(value = "hotPosts", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     @Transactional(readOnly = true)
-    public Page<PostResponse> getHotPosts(Pageable pageable, Long currentUserId) {
+    public Page<PostResponse> getHotPosts(Pageable pageable, UUID currentUserId) {
         Page<Post> posts = postRepository.findHotPosts(pageable);
         return posts.map(post -> {
             String userVote = getUserVote(post, currentUserId);
@@ -147,7 +148,7 @@ public class PostService {
 
     @Cacheable(value = "newPosts", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     @Transactional(readOnly = true)
-    public Page<PostResponse> getNewPosts(Pageable pageable, Long currentUserId) {
+    public Page<PostResponse> getNewPosts(Pageable pageable, UUID currentUserId) {
         Page<Post> posts = postRepository.findNewPosts(pageable);
         return posts.map(post -> {
             String userVote = getUserVote(post, currentUserId);
@@ -157,7 +158,7 @@ public class PostService {
 
     @Cacheable(value = "topPosts", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     @Transactional(readOnly = true)
-    public Page<PostResponse> getTopPosts(Pageable pageable, Long currentUserId) {
+    public Page<PostResponse> getTopPosts(Pageable pageable, UUID currentUserId) {
         Page<Post> posts = postRepository.findTopPosts(pageable);
         return posts.map(post -> {
             String userVote = getUserVote(post, currentUserId);
@@ -166,11 +167,11 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PostResponse> getPostsBySubreddit(Long subredditId, Pageable pageable, Long currentUserId) {
-        Subreddit subreddit = subredditRepository.findById(subredditId)
-            .orElseThrow(() -> new RuntimeException("Subreddit not found"));
+    public Page<PostResponse> getPostsByCommunity(UUID communityId, Pageable pageable, UUID currentUserId) {
+        Community community = communityRepository.findById(communityId)
+            .orElseThrow(() -> new RuntimeException("Community not found"));
         
-        Page<Post> posts = postRepository.findBySubreddit(subreddit, pageable);
+        Page<Post> posts = postRepository.findByCommunity(community, pageable);
         return posts.map(post -> {
             String userVote = getUserVote(post, currentUserId);
             return PostResponse.from(post, userVote);
@@ -178,7 +179,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PostResponse> getPostsByUser(Long userId, Pageable pageable, Long currentUserId) {
+    public Page<PostResponse> getPostsByUser(UUID userId, Pageable pageable, UUID currentUserId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
         
@@ -191,7 +192,7 @@ public class PostService {
 
     @Cacheable(value = "searchPosts", key = "#query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     @Transactional(readOnly = true)
-    public Page<PostResponse> searchPosts(String query, Pageable pageable, Long currentUserId) {
+    public Page<PostResponse> searchPosts(String query, Pageable pageable, UUID currentUserId) {
         Page<Post> posts = postRepository.searchPosts(query, pageable);
         return posts.map(post -> {
             String userVote = getUserVote(post, currentUserId);
@@ -202,7 +203,7 @@ public class PostService {
     @CacheEvict(value = "posts", key = "#postId")
     @CircuitBreaker(name = "postService")
     @Retry(name = "postService")
-    public PostResponse updatePost(Long postId, PostCreateRequest request, Long currentUserId) {
+    public PostResponse updatePost(UUID postId, PostCreateRequest request, UUID currentUserId) {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("Post not found"));
 
@@ -226,13 +227,13 @@ public class PostService {
             post.isRemoved(),
             request.isOver18(),
             post.score(),
-            post.upvoteCount(),
-            post.downvoteCount(),
+                post.likeCount(),
+                post.dislikeCount(),
             post.commentCount(),
             post.viewCount(),
             post.awardCount(),
             post.author(),
-            post.subreddit(),
+            post.community(),
             post.comments(),
             post.votes(),
             post.createdAt(),
@@ -249,7 +250,7 @@ public class PostService {
     }
 
     @CacheEvict(value = {"posts", "hotPosts", "newPosts", "topPosts", "searchPosts"}, allEntries = true)
-    public void deletePost(Long postId, Long currentUserId) {
+    public void deletePost(UUID postId, UUID currentUserId) {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("Post not found"));
 
@@ -261,9 +262,9 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostResponse> getStickiedPosts(Long subredditId, Long currentUserId) {
-        List<Post> posts = subredditId != null 
-            ? postRepository.findStickiedPostsBySubreddit(subredditId)
+    public List<PostResponse> getStickiedPosts(UUID communityId, UUID currentUserId) {
+        List<Post> posts = communityId != null 
+            ? postRepository.findStickiedPostsByCommunity(communityId)
             : postRepository.findStickiedPosts();
             
         return posts.stream()
@@ -274,7 +275,7 @@ public class PostService {
             .toList();
     }
 
-    private String getUserVote(Post post, Long currentUserId) {
+    private String getUserVote(Post post, UUID currentUserId) {
         if (currentUserId == null) return null;
         
         User currentUser = userRepository.findById(currentUserId).orElse(null);

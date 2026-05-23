@@ -15,9 +15,10 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpecificationExecutor<Comment> {
+public interface CommentRepository extends JpaRepository<Comment, UUID>, JpaSpecificationExecutor<Comment> {
 
     Page<Comment> findByPost(Post post, Pageable pageable);
 
@@ -28,40 +29,40 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpec
     List<Comment> findByParent(Comment parent);
 
     @Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND c.parent IS NULL ORDER BY c.score DESC")
-    List<Comment> findTopLevelCommentsByPost(@Param("postId") Long postId);
+    List<Comment> findTopLevelCommentsByPost(@Param("postId") UUID postId);
 
     @Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND c.parent.id = :parentId ORDER BY c.createdAt ASC")
-    List<Comment> findRepliesByParent(@Param("postId") Long postId, @Param("parentId") Long parentId);
+    List<Comment> findRepliesByParent(@Param("postId") UUID postId, @Param("parentId") UUID parentId);
 
     @Query("SELECT c FROM Comment c WHERE c.isDeleted = false AND c.isRemoved = false AND c.post.id = :postId ORDER BY c.score DESC")
-    Page<Comment> findActiveCommentsByPost(@Param("postId") Long postId, Pageable pageable);
+    Page<Comment> findActiveCommentsByPost(@Param("postId") UUID postId, Pageable pageable);
 
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId AND c.isDeleted = false AND c.isRemoved = false")
-    long countActiveCommentsByPost(@Param("postId") Long postId);
+    long countActiveCommentsByPost(@Param("postId") UUID postId);
 
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.author.id = :authorId AND c.isDeleted = false AND c.isRemoved = false")
-    long countActiveCommentsByAuthor(@Param("authorId") Long authorId);
+    long countActiveCommentsByAuthor(@Param("authorId") UUID authorId);
 
-    @Query("UPDATE Comment c SET c.score = c.score + :delta, c.upvoteCount = c.upvoteCount + :upvoteDelta, c.downvoteCount = c.downvoteCount + :downvoteDelta WHERE c.id = :commentId")
+    @Query("UPDATE Comment c SET c.score = c.score + :delta, c.likeCount = c.likeCount + :likeDelta, c.dislikeCount = c.dislikeCount + :dislikeDelta WHERE c.id = :commentId")
     @Modifying
-    void updateCommentScore(@Param("commentId") Long commentId, @Param("delta") int delta,
-                           @Param("upvoteDelta") int upvoteDelta, @Param("downvoteDelta") int downvoteDelta);
+    void updateCommentScore(@Param("commentId") UUID commentId, @Param("delta") int delta,
+                           @Param("likeDelta") int likeDelta, @Param("dislikeDelta") int dislikeDelta);
 
     @Query("UPDATE Comment c SET c.replyCount = c.replyCount + :delta WHERE c.id = :commentId")
     @Modifying
-    void updateCommentReplyCount(@Param("commentId") Long commentId, @Param("delta") int delta);
+    void updateCommentReplyCount(@Param("commentId") UUID commentId, @Param("delta") int delta);
 
     @Query("SELECT c FROM Comment c WHERE c.content LIKE %:query% AND c.isDeleted = false AND c.isRemoved = false")
     Page<Comment> searchComments(@Param("query") String query, Pageable pageable);
 
     @Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND c.content LIKE %:query% AND c.isDeleted = false AND c.isRemoved = false")
-    Page<Comment> searchCommentsByPost(@Param("postId") Long postId, @Param("query") String query, Pageable pageable);
+    Page<Comment> searchCommentsByPost(@Param("postId") UUID postId, @Param("query") String query, Pageable pageable);
 
     @Query("SELECT c FROM Comment c WHERE c.isStickied = true AND c.isDeleted = false AND c.isRemoved = false ORDER BY c.createdAt DESC")
     List<Comment> findStickiedComments();
 
     @Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND c.isStickied = true AND c.isDeleted = false AND c.isRemoved = false")
-    List<Comment> findStickiedCommentsByPost(@Param("postId") Long postId);
+    List<Comment> findStickiedCommentsByPost(@Param("postId") UUID postId);
 
     @Query("SELECT c FROM Comment c WHERE c.isEdited = true AND c.isDeleted = false AND c.isRemoved = false ORDER BY c.editedAt DESC")
     Page<Comment> findEditedComments(Pageable pageable);
@@ -70,10 +71,10 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpec
     List<Comment> findRecentComments(@Param("since") Instant since);
 
     @Query("SELECT c FROM Comment c WHERE c.depthLevel <= :maxDepth AND c.post.id = :postId AND c.isDeleted = false AND c.isRemoved = false ORDER BY c.createdAt ASC")
-    List<Comment> findCommentsByMaxDepth(@Param("postId") Long postId, @Param("maxDepth") int maxDepth);
+    List<Comment> findCommentsByMaxDepth(@Param("postId") UUID postId, @Param("maxDepth") int maxDepth);
 
     @Query("SELECT c FROM Comment c WHERE c.author.id = :authorId AND c.createdAt >= :since AND c.isDeleted = false AND c.isRemoved = false ORDER BY c.createdAt DESC")
-    Page<Comment> findUserCommentsSince(@Param("authorId") Long authorId, @Param("since") Instant since, Pageable pageable);
+    Page<Comment> findUserCommentsSince(@Param("authorId") UUID authorId, @Param("since") Instant since, Pageable pageable);
 
     @Query("SELECT c FROM Comment c WHERE c.score >= :minScore AND c.isDeleted = false AND c.isRemoved = false ORDER BY c.score DESC")
     Page<Comment> findCommentsByMinScore(@Param("minScore") int minScore, Pageable pageable);
@@ -86,11 +87,11 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpec
 
     @Query("UPDATE Comment c SET c.isDeleted = true, c.deletedAt = :deletedAt WHERE c.id = :commentId")
     @Modifying
-    void softDeleteComment(@Param("commentId") Long commentId, @Param("deletedAt") Instant deletedAt);
+    void softDeleteComment(@Param("commentId") UUID commentId, @Param("deletedAt") Instant deletedAt);
 
     @Query("UPDATE Comment c SET c.isRemoved = true, c.removedAt = :removedAt WHERE c.id = :commentId")
     @Modifying
-    void removeComment(@Param("commentId") Long commentId, @Param("removedAt") Instant removedAt);
+    void removeComment(@Param("commentId") UUID commentId, @Param("removedAt") Instant removedAt);
 
     @Query("SELECT c FROM Comment c WHERE c.awardCount > 0 AND c.isDeleted = false AND c.isRemoved = false ORDER BY c.awardCount DESC")
     Page<Comment> findAwardedComments(Pageable pageable);

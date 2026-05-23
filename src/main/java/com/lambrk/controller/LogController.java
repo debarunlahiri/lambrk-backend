@@ -8,6 +8,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/logs")
@@ -28,7 +29,7 @@ public class LogController {
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<Page<LogEntry>> getLogsByUser(
-            @PathVariable Long userId,
+            @PathVariable UUID userId,
             @PageableDefault(size = 50, sort = "timestamp", direction = org.springframework.data.domain.Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(loggingService.getLogsByUser(userId, pageable));
     }

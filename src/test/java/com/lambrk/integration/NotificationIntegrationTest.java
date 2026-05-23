@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import java.util.UUID;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -57,11 +58,11 @@ class NotificationIntegrationTest {
     void shouldCreateNotification() throws Exception {
         NotificationRequest request = new NotificationRequest(
             NotificationRequest.NotificationType.COMMENT_REPLY,
-            1L,
+            UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
             "New reply to your comment",
             "Someone replied to your comment",
-            1L,
-            10L,
+            UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
+            UUID.fromString("d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
             null,
             "/posts/1#comment-10",
             "View reply",

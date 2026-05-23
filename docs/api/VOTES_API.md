@@ -1,115 +1,60 @@
 # Votes API
 
-Base URL: `/api/votes`
+Base path: `/api/votes`. JWT required.
 
-All endpoints require **JWT authentication**.
+### POST `/api/votes/post`
 
----
+Vote on a post.
 
-## POST `/api/votes/post`
+**Auth:** User
 
-Upvote or downvote a post. Voting is toggle-based:
-
-- **First vote** → creates the vote
-- **Same vote again** → removes the vote (toggle off)
-- **Opposite vote** → flips the vote direction
-
-### Headers
-
-```
-Authorization: Bearer <access_token>
-Content-Type: application/json
-```
-
-### Request Body
+**Request body**
 
 ```json
-{
-  "voteType": "UPVOTE",
+{"voteType":"LIKE","postId":1,"commentId":null}
+```
+
+**cURL**
+
+```bash
+curl -X POST 'http://localhost:9500/api/votes/post' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "voteType": "LIKE",
   "postId": 1,
   "commentId": null
-}
+}'
 ```
 
-### Validation Rules
+**Response**
 
-| Field    | Rule                          |
-|----------|-------------------------------|
-| voteType | Required: `UPVOTE`, `DOWNVOTE`|
-| postId   | Required for post votes       |
+`200 OK` with an empty body
+### POST `/api/votes/comment`
 
-### Response `200 OK`
+Vote on a comment.
 
-Empty body. Side effects:
+**Auth:** User
 
-- Post `score`, `upvoteCount`, `downvoteCount` updated
-- Author `karma` adjusted accordingly
-- Kafka `vote.cast` event published
-
-### Score Calculation
-
-| Action         | Score Delta | Upvote Delta | Downvote Delta | Karma Delta |
-|----------------|-------------|--------------|----------------|-------------|
-| New upvote     | +1          | +1           | 0              | +1          |
-| New downvote   | -1          | 0            | +1             | -1          |
-| Remove upvote  | -1          | -1           | 0              | -1          |
-| Remove downvote| +1          | 0            | -1             | +1          |
-| Flip to upvote | +2          | +1           | -1             | +2          |
-| Flip to down   | -2          | -1           | +1             | -2          |
-
-### Error Responses
-
-| Status | Condition                    |
-|--------|------------------------------|
-| 400    | Validation failed            |
-| 401    | Not authenticated            |
-| 404    | Post not found               |
-| 429    | Rate limit exceeded (1000/min)|
-
----
-
-## POST `/api/votes/comment`
-
-Upvote or downvote a comment. Same toggle behaviour as post votes.
-
-### Request Body
+**Request body**
 
 ```json
-{
-  "voteType": "UPVOTE",
-  "postId": null,
-  "commentId": 10
-}
+{"voteType":"DISLIKE","postId":null,"commentId":1}
 ```
 
-### Validation Rules
+**cURL**
 
-| Field     | Rule                            |
-|-----------|---------------------------------|
-| voteType  | Required: `UPVOTE`, `DOWNVOTE`  |
-| commentId | Required for comment votes      |
+```bash
+curl -X POST 'http://localhost:9500/api/votes/comment' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "voteType": "DISLIKE",
+  "postId": null,
+  "commentId": 1
+}'
+```
 
-### Response `200 OK`
+**Response**
 
-Empty body. Same side effects as post voting but applied to the comment.
-
-### Error Responses
-
-| Status | Condition                    |
-|--------|------------------------------|
-| 400    | Validation failed            |
-| 401    | Not authenticated            |
-| 404    | Comment not found            |
-| 429    | Rate limit exceeded (1000/min)|
-
----
-
-## Database Constraints
-
-- A user can only have **one vote per post** (`UNIQUE(user_id, post_id)`)
-- A user can only have **one vote per comment** (`UNIQUE(user_id, comment_id)`)
-- A vote must target **either** a post or a comment, never both (`CHECK` constraint)
-
-## Caching
-
-Voting evicts `posts`, `comments`, `hotPosts`, `topPosts`, and `commentTrees` caches.
+`200 OK` with an empty body

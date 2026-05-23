@@ -7,8 +7,10 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
+@org.hibernate.annotations.GenericGenerator(name = "uuid7", strategy = "com.lambrk.util.UuidV7Generator")
 @Table(name = "votes", indexes = {
     @Index(name = "idx_vote_user", columnList = "user_id"),
     @Index(name = "idx_vote_post", columnList = "post_id"),
@@ -21,8 +23,8 @@ import java.time.Instant;
 public record Vote(
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id,
+    @GeneratedValue(generator = "uuid7")
+    UUID id,
     
     @Enumerated(EnumType.STRING)
     @Column(name = "vote_type", nullable = false)
@@ -59,7 +61,7 @@ public record Vote(
         this(null, voteType, user, post, comment, null, null, Instant.now(), Instant.now());
     }
     
-    public Vote(Long id, VoteType voteType, User user, Post post, Comment comment,
+    public Vote(UUID id, VoteType voteType, User user, Post post, Comment comment,
                 String ipAddress, String userAgent, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.voteType = voteType;
@@ -73,6 +75,6 @@ public record Vote(
     }
     
     public enum VoteType {
-        UPVOTE, DOWNVOTE
+        LIKE, DISLIKE
     }
 }

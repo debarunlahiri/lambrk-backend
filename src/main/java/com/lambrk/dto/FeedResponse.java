@@ -4,6 +4,7 @@ import com.lambrk.domain.Post.PostType;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 public record FeedResponse(
     List<FeedPost> posts,
@@ -13,7 +14,7 @@ public record FeedResponse(
     boolean hasMore
 ) {
     public record FeedPost(
-        Long id,
+        UUID id,
         String title,
         String content,
         String url,
@@ -23,20 +24,20 @@ public record FeedResponse(
         boolean isSpoiler,
         boolean isOver18,
         int score,
-        int upvoteCount,
-        int downvoteCount,
+        int likeCount,
+        int dislikeCount,
         int commentCount,
         int viewCount,
         double algorithmScore,
         List<String> reasons,
         PostUserInfo author,
-        SubredditInfo subreddit,
+        CommunityInfo community,
         Instant createdAt,
         UserInteraction userInteraction
     ) {}
 
     public record PostUserInfo(
-        Long id,
+        UUID id,
         String username,
         String displayName,
         String avatarUrl,
@@ -45,8 +46,8 @@ public record FeedResponse(
         UserType type
     ) {}
 
-    public record SubredditInfo(
-        Long id,
+    public record CommunityInfo(
+        UUID id,
         String name,
         String title,
         String iconImageUrl,
@@ -54,7 +55,7 @@ public record FeedResponse(
     ) {}
 
     public record SuggestedUser(
-        Long id,
+        UUID id,
         String username,
         String displayName,
         String bio,
@@ -64,13 +65,13 @@ public record FeedResponse(
         UserType type,
         double relevanceScore,
         List<String> reasons,
-        int mutualSubreddits,
+        int mutualCommunities,
         List<String> commonInterests
     ) {}
 
     public record UserInteraction(
-        boolean hasUpvoted,
-        boolean hasDownvoted,
+        boolean hasLiked,
+        boolean hasDisliked,
         boolean hasCommented,
         boolean hasViewed,
         boolean isSaved,
@@ -91,7 +92,7 @@ public record FeedResponse(
         REGULAR,        // Normal user
         INFLUENCER,     // High karma/activity
         NEW_USER,       // Recently joined
-        MODERATOR,      // Subreddit moderator
+        MODERATOR,      // Community moderator
         ADMIN,          // Site admin
         VERIFIED        // Verified account
     }

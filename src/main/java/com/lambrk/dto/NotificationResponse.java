@@ -2,28 +2,29 @@ package com.lambrk.dto;
 
 import com.lambrk.domain.Notification;
 import java.time.Instant;
+import java.util.UUID;
 
 public record NotificationResponse(
     
-    Long id,
+    UUID id,
     
     Notification.NotificationType type,
     
-    Long recipientId,
+    UUID recipientId,
     
     String title,
     
     String message,
     
-    Long relatedPostId,
+    UUID relatedPostId,
     
     String relatedPostTitle,
     
-    Long relatedCommentId,
+    UUID relatedCommentId,
     
     String relatedCommentPreview,
     
-    Long relatedUserId,
+    UUID relatedUserId,
     
     String relatedUsername,
     

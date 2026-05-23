@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.YearMonth;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -36,7 +37,7 @@ public class FreeTierLimitService {
         this.freeTierUsageRepository = freeTierUsageRepository;
     }
 
-    public void checkUploadAllowed(Long userId, long fileSizeBytes) {
+    public void checkUploadAllowed(UUID userId, long fileSizeBytes) {
         if (!freeTierEnabled) {
             return;
         }
@@ -70,7 +71,7 @@ public class FreeTierLimitService {
         }
     }
 
-    public FreeTierUsage recordUpload(Long userId, long fileSizeBytes) {
+    public FreeTierUsage recordUpload(UUID userId, long fileSizeBytes) {
         if (!freeTierEnabled) {
             return null;
         }
@@ -94,7 +95,7 @@ public class FreeTierLimitService {
         return saved;
     }
 
-    public void recordFileDeletion(Long userId, long fileSizeBytes) {
+    public void recordFileDeletion(UUID userId, long fileSizeBytes) {
         if (!freeTierEnabled) {
             return;
         }
@@ -111,7 +112,7 @@ public class FreeTierLimitService {
         }
     }
 
-    public void recordBandwidthUsage(Long userId, long bytesTransferred) {
+    public void recordBandwidthUsage(UUID userId, long bytesTransferred) {
         if (!freeTierEnabled) {
             return;
         }
@@ -139,7 +140,7 @@ public class FreeTierLimitService {
         freeTierUsageRepository.save(updated);
     }
 
-    public FreeTierUsage getCurrentUsage(Long userId) {
+    public FreeTierUsage getCurrentUsage(UUID userId) {
         YearMonth currentMonth = YearMonth.now();
         return freeTierUsageRepository
             .findByUserIdAndPeriodYearAndPeriodMonth(userId, currentMonth.getYear(), currentMonth.getMonthValue())
@@ -173,7 +174,7 @@ public class FreeTierLimitService {
         boolean withinLimits
     ) {}
 
-    public FreeTierStatus getUserStatus(Long userId) {
+    public FreeTierStatus getUserStatus(UUID userId) {
         FreeTierUsage usage = getCurrentUsage(userId);
 
         long storageLimitBytes = getStorageLimitBytes();

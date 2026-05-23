@@ -8,8 +8,10 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
+@org.hibernate.annotations.GenericGenerator(name = "uuid7", strategy = "com.lambrk.util.UuidV7Generator")
 @Table(name = "admin_actions", indexes = {
     @Index(name = "idx_admin_action_type", columnList = "type"),
     @Index(name = "idx_admin_action_target", columnList = "target_id"),
@@ -21,15 +23,15 @@ import java.time.Instant;
 public record AdminAction(
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id,
+    @GeneratedValue(generator = "uuid7")
+    UUID id,
     
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     AdminActionType type,
     
     @Column(name = "target_id", nullable = false)
-    Long targetId,
+    UUID targetId,
     
     @Column(name = "target_type", nullable = false, length = 50)
     String targetType,
@@ -43,7 +45,7 @@ public record AdminAction(
     String notes,
     
     @Column(name = "performed_by", nullable = false)
-    Long performedBy,
+    UUID performedBy,
     
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -59,14 +61,14 @@ public record AdminAction(
     String result
 ) {
     
-    public AdminAction(AdminActionType type, Long targetId, String targetType, String reason,
-                      String notes, Long performedBy, Instant createdAt, Instant expiresAt,
+    public AdminAction(AdminActionType type, UUID targetId, String targetType, String reason,
+                      String notes, UUID performedBy, Instant createdAt, Instant expiresAt,
                       boolean isActive, String result) {
         this(null, type, targetId, targetType, reason, notes, performedBy, createdAt, expiresAt, isActive, result);
     }
     
     public enum AdminActionType {
         BAN_USER, SUSPEND_USER, DELETE_POST, DELETE_COMMENT, LOCK_POST, LOCK_COMMENT,
-        REMOVE_MODERATOR, ADD_MODERATOR, BAN_SUBREDDIT, QUARANTINE_POST, QUARANTINE_COMMENT
+        REMOVE_MODERATOR, ADD_MODERATOR, BAN_COMMUNITY, QUARANTINE_POST, QUARANTINE_COMMENT
     }
 }

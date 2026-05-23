@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import java.util.UUID;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -70,14 +71,14 @@ class RecommendationIntegrationTest {
     }
 
     @Test
-    void shouldGetSubredditRecommendations() throws Exception {
-        mockMvc.perform(get("/api/recommendations/subreddits/1")
+    void shouldGetCommunityRecommendations() throws Exception {
+        mockMvc.perform(get("/api/recommendations/communities/1")
                 .param("limit", "10")
                 .param("includeNSFW", "false")
                 .param("includeOver18", "false"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.type").value("SUBREDDITS"))
-            .andExpect(jsonPath("$.subreddits").isArray())
+            .andExpect(jsonPath("$.type").value("COMMUNITIES"))
+            .andExpect(jsonPath("$.communities").isArray())
             .andExpect(jsonPath("$.explanation").isString())
             .andExpect(jsonPath("$.confidence").isNumber())
             .andExpect(jsonPath("$.factors").isArray());
@@ -110,7 +111,7 @@ class RecommendationIntegrationTest {
     @Test
     void shouldGetContextualRecommendations() throws Exception {
         mockMvc.perform(get("/api/recommendations/context/1")
-                .param("contextSubredditId", "1")
+                .param("contextCommunityId", "1")
                 .param("contextPostId", "1")
                 .param("type", "posts")
                 .param("limit", "10"))
@@ -132,7 +133,7 @@ class RecommendationIntegrationTest {
     @Test
     void shouldCreateRecommendationRequest() throws Exception {
         RecommendationRequest request = new RecommendationRequest(
-            1L,
+            UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
             RecommendationRequest.RecommendationType.POSTS,
             10,
             List.of(),
@@ -145,7 +146,7 @@ class RecommendationIntegrationTest {
 
         mockMvc.perform(post("/api/recommendations")
                 .contentType("application/json")
-                .content("{\"userId\":1,\"type\":\"POSTS\",\"limit\":10,\"excludeSubreddits\":[],\"excludeUsers\":[],\"includeNSFW\":false,\"includeOver18\":false,\"contextSubredditId\":null,\"contextPostId\":null}"))
+                .content("{\"userId\":1,\"type\":\"POSTS\",\"limit\":10,\"excludeCommunities\":[],\"excludeUsers\":[],\"includeNSFW\":false,\"includeOver18\":false,\"contextCommunityId\":null,\"contextPostId\":null}"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.type").value("POSTS"))
             .andExpect(jsonPath("$.posts").isArray());
@@ -155,7 +156,7 @@ class RecommendationIntegrationTest {
     void shouldGetRecommendationsWithExclusions() throws Exception {
         mockMvc.perform(get("/api/recommendations/posts/1")
                 .param("limit", "10")
-                .param("excludeSubreddits", "programming,gaming")
+                .param("excludeCommunities", "programming,gaming")
                 .param("excludeUsers", "user1,user2")
                 .param("includeNSFW", "false")
                 .param("includeOver18", "false"))

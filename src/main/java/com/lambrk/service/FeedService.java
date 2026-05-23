@@ -1,14 +1,14 @@
 package com.lambrk.service;
 
 import com.lambrk.domain.Post;
-import com.lambrk.domain.Subreddit;
+import com.lambrk.domain.Community;
 import com.lambrk.domain.User;
 import com.lambrk.domain.Vote;
 import com.lambrk.dto.FeedRequest;
 import com.lambrk.dto.FeedResponse;
 import com.lambrk.dto.PostResponse;
 import com.lambrk.repository.PostRepository;
-import com.lambrk.repository.SubredditRepository;
+import com.lambrk.repository.CommunityRepository;
 import com.lambrk.repository.UserRepository;
 import com.lambrk.repository.VoteRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -28,6 +28,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
@@ -37,18 +38,18 @@ public class FeedService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final SubredditRepository subredditRepository;
+    private final CommunityRepository communityRepository;
     private final VoteRepository voteRepository;
     private final CustomMetrics customMetrics;
 
     public FeedService(PostRepository postRepository,
                       UserRepository userRepository,
-                      SubredditRepository subredditRepository,
+                      CommunityRepository communityRepository,
                       VoteRepository voteRepository,
                       CustomMetrics customMetrics) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
-        this.subredditRepository = subredditRepository;
+        this.communityRepository = communityRepository;
         this.voteRepository = voteRepository;
         this.customMetrics = customMetrics;
     }
@@ -74,7 +75,7 @@ public class FeedService {
             // Gather user interaction data
             UserInteractionData interactionData = gatherUserInteractionData(user);
             
-            // Get candidate posts based on user's subreddits and interactions
+            // Get candidate posts based on user's communities and interactions
             List<ScoredPost> scoredPosts = scoreAndRankPosts(user, interactionData, request);
             
             // Get suggested users based on interactions
@@ -94,9 +95,9 @@ public class FeedService {
                 24,
                 List.of(
                     "User engagement history",
-                    "Post popularity (upvotes/downvotes)",
+                    "Post popularity (likes/dislikes)",
                     "Time decay (freshness)",
-                    "Subreddit affinity",
+                    "Community affinity",
                     "Content type preferences",
                     "Author reputation"
                 ),
@@ -122,19 +123,19 @@ public class FeedService {
     private UserInteractionData gatherUserInteractionData(User user) {
         // Get user's voting history
         List<Vote> userVotes = voteRepository.findByUser(user);
-        Set<Long> upvotedPostIds = userVotes.stream()
-            .filter(v -> v.voteType() == Vote.VoteType.UPVOTE)
+        Set<UUID> likedPostIds = userVotes.stream()
+            .filter(v -> v.voteType() == Vote.VoteType.LIKE)
             .map(v -> v.post().id())
             .collect(Collectors.toSet());
-        Set<Long> downvotedPostIds = userVotes.stream()
-            .filter(v -> v.voteType() == Vote.VoteType.DOWNVOTE)
+        Set<UUID> dislikedPostIds = userVotes.stream()
+            .filter(v -> v.voteType() == Vote.VoteType.DISLIKE)
             .map(v -> v.post().id())
             .collect(Collectors.toSet());
 
-        // Get user's subscribed subreddits
-        Set<Subreddit> subscribedSubreddits = subredditRepository.findSubscribedSubredditsByUser(user.id());
-        Set<Long> subscribedSubredditIds = subscribedSubreddits.stream()
-            .map(Subreddit::id)
+        // Get user's subscribed communities
+        Set<Community> subscribedCommunities = communityRepository.findSubscribedCommunitiesByUser(user.id());
+        Set<UUID> subscribedCommunityIds = subscribedCommunities.stream()
+            .map(Community::id)
             .collect(Collectors.toSet());
 
         // Get user's post history
@@ -143,34 +144,34 @@ public class FeedService {
             .map(Post::postType)
             .collect(Collectors.toSet());
 
-        // Get active subreddits from post history
-        Map<Long, Integer> subredditActivityScore = new HashMap<>();
+        // Get active communities from post history
+        Map<UUID, Integer> communityActivityScore = new HashMap<>();
         userPosts.forEach(post -> {
-            Long subredditId = post.subreddit().id();
-            subredditActivityScore.merge(subredditId, 1, (a, b) -> a + b);
+            UUID communityId = post.community().id();
+            communityActivityScore.merge(communityId, 1, (a, b) -> a + b);
         });
 
         return new UserInteractionData(
-            upvotedPostIds,
-            downvotedPostIds,
-            subscribedSubredditIds,
-            subscribedSubreddits,
+            likedPostIds,
+            dislikedPostIds,
+            subscribedCommunityIds,
+            subscribedCommunities,
             preferredPostTypes,
-            subredditActivityScore,
+            communityActivityScore,
             userPosts
         );
     }
 
     private List<ScoredPost> scoreAndRankPosts(User user, UserInteractionData interactionData, FeedRequest request) {
-        // Get candidate posts from subscribed subreddits and popular posts
+        // Get candidate posts from subscribed communities and popular posts
         Pageable pageable = PageRequest.of(0, request.limit() * 3, Sort.by(Sort.Direction.DESC, "createdAt"));
         List<Post> candidatePosts;
         
-        if (request.includeFromFollowingOnly() && !interactionData.subscribedSubredditIds().isEmpty()) {
-            // Use findAll and filter since findBySubredditIdIn doesn't exist
+        if (request.includeFromFollowingOnly() && !interactionData.subscribedCommunityIds().isEmpty()) {
+            // Use findAll and filter since findByCommunityIdIn doesn't exist
             candidatePosts = postRepository.findAll(pageable).getContent()
                 .stream()
-                .filter(p -> interactionData.subscribedSubredditIds().contains(p.subreddit().id()))
+                .filter(p -> interactionData.subscribedCommunityIds().contains(p.community().id()))
                 .collect(Collectors.toList());
         } else {
             candidatePosts = postRepository.findAll(pageable).getContent();
@@ -201,9 +202,9 @@ public class FeedService {
         double freshnessScore = calculateFreshnessScore(post, request.timeDecayFactor());
         score += freshnessScore * 0.20;
         
-        // 3. Subreddit affinity (0-100)
-        double subredditScore = calculateSubredditAffinity(post, interactionData);
-        score += subredditScore * 0.25;
+        // 3. Community affinity (0-100)
+        double communityScore = calculateCommunityAffinity(post, interactionData);
+        score += communityScore * 0.25;
         
         // 4. Content type preference (0-100)
         double contentTypeScore = calculateContentTypeScore(post, interactionData);
@@ -214,19 +215,19 @@ public class FeedService {
         score += authorScore * 0.10;
         
         // 6. Personalization boosts
-        if (interactionData.upvotedPostIds().contains(post.id())) {
-            score *= 0.3; // Penalize already seen/upvoted posts
+        if (interactionData.likedPostIds().contains(post.id())) {
+            score *= 0.3; // Penalize already seen/liked posts
         }
-        if (interactionData.downvotedPostIds().contains(post.id())) {
-            score *= 0.1; // Heavily penalize downvoted posts
+        if (interactionData.dislikedPostIds().contains(post.id())) {
+            score *= 0.1; // Heavily penalize disliked posts
         }
         
         return score;
     }
 
     private double calculatePopularityScore(Post post) {
-        // Score based on upvotes, downvotes, comments, views
-        int netVotes = post.upvoteCount() - post.downvoteCount();
+        // Score based on likes, dislikes, comments, views
+        int netVotes = post.likeCount() - post.dislikeCount();
         int engagement = post.commentCount() + post.viewCount() / 100;
         
         double score = Math.min(100, (netVotes * 2) + (engagement * 0.5));
@@ -246,20 +247,20 @@ public class FeedService {
         return Math.max(0, Math.min(100, score));
     }
 
-    private double calculateSubredditAffinity(Post post, UserInteractionData interactionData) {
-        Long subredditId = post.subreddit().id();
+    private double calculateCommunityAffinity(Post post, UserInteractionData interactionData) {
+        UUID communityId = post.community().id();
         
-        if (interactionData.subscribedSubredditIds().contains(subredditId)) {
-            return 100.0; // Subscribed subreddit - high affinity
+        if (interactionData.subscribedCommunityIds().contains(communityId)) {
+            return 100.0; // Subscribed community - high affinity
         }
         
-        // Check if user has been active in this subreddit
-        Integer activityScore = interactionData.subredditActivityScore().get(subredditId);
+        // Check if user has been active in this community
+        Integer activityScore = interactionData.communityActivityScore().get(communityId);
         if (activityScore != null) {
             return Math.min(100, activityScore * 10.0); // 10 points per post
         }
         
-        return 30.0; // Base score for new subreddits
+        return 30.0; // Base score for new communities
     }
 
     private double calculateContentTypeScore(Post post, UserInteractionData interactionData) {
@@ -289,11 +290,11 @@ public class FeedService {
     private List<String> generateScoreReasons(Post post, UserInteractionData interactionData, double score) {
         List<String> reasons = new ArrayList<>();
         
-        if (interactionData.subscribedSubredditIds().contains(post.subreddit().id())) {
+        if (interactionData.subscribedCommunityIds().contains(post.community().id())) {
             reasons.add("From your subscribed community");
         }
         
-        if (post.upvoteCount() > 100) {
+        if (post.likeCount() > 100) {
             reasons.add("Popular post");
         }
         
@@ -318,13 +319,13 @@ public class FeedService {
     }
 
     private List<FeedResponse.SuggestedUser> findSuggestedUsers(User user, UserInteractionData interactionData, FeedRequest request) {
-        // Find users who post in similar subreddits
-        Set<Long> similarUsers = new HashSet<>();
+        // Find users who post in similar communities
+        Set<UUID> similarUsers = new HashSet<>();
         
-        for (Long subredditId : interactionData.subredditActivityScore().keySet()) {
-            subredditRepository.findById(subredditId).ifPresent(sub -> {
-                List<Post> postsInSubreddit = postRepository.findBySubreddit(sub, PageRequest.of(0, 20)).getContent();
-                postsInSubreddit.forEach(post -> {
+        for (UUID communityId : interactionData.communityActivityScore().keySet()) {
+            communityRepository.findById(communityId).ifPresent(sub -> {
+                List<Post> postsInCommunity = postRepository.findByCommunity(sub, PageRequest.of(0, 20)).getContent();
+                postsInCommunity.forEach(post -> {
                     if (!post.author().id().equals(user.id())) {
                         similarUsers.add(post.author().id());
                     }
@@ -345,21 +346,21 @@ public class FeedService {
     private FeedResponse.SuggestedUser calculateUserRelevance(User suggestedUser, User currentUser, UserInteractionData interactionData) {
         double score = 0.0;
         List<String> reasons = new ArrayList<>();
-        int mutualSubreddits = 0;
+        int mutualCommunities = 0;
         List<String> commonInterests = new ArrayList<>();
         
-        // Check mutual subreddits
-        Set<Subreddit> theirSubreddits = subredditRepository.findSubscribedSubredditsByUser(suggestedUser.id());
-        for (Subreddit sub : theirSubreddits) {
-            if (interactionData.subscribedSubreddits().contains(sub)) {
-                mutualSubreddits++;
+        // Check mutual communities
+        Set<Community> theirCommunities = communityRepository.findSubscribedCommunitiesByUser(suggestedUser.id());
+        for (Community sub : theirCommunities) {
+            if (interactionData.subscribedCommunities().contains(sub)) {
+                mutualCommunities++;
                 commonInterests.add(sub.name());
             }
         }
         
-        if (mutualSubreddits > 0) {
-            score += mutualSubreddits * 20.0;
-            reasons.add("Active in " + mutualSubreddits + " communities you follow");
+        if (mutualCommunities > 0) {
+            score += mutualCommunities * 20.0;
+            reasons.add("Active in " + mutualCommunities + " communities you follow");
         }
         
         // Author reputation
@@ -387,7 +388,7 @@ public class FeedService {
             userType,
             Math.min(100, score),
             reasons,
-            mutualSubreddits,
+            mutualCommunities,
             commonInterests.stream().limit(3).toList()
         );
     }
@@ -413,17 +414,17 @@ public class FeedService {
             determineUserType(post.author())
         );
         
-        FeedResponse.SubredditInfo subredditInfo = new FeedResponse.SubredditInfo(
-            post.subreddit().id(),
-            post.subreddit().name(),
-            post.subreddit().title(),
-            post.subreddit().iconImageUrl(),
-            interactionData.subscribedSubredditIds().contains(post.subreddit().id())
+        FeedResponse.CommunityInfo communityInfo = new FeedResponse.CommunityInfo(
+            post.community().id(),
+            post.community().name(),
+            post.community().title(),
+            post.community().iconImageUrl(),
+            interactionData.subscribedCommunityIds().contains(post.community().id())
         );
         
         FeedResponse.UserInteraction userInteraction = new FeedResponse.UserInteraction(
-            interactionData.upvotedPostIds().contains(post.id()),
-            interactionData.downvotedPostIds().contains(post.id()),
+            interactionData.likedPostIds().contains(post.id()),
+            interactionData.dislikedPostIds().contains(post.id()),
             false, // hasCommented - would need comment repository
             false, // hasViewed - would need view tracking
             false, // isSaved
@@ -443,14 +444,14 @@ public class FeedService {
             post.isSpoiler(),
             post.isOver18(),
             post.score(),
-            post.upvoteCount(),
-            post.downvoteCount(),
+            post.likeCount(),
+            post.dislikeCount(),
             post.commentCount(),
             post.viewCount(),
             score,
             reasons,
             authorInfo,
-            subredditInfo,
+            communityInfo,
             post.createdAt(),
             userInteraction
         );
@@ -458,12 +459,12 @@ public class FeedService {
 
     // Record to hold user interaction data for scoring
     private record UserInteractionData(
-        Set<Long> upvotedPostIds,
-        Set<Long> downvotedPostIds,
-        Set<Long> subscribedSubredditIds,
-        Set<Subreddit> subscribedSubreddits,
+        Set<UUID> likedPostIds,
+        Set<UUID> dislikedPostIds,
+        Set<UUID> subscribedCommunityIds,
+        Set<Community> subscribedCommunities,
         Set<Post.PostType> preferredPostTypes,
-        Map<Long, Integer> subredditActivityScore,
+        Map<UUID, Integer> communityActivityScore,
         List<Post> userPosts
     ) {}
 

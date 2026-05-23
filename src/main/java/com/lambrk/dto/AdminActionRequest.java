@@ -2,6 +2,7 @@ package com.lambrk.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
 
 public record AdminActionRequest(
     
@@ -9,7 +10,7 @@ public record AdminActionRequest(
     AdminActionType action,
     
     @NotNull
-    Long targetId,
+    UUID targetId,
     
     String reason,
     
@@ -24,6 +25,6 @@ public record AdminActionRequest(
 
     public enum AdminActionType {
         BAN_USER, SUSPEND_USER, DELETE_POST, DELETE_COMMENT, LOCK_POST, LOCK_COMMENT,
-        REMOVE_MODERATOR, ADD_MODERATOR, BAN_SUBREDDIT, QUARANTINE_POST, QUARANTINE_COMMENT
+        REMOVE_MODERATOR, ADD_MODERATOR, BAN_COMMUNITY, QUARANTINE_POST, QUARANTINE_COMMENT
     }
 }

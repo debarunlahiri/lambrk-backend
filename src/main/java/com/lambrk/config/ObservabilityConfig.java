@@ -19,9 +19,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class ObservabilityConfig {
@@ -73,26 +70,19 @@ public class ObservabilityConfig {
     }
 
     @Bean
-    public ScheduledExecutorService metricsScheduler() {
-        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.scheduleAtFixedRate(() -> {
-            // Custom metrics collection can be added here
-        }, 1, 1, TimeUnit.MINUTES);
-        return scheduler;
-    }
-
-    @Bean
     public OpenTelemetry openTelemetry() {
         String otlpEndpoint = System.getenv().getOrDefault("OTLP_ENDPOINT", "http://localhost:4317");
-        
+        if (otlpEndpoint.isBlank() || "disabled".equalsIgnoreCase(otlpEndpoint)) {
+            return OpenTelemetry.noop();
+        }
         var spanExporter = OtlpGrpcSpanExporter.builder()
             .setEndpoint(otlpEndpoint)
-            .setTimeout(Duration.ofSeconds(30))
+            .setTimeout(Duration.ofSeconds(5))
             .build();
 
         var tracerProvider = SdkTracerProvider.builder()
             .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
-            .setSampler(Sampler.traceIdRatioBased(0.1)) // 10% sampling
+            .setSampler(Sampler.traceIdRatioBased(0.05))
             .build();
 
         return OpenTelemetrySdk.builder()
@@ -103,62 +93,5 @@ public class ObservabilityConfig {
     @Bean
     public TracerProvider openTelemetryTracerProvider(OpenTelemetry openTelemetry) {
         return openTelemetry.getTracerProvider();
-    }
-
-    public static class CustomMetrics {
-        private final MeterRegistry meterRegistry;
-
-        public CustomMetrics(MeterRegistry meterRegistry) {
-            this.meterRegistry = meterRegistry;
-            initializeMetrics();
-        }
-
-        private void initializeMetrics() {
-            // Custom business metrics
-            meterRegistry.gauge("lambrk.posts.total", this, CustomMetrics::getTotalPosts);
-            meterRegistry.gauge("lambrk.comments.total", this, CustomMetrics::getTotalComments);
-            meterRegistry.gauge("lambrk.users.active", this, CustomMetrics::getActiveUsers);
-            meterRegistry.gauge("lambrk.communities.total", this, CustomMetrics::getTotalSubreddits);
-        }
-
-        private double getTotalPosts() {
-            // This would typically query the database or cache
-            return 0.0; // Placeholder
-        }
-
-        private double getTotalComments() {
-            // This would typically query the database or cache
-            return 0.0; // Placeholder
-        }
-
-        private double getActiveUsers() {
-            // This would typically query the database or cache
-            return 0.0; // Placeholder
-        }
-
-        private double getTotalSubreddits() {
-            // This would typically query the database or cache
-            return 0.0; // Placeholder
-        }
-
-        public void recordPostCreated(String subreddit) {
-            meterRegistry.counter("lambrk.posts.created", "community", subreddit).increment();
-        }
-
-        public void recordCommentCreated(String subreddit) {
-            meterRegistry.counter("lambrk.comments.created", "community", subreddit).increment();
-        }
-
-        public void recordVoteCast(String voteType) {
-            meterRegistry.counter("lambrk.votes.cast", "type", voteType).increment();
-        }
-
-        public void recordUserLogin(String userId) {
-            meterRegistry.counter("lambrk.users.login", "userId", userId).increment();
-        }
-
-        public void recordUserRegistration() {
-            meterRegistry.counter("lambrk.users.registered").increment();
-        }
     }
 }

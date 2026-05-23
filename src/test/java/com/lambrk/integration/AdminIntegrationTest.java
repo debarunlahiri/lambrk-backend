@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import java.util.UUID;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -59,7 +60,7 @@ class AdminIntegrationTest {
     void shouldPerformAdminAction() throws Exception {
         AdminActionRequest request = new AdminActionRequest(
             AdminActionRequest.AdminActionType.DELETE_POST,
-            1L,
+            UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
             "Violation of community guidelines",
             "Spam content",
             null,

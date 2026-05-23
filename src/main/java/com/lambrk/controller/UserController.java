@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
@@ -30,7 +31,7 @@ public class UserController {
     @GetMapping("/{userId}")
     @NewSpan("get-user")
     @Timed(value = "users.get.duration")
-    public ResponseEntity<UserResponse> getUser(@PathVariable @SpanTag Long userId) {
+    public ResponseEntity<UserResponse> getUser(@PathVariable @SpanTag UUID userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
         return ResponseEntity.ok(UserResponse.from(user));
@@ -79,7 +80,7 @@ public class UserController {
     @NewSpan("delete-user")
     @Timed(value = "users.delete.duration")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteUser(@PathVariable @SpanTag Long userId) {
+    public ResponseEntity<Void> deleteUser(@PathVariable @SpanTag UUID userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
         userRepository.delete(user);

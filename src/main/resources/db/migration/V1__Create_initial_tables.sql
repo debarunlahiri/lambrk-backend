@@ -1,6 +1,6 @@
 -- Create Users table
 CREATE TABLE users (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
@@ -14,9 +14,9 @@ CREATE TABLE users (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create Sublambrks table
-CREATE TABLE sublambrks (
-    id BIGSERIAL PRIMARY KEY,
+-- Create Communities table
+CREATE TABLE communities (
+    id UUID PRIMARY KEY,
     name VARCHAR(21) UNIQUE NOT NULL,
     title VARCHAR(100) NOT NULL,
     description TEXT,
@@ -29,14 +29,14 @@ CREATE TABLE sublambrks (
     member_count INTEGER NOT NULL DEFAULT 0,
     subscriber_count INTEGER NOT NULL DEFAULT 0,
     active_user_count INTEGER NOT NULL DEFAULT 0,
-    created_by BIGINT NOT NULL REFERENCES users(id),
+    created_by UUID NOT NULL REFERENCES users(id),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create Posts table
 CREATE TABLE posts (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     title VARCHAR(300) NOT NULL,
     content TEXT,
     url VARCHAR(2000),
@@ -55,8 +55,8 @@ CREATE TABLE posts (
     comment_count INTEGER NOT NULL DEFAULT 0,
     view_count INTEGER NOT NULL DEFAULT 0,
     award_count INTEGER NOT NULL DEFAULT 0,
-    author_id BIGINT NOT NULL REFERENCES users(id),
-    sublambrk_id BIGINT NOT NULL REFERENCES sublambrks(id),
+    author_id UUID NOT NULL REFERENCES users(id),
+    community_id UUID NOT NULL REFERENCES communities(id),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     archived_at TIMESTAMP
@@ -64,7 +64,7 @@ CREATE TABLE posts (
 
 -- Create Comments table
 CREATE TABLE comments (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     content TEXT NOT NULL,
     flair_text VARCHAR(64),
     is_edited BOOLEAN NOT NULL DEFAULT FALSE,
@@ -79,9 +79,9 @@ CREATE TABLE comments (
     reply_count INTEGER NOT NULL DEFAULT 0,
     award_count INTEGER NOT NULL DEFAULT 0,
     depth_level INTEGER NOT NULL DEFAULT 0,
-    author_id BIGINT NOT NULL REFERENCES users(id),
-    post_id BIGINT NOT NULL REFERENCES posts(id),
-    parent_id BIGINT REFERENCES comments(id),
+    author_id UUID NOT NULL REFERENCES users(id),
+    post_id UUID NOT NULL REFERENCES posts(id),
+    parent_id UUID REFERENCES comments(id),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     edited_at TIMESTAMP,
@@ -91,11 +91,11 @@ CREATE TABLE comments (
 
 -- Create Votes table
 CREATE TABLE votes (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     vote_type VARCHAR(10) NOT NULL,
-    user_id BIGINT NOT NULL REFERENCES users(id),
-    post_id BIGINT REFERENCES posts(id),
-    comment_id BIGINT REFERENCES comments(id),
+    user_id UUID NOT NULL REFERENCES users(id),
+    post_id UUID REFERENCES posts(id),
+    comment_id UUID REFERENCES comments(id),
     ip_address VARCHAR(45),
     user_agent VARCHAR(500),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -108,20 +108,20 @@ CREATE TABLE votes (
     )
 );
 
--- Create User-Sublambrk membership table
-CREATE TABLE user_sublambrk_memberships (
-    user_id BIGINT NOT NULL REFERENCES users(id),
-    sublambrk_id BIGINT NOT NULL REFERENCES sublambrks(id),
+-- Create User-Community membership table
+CREATE TABLE user_community_memberships (
+    user_id UUID NOT NULL REFERENCES users(id),
+    community_id UUID NOT NULL REFERENCES communities(id),
     joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, sublambrk_id)
+    PRIMARY KEY (user_id, community_id)
 );
 
--- Create User-Sublambrk moderator table
-CREATE TABLE user_sublambrk_moderators (
-    user_id BIGINT NOT NULL REFERENCES users(id),
-    sublambrk_id BIGINT NOT NULL REFERENCES sublambrks(id),
+-- Create User-Community moderator table
+CREATE TABLE user_community_moderators (
+    user_id UUID NOT NULL REFERENCES users(id),
+    community_id UUID NOT NULL REFERENCES communities(id),
     added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, sublambrk_id)
+    PRIMARY KEY (user_id, community_id)
 );
 
 -- Create indexes for better performance
@@ -129,12 +129,12 @@ CREATE INDEX idx_user_username ON users(username);
 CREATE INDEX idx_user_email ON users(email);
 CREATE INDEX idx_user_created_at ON users(created_at);
 
-CREATE INDEX idx_sublambrk_name ON sublambrks(name);
-CREATE INDEX idx_sublambrk_created_at ON sublambrks(created_at);
-CREATE INDEX idx_sublambrk_member_count ON sublambrks(member_count);
+CREATE INDEX idx_community_name ON communities(name);
+CREATE INDEX idx_community_created_at ON communities(created_at);
+CREATE INDEX idx_community_member_count ON communities(member_count);
 
 CREATE INDEX idx_post_author ON posts(author_id);
-CREATE INDEX idx_post_sublambrk ON posts(sublambrk_id);
+CREATE INDEX idx_post_community ON posts(community_id);
 CREATE INDEX idx_post_created_at ON posts(created_at);
 CREATE INDEX idx_post_score ON posts(score);
 CREATE INDEX idx_post_title ON posts(title);
@@ -164,7 +164,7 @@ $$ language 'plpgsql';
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_sublambrks_updated_at BEFORE UPDATE ON sublambrks
+CREATE TRIGGER update_communities_updated_at BEFORE UPDATE ON communities
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_posts_updated_at BEFORE UPDATE ON posts
@@ -177,27 +177,27 @@ CREATE TRIGGER update_votes_updated_at BEFORE UPDATE ON votes
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Insert some sample data
-INSERT INTO users (username, email, password, display_name) VALUES
-('admin', 'admin@lambrk.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'Admin User'),
-('john_doe', 'john@example.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'John Doe'),
-('jane_smith', 'jane@example.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'Jane Smith');
+INSERT INTO users (id, username, email, password, display_name) VALUES
+('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'admin', 'admin@lambrk.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'Admin User'),
+('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'john_doe', 'john@example.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'John Doe'),
+('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'jane_smith', 'jane@example.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'Jane Smith');
 
-INSERT INTO sublambrks (name, title, description, created_by) VALUES
-('programming', 'Programming', 'All things programming and software development', 1),
-('gaming', 'Gaming', 'Discussions about video games', 1),
-('technology', 'Technology', 'Latest tech news and discussions', 1);
+INSERT INTO communities (id, name, title, description, created_by) VALUES
+('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'programming', 'Programming', 'All things programming and software development', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'gaming', 'Gaming', 'Discussions about video games', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'technology', 'Technology', 'Latest tech news and discussions', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
 
-INSERT INTO user_sublambrk_moderators (user_id, sublambrk_id) VALUES
-(1, 1), (1, 2), (1, 3);
+INSERT INTO user_community_moderators (user_id, community_id) VALUES
+('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'), ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12'), ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13');
 
-INSERT INTO user_sublambrk_memberships (user_id, sublambrk_id) VALUES
-(1, 1), (1, 2), (1, 3),
-(2, 1), (2, 2),
-(3, 1), (3, 3);
+INSERT INTO user_community_memberships (user_id, community_id) VALUES
+('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'), ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12'), ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13'),
+('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'), ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12'),
+('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'), ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13');
 
--- Update sublambrk member counts
-UPDATE sublambrks SET member_count = (
-    SELECT COUNT(*) FROM user_sublambrk_memberships WHERE sublambrk_id = sublambrks.id
+-- Update community member counts
+UPDATE communities SET member_count = (
+    SELECT COUNT(*) FROM user_community_memberships WHERE community_id = communities.id
 );
 
-UPDATE sublambrks SET subscriber_count = member_count;
+UPDATE communities SET subscriber_count = member_count;

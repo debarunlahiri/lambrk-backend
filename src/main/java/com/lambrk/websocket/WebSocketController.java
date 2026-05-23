@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 public class WebSocketController {
@@ -66,7 +67,7 @@ public class WebSocketController {
     @MessageMapping("/subscribe/posts/{postId}")
     @Counted(value = "websocket.posts.subscribed")
     @Timed(value = "websocket.posts.subscribe.duration")
-    public void subscribeToPost(@Payload Long postId, Principal principal) {
+    public void subscribeToPost(@Payload UUID postId, Principal principal) {
         // User wants real-time updates for a specific post
         String username = principal.getName();
         
@@ -78,18 +79,18 @@ public class WebSocketController {
         );
     }
 
-    @MessageMapping("/subscribe/subreddit/{subredditId}")
-    @Counted(value = "websocket.subreddits.subscribed")
-    @Timed(value = "websocket.subreddits.subscribe.duration")
-    public void subscribeToSubreddit(@Payload Long subredditId, Principal principal) {
-        // User wants real-time updates for a specific subreddit
+    @MessageMapping("/subscribe/community/{communityId}")
+    @Counted(value = "websocket.communities.subscribed")
+    @Timed(value = "websocket.communities.subscribe.duration")
+    public void subscribeToCommunity(@Payload UUID communityId, Principal principal) {
+        // User wants real-time updates for a specific community
         String username = principal.getName();
         
         // Send confirmation
         messagingTemplate.convertAndSendToUser(
             username,
-            "/queue/subreddit/" + subredditId + "/subscribed",
-            "Subscribed to subreddit updates: " + subredditId
+            "/queue/community/" + communityId + "/subscribed",
+            "Subscribed to community updates: " + communityId
         );
     }
 
@@ -133,9 +134,9 @@ public class WebSocketController {
         );
     }
 
-    public void broadcastSubredditUpdate(Long subredditId, Object update) {
+    public void broadcastCommunityUpdate(UUID communityId, Object update) {
         messagingTemplate.convertAndSend(
-            "/topic/subreddits/" + subredditId,
+            "/topic/communities/" + communityId,
             update
         );
     }

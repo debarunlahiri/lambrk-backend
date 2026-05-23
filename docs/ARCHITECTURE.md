@@ -17,12 +17,12 @@
 │                  Spring Boot Application                        │
 │                                                                 │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-│  │  Auth    │  │  Post    │  │ Comment  │  │Sublambrk │       │
+│  │  Auth    │  │  Post    │  │ Comment  │  │Community │       │
 │  │Controller│  │Controller│  │Controller│  │Controller│       │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
 │       │              │              │              │             │
 │  ┌────▼─────┐  ┌────▼─────┐  ┌────▼─────┐  ┌────▼─────┐       │
-│  │  Auth   │  │  Post    │  │ Comment  │  │Sublambrk │       │
+│  │  Auth   │  │  Post    │  │ Comment  │  │Community │       │
 │  │ Service │  │ Service  │  │ Service  │  │ Service  │       │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
 │       │              │              │              │             │
@@ -81,7 +81,8 @@ com.example.lambrk
 │   ├── User.java                       # JPA record entity
 │   ├── Post.java                       # JPA record entity + PostType enum
 │   ├── Comment.java                    # JPA record entity (tree structure)
-│   ├── Sublambrk.java                  # JPA record entity
+│   ├── Community.java                  # JPA record entity
+│   ├── Category.java                   # JPA record entity
 │   ├── Vote.java                       # JPA record entity + VoteType enum
 │   ├── FileUpload.java                 # JPA record entity for file metadata
 │   └── FreeTierUsage.java              # JPA record entity for usage tracking
@@ -93,8 +94,10 @@ com.example.lambrk
 │   ├── PostResponse.java               # Post API response
 │   ├── CommentCreateRequest.java       # Comment creation
 │   ├── CommentResponse.java            # Comment API response
-│   ├── SublambrkCreateRequest.java     # Sublambrk creation/update
-│   ├── SublambrkResponse.java          # Sublambrk API response
+│   ├── CommunityCreateRequest.java     # Community creation/update
+│   ├── CommunityResponse.java          # Community API response
+│   ├── CategoryCreateRequest.java      # Category creation/update
+│   ├── CategoryResponse.java           # Category API response
 │   ├── UserResponse.java               # User API response (no email/password)
 │   ├── VoteRequest.java                # Vote creation
 │   ├── FileUploadRequest.java          # File upload request
@@ -103,7 +106,8 @@ com.example.lambrk
 │   ├── UserRepository.java             # JPA + custom queries
 │   ├── PostRepository.java             # JPA + custom queries
 │   ├── CommentRepository.java          # JPA + custom queries
-│   ├── SublambrkRepository.java        # JPA + custom queries
+│   ├── CommunityRepository.java        # JPA + custom queries
+│   ├── CategoryRepository.java         # JPA + custom queries
 │   ├── VoteRepository.java             # JPA + custom queries
 │   ├── FileUploadRepository.java       # File metadata queries
 │   └── FreeTierUsageRepository.java    # Free tier usage queries
@@ -111,7 +115,8 @@ com.example.lambrk
 │   ├── PostService.java                # Business logic + structured concurrency
 │   ├── CommentService.java             # Comment CRUD + threading
 │   ├── VoteService.java                # Toggle voting logic
-│   ├── SublambrkService.java           # Community management
+│   ├── CommunityService.java           # Community management
+│   ├── CategoryService.java            # Category management
 │   ├── AuthService.java                # Registration + login + refresh
 │   ├── KafkaEventService.java          # Event publishing via StreamBridge
 │   ├── AIContentModerationService.java # Spring AI moderation + recommendations
@@ -126,7 +131,8 @@ com.example.lambrk
 │   ├── AuthController.java             # /api/auth/*
 │   ├── PostController.java             # /api/posts/*
 │   ├── CommentController.java          # /api/comments/*
-│   ├── SublambrkController.java        # /api/sublambrks/*
+│   ├── CommunityController.java        # /api/communities/*
+│   ├── CategoryController.java         # /api/categories/*
 │   ├── VoteController.java             # /api/votes/*
 │   ├── UserController.java             # /api/users/*
 │   └── FileUploadController.java       # /api/files/*
@@ -186,7 +192,7 @@ Side Effects:
 ### Structured Concurrency in Services
 - `StructuredTaskScope.ShutdownOnFailure` for parallel DB lookups
 - Clean cancellation when any subtask fails
-- Used in `PostService.createPost()` to fetch User + Sublambrk concurrently
+- Used in `PostService.createPost()` to fetch User + Community concurrently
 
 ### Record-Based Domain Model
 - JPA entities as Java records (immutable by default)
@@ -211,7 +217,7 @@ Side Effects:
 
 ### S3 Storage Architecture
 - AWS S3 as primary file storage with configurable fallback to local filesystem
-- Files organized by type: `avatars/`, `posts/images/`, `posts/videos/`, `sublambrks/icons/`, etc.
+- Files organized by type: `avatars/`, `posts/images/`, `posts/videos/`, `communities/icons/`, etc.
 - Presigned URLs for secure temporary access to private files
 - Circuit breaker and retry patterns for S3 operations (Resilience4j)
 - Support for MinIO and other S3-compatible services via custom endpoint
@@ -239,9 +245,10 @@ User 1──* Comment
 User 1──* Vote
 User 1──* FileUpload
 User 1──* FreeTierUsage
-User *──* Sublambrk (membership)
-User *──* Sublambrk (moderation)
-Sublambrk 1──* Post
+User *──* Community (membership)
+User *──* Community (moderation)
+Community *──* Category (categorization)
+Community 1──* Post
 Post 1──* Comment
 Post 1──* Vote
 Post *──* FileUpload (post attachments)
@@ -285,5 +292,5 @@ Register/Login → JWT access token (24h) + refresh token (7d)
 |------------|------------------------------------------------|
 | USER       | CRUD own posts/comments, vote, subscribe       |
 | VERIFIED   | Same as USER (badge only)                      |
-| MODERATOR  | Edit sublambrk settings, remove content        |
+| MODERATOR  | Edit community settings, remove content        |
 | ADMIN      | All permissions, delete users, manage system   |

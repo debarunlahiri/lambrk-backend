@@ -14,9 +14,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
+public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
 
     Optional<User> findByUsername(String username);
 
@@ -43,13 +44,13 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     @Query("UPDATE User u SET u.karma = u.karma + :delta WHERE u.id = :userId")
     @Modifying
-    void updateUserKarma(@Param("userId") Long userId, @Param("delta") int delta);
+    void updateUserKarma(@Param("userId") UUID userId, @Param("delta") int delta);
 
-    @Query("SELECT u FROM User u JOIN u.subscribedSubreddits s WHERE s.id = :subredditId")
-    Set<User> findSubscribersBySubredditId(@Param("subredditId") Long subredditId);
+    @Query("SELECT u FROM User u JOIN u.subscribedCommunities s WHERE s.id = :communityId")
+    Set<User> findSubscribersByCommunityId(@Param("communityId") UUID communityId);
 
-    @Query("SELECT u FROM User u JOIN u.moderatedSubreddits s WHERE s.id = :subredditId")
-    Set<User> findModeratorsBySubredditId(@Param("subredditId") Long subredditId);
+    @Query("SELECT u FROM User u JOIN u.moderatedCommunities s WHERE s.id = :communityId")
+    Set<User> findModeratorsByCommunityId(@Param("communityId") UUID communityId);
 
     @Query("SELECT u FROM User u WHERE u.username LIKE %:query% OR u.email LIKE %:query%")
     Page<User> searchUsers(@Param("query") String query, Pageable pageable);

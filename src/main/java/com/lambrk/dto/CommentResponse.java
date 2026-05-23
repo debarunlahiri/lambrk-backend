@@ -4,9 +4,10 @@ import com.lambrk.domain.Comment;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 public record CommentResponse(
-    Long id,
+    UUID id,
     String content,
     String flairText,
     boolean isEdited,
@@ -15,14 +16,14 @@ public record CommentResponse(
     boolean isCollapsed,
     boolean isStickied,
     int score,
-    int upvoteCount,
-    int downvoteCount,
+    int likeCount,
+    int dislikeCount,
     int replyCount,
     int awardCount,
     int depthLevel,
     UserResponse author,
-    Long postId,
-    Long parentId,
+    UUID postId,
+    UUID parentId,
     List<CommentResponse> replies,
     Instant createdAt,
     Instant updatedAt,
@@ -41,8 +42,8 @@ public record CommentResponse(
             comment.isCollapsed(),
             comment.isStickied(),
             comment.score(),
-            comment.upvoteCount(),
-            comment.downvoteCount(),
+            comment.likeCount(),
+            comment.dislikeCount(),
             comment.replyCount(),
             comment.awardCount(),
             comment.depthLevel(),

@@ -28,7 +28,7 @@ Published to `post.created` and `post.updated`.
   "postId": 1,
   "title": "My first post about Spring Boot 3.5",
   "authorId": 2,
-  "sublambrkId": 1,
+  "communityId": 1,
   "timestamp": "2026-02-07T14:00:00Z",
   "eventType": "POST_CREATED"
 }
@@ -39,7 +39,7 @@ Published to `post.created` and `post.updated`.
 | postId      | Long    | ID of the post                       |
 | title       | String  | Post title                           |
 | authorId    | Long    | ID of the author                     |
-| sublambrkId | Long    | ID of the sublambrk                  |
+| communityId | Long    | ID of the community                  |
 | timestamp   | Instant | When the event occurred              |
 | eventType   | String  | `POST_CREATED` or `POST_UPDATED`     |
 
@@ -76,7 +76,7 @@ Published to `vote.cast`.
 ```json
 {
   "voteId": 50,
-  "voteType": "UPVOTE",
+  "voteType": "LIKE",
   "userId": 2,
   "postId": 1,
   "commentId": null,
@@ -88,7 +88,7 @@ Published to `vote.cast`.
 | Field     | Type         | Description                       |
 |-----------|--------------|-----------------------------------|
 | voteId    | Long         | ID of the vote                    |
-| voteType  | String       | `UPVOTE` or `DOWNVOTE`            |
+| voteType  | String       | `LIKE` or `DISLIKE`            |
 | userId    | Long         | ID of the voter                   |
 | postId    | Long or null | Post ID (if post vote)            |
 | commentId | Long or null | Comment ID (if comment vote)      |
@@ -115,7 +115,7 @@ Published to `file.uploaded` and `file.deleted`.
 |-----------|---------|--------------------------------------|
 | fileId    | Long    | ID of the file                       |
 | fileName  | String  | Unique file name                     |
-| fileType  | String  | `AVATAR`, `POST_IMAGE`, `POST_VIDEO`, `SUBREDDIT_ICON`, `SUBREDDIT_HEADER`, `BANNER` |
+| fileType  | String  | `AVATAR`, `POST_IMAGE`, `POST_VIDEO`, `COMMUNITY_ICON`, `COMMUNITY_HEADER`, `BANNER` |
 | fileSize  | Long    | File size in bytes                   |
 | userId    | Long    | ID of the uploader                   |
 | timestamp | Instant | When the event occurred              |

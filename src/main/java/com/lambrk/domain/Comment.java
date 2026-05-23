@@ -10,8 +10,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
+@org.hibernate.annotations.GenericGenerator(name = "uuid7", strategy = "com.lambrk.util.UuidV7Generator")
 @Table(name = "comments", indexes = {
     @Index(name = "idx_comment_author", columnList = "author_id"),
     @Index(name = "idx_comment_post", columnList = "post_id"),
@@ -23,8 +25,8 @@ import java.util.Set;
 public record Comment(
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id,
+    @GeneratedValue(generator = "uuid7")
+    UUID id,
     
     @NotBlank(message = "Content is required")
     @Size(max = 10000, message = "Comment must be less than 10000 characters")
@@ -55,11 +57,11 @@ public record Comment(
     @Column(name = "score", nullable = false)
     int score,
     
-    @Column(name = "upvote_count", nullable = false)
-    int upvoteCount,
+    @Column(name = "like_count", nullable = false)
+    int likeCount,
     
-    @Column(name = "downvote_count", nullable = false)
-    int downvoteCount,
+    @Column(name = "dislike_count", nullable = false)
+    int dislikeCount,
     
     @Column(name = "reply_count", nullable = false)
     int replyCount,
@@ -116,8 +118,8 @@ public record Comment(
         isStickied = false;
         isOver18 = false;
         score = 1;
-        upvoteCount = 1;
-        downvoteCount = 0;
+        likeCount = 1;
+        dislikeCount = 0;
         replyCount = 0;
         awardCount = 0;
         depthLevel = 0;

@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/recommendations")
@@ -42,13 +43,13 @@ public class RecommendationController {
     @Counted(value = "recommendations.posts")
     @Timed(value = "recommendations.posts.duration")
     public ResponseEntity<RecommendationResponse> getPostRecommendations(
-            @PathVariable @SpanTag Long userId,
+            @PathVariable @SpanTag UUID userId,
             @RequestParam(defaultValue = "20") Integer limit,
-            @RequestParam(required = false) List<String> excludeSubreddits,
+            @RequestParam(required = false) List<String> excludeCommunities,
             @RequestParam(required = false) List<String> excludeUsers,
             @RequestParam(defaultValue = "false") boolean includeNSFW,
             @RequestParam(defaultValue = "false") boolean includeOver18,
-            @RequestParam(required = false) String contextSubredditId,
+            @RequestParam(required = false) String contextCommunityId,
             @RequestParam(required = false) String contextPostId,
             @AuthenticationPrincipal UserDetails userDetails) {
         
@@ -56,11 +57,11 @@ public class RecommendationController {
             userId,
             RecommendationRequest.RecommendationType.POSTS,
             limit,
-            excludeSubreddits,
+            excludeCommunities,
             excludeUsers,
             includeNSFW,
             includeOver18,
-            contextSubredditId,
+            contextCommunityId,
             contextPostId
         );
         
@@ -68,23 +69,23 @@ public class RecommendationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/subreddits/{userId}")
-    @NewSpan("get-subreddit-recommendations")
-    @Counted(value = "recommendations.subreddits")
-    @Timed(value = "recommendations.subreddits.duration")
-    public ResponseEntity<RecommendationResponse> getSubredditRecommendations(
-            @PathVariable @SpanTag Long userId,
+    @GetMapping("/communities/{userId}")
+    @NewSpan("get-community-recommendations")
+    @Counted(value = "recommendations.communities")
+    @Timed(value = "recommendations.communities.duration")
+    public ResponseEntity<RecommendationResponse> getCommunityRecommendations(
+            @PathVariable @SpanTag UUID userId,
             @RequestParam(defaultValue = "20") Integer limit,
-            @RequestParam(required = false) List<String> excludeSubreddits,
+            @RequestParam(required = false) List<String> excludeCommunities,
             @RequestParam(defaultValue = "false") boolean includeNSFW,
             @RequestParam(defaultValue = "false") boolean includeOver18,
             @AuthenticationPrincipal UserDetails userDetails) {
         
         RecommendationRequest request = new RecommendationRequest(
             userId,
-            RecommendationRequest.RecommendationType.SUBREDDITS,
+            RecommendationRequest.RecommendationType.COMMUNITIES,
             limit,
-            excludeSubreddits,
+            excludeCommunities,
             List.of(),
             includeNSFW,
             includeOver18,
@@ -101,7 +102,7 @@ public class RecommendationController {
     @Counted(value = "recommendations.users")
     @Timed(value = "recommendations.users.duration")
     public ResponseEntity<RecommendationResponse> getUserRecommendations(
-            @PathVariable @SpanTag Long userId,
+            @PathVariable @SpanTag UUID userId,
             @RequestParam(defaultValue = "20") Integer limit,
             @RequestParam(required = false) List<String> excludeUsers,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -127,7 +128,7 @@ public class RecommendationController {
     @Counted(value = "recommendations.comments")
     @Timed(value = "recommendations.comments.duration")
     public ResponseEntity<RecommendationResponse> getCommentRecommendations(
-            @PathVariable @SpanTag Long userId,
+            @PathVariable @SpanTag UUID userId,
             @RequestParam(defaultValue = "20") Integer limit,
             @AuthenticationPrincipal UserDetails userDetails) {
         
@@ -152,8 +153,8 @@ public class RecommendationController {
     @Counted(value = "recommendations.contextual")
     @Timed(value = "recommendations.contextual.duration")
     public ResponseEntity<RecommendationResponse> getContextualRecommendations(
-            @PathVariable @SpanTag Long userId,
-            @RequestParam(required = false) String contextSubredditId,
+            @PathVariable @SpanTag UUID userId,
+            @RequestParam(required = false) String contextCommunityId,
             @RequestParam(required = false) String contextPostId,
             @RequestParam(defaultValue = "posts") String type,
             @RequestParam(defaultValue = "20") Integer limit,
@@ -161,7 +162,7 @@ public class RecommendationController {
         
         RecommendationRequest.RecommendationType recType = switch (type.toLowerCase()) {
             case "posts" -> RecommendationRequest.RecommendationType.POSTS;
-            case "subreddits" -> RecommendationRequest.RecommendationType.SUBREDDITS;
+            case "communities" -> RecommendationRequest.RecommendationType.COMMUNITIES;
             case "users" -> RecommendationRequest.RecommendationType.USERS;
             case "comments" -> RecommendationRequest.RecommendationType.COMMENTS;
             default -> RecommendationRequest.RecommendationType.POSTS;
@@ -175,7 +176,7 @@ public class RecommendationController {
             List.of(),
             false,
             false,
-            contextSubredditId,
+            contextCommunityId,
             contextPostId
         );
         
@@ -195,7 +196,7 @@ public class RecommendationController {
         // This would return trending content for all users
         RecommendationRequest.RecommendationType recType = switch (type.toLowerCase()) {
             case "posts" -> RecommendationRequest.RecommendationType.POSTS;
-            case "subreddits" -> RecommendationRequest.RecommendationType.SUBREDDITS;
+            case "communities" -> RecommendationRequest.RecommendationType.COMMUNITIES;
             case "users" -> RecommendationRequest.RecommendationType.USERS;
             case "comments" -> RecommendationRequest.RecommendationType.COMMENTS;
             default -> RecommendationRequest.RecommendationType.POSTS;
@@ -203,7 +204,7 @@ public class RecommendationController {
         
         // Use a generic user ID for trending recommendations
         RecommendationRequest request = new RecommendationRequest(
-            0L, // System user ID
+            java.util.UUID.fromString("00000000-0000-0000-0000-000000000000"), // System user ID
             recType,
             limit,
             List.of(),

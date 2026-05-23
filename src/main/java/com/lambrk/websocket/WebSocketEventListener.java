@@ -101,10 +101,10 @@ public class WebSocketEventListener {
             String postId = destination.substring("/topic/posts/".length());
             System.out.println("User " + username + " subscribed to post: " + postId);
             
-        } else if (destination.startsWith("/topic/subreddits/")) {
-            // User subscribed to subreddit updates
-            String subredditId = destination.substring("/topic/subreddits/".length());
-            System.out.println("User " + username + " subscribed to subreddit: " + subredditId);
+        } else if (destination.startsWith("/topic/communities/")) {
+            // User subscribed to community updates
+            String communityId = destination.substring("/topic/communities/".length());
+            System.out.println("User " + username + " subscribed to community: " + communityId);
             
         } else if (destination.equals("/topic/announcements")) {
             // User subscribed to system announcements
@@ -123,9 +123,9 @@ public class WebSocketEventListener {
             String postId = destination.substring("/topic/posts/".length());
             System.out.println("User " + username + " unsubscribed from post: " + postId);
             
-        } else if (destination.startsWith("/topic/subreddits/")) {
-            String subredditId = destination.substring("/topic/subreddits/".length());
-            System.out.println("User " + username + " unsubscribed from subreddit: " + subredditId);
+        } else if (destination.startsWith("/topic/communities/")) {
+            String communityId = destination.substring("/topic/communities/".length());
+            System.out.println("User " + username + " unsubscribed from community: " + communityId);
         }
     }
 

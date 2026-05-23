@@ -1,297 +1,198 @@
 # Notifications API
 
-Base URL: `/api/notifications`
+Base path: `/api/notifications`. JWT required.
 
-All endpoints require **JWT authentication**.
+### POST `/api/notifications`
 
----
+Create notification.
 
-## POST `/api/notifications`
+**Auth:** User
 
-Create a new notification for a user.
-
-### Headers
-
-```
-Authorization: Bearer <access_token>
-Content-Type: application/json
-```
-
-### Request Body
+**Request body**
 
 ```json
-{
+{"type":"COMMENT_REPLY","recipientId":1,"title":"New reply","message":"Someone replied","relatedPostId":10,"relatedCommentId":20,"relatedUserId":2,"actionUrl":"/posts/10","actionText":"View","isRead":false}
+```
+
+**cURL**
+
+```bash
+curl -X POST 'http://localhost:9500/api/notifications' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
   "type": "COMMENT_REPLY",
   "recipientId": 1,
-  "title": "New reply to your comment",
-  "message": "john_doe replied to your comment: \"Great post!\"",
-  "relatedPostId": 1,
-  "relatedCommentId": 10,
+  "title": "New reply",
+  "message": "Someone replied",
+  "relatedPostId": 10,
+  "relatedCommentId": 20,
   "relatedUserId": 2,
-  "actionUrl": "/posts/1#comment-10",
-  "actionText": "View reply",
+  "actionUrl": "/posts/10",
+  "actionText": "View",
   "isRead": false
-}
+}'
 ```
 
-### Validation Rules
-
-| Field          | Rule                                                    |
-|----------------|---------------------------------------------------------|
-| type           | Required: `COMMENT_REPLY`, `POST_UPVOTE`, `COMMENT_UPVOTE`, `POST_MENTION`, `COMMENT_MENTION`, `SUBREDDIT_INVITE`, `MODERATOR_ACTION`, `SYSTEM_ANNOUNCEMENT`, `CONTENT_MODERATION` |
-| recipientId    | Required, must exist                                    |
-| title          | Required, max 500 chars                                |
-| message        | Required, max 2000 chars                               |
-| relatedPostId  | Optional                                                |
-| relatedCommentId| Optional                                                |
-| relatedUserId  | Optional                                                |
-| actionUrl      | Optional, max 500 chars                                |
-| actionText     | Optional, max 100 chars                                |
-| isRead         | Boolean, default false                                  |
-
-### Response `200 OK`
+**Response**
 
 ```json
-{
-  "id": 100,
-  "type": "COMMENT_REPLY",
-  "recipientId": 1,
-  "title": "New reply to your comment",
-  "message": "john_doe replied to your comment: \"Great post!\"",
-  "relatedPostId": 1,
-  "relatedPostTitle": "Spring Boot 3.5 Features",
-  "relatedCommentId": 10,
-  "relatedCommentPreview": "Great post!",
-  "relatedUserId": 2,
-  "relatedUsername": "john_doe",
-  "actionUrl": "/posts/1#comment-10",
-  "actionText": "View reply",
-  "isRead": false,
-  "createdAt": "2026-02-07T14:30:00Z",
-  "readAt": null
-}
+{"id":1,"type":"COMMENT_REPLY","recipientId":1,"title":"New reply","message":"Someone replied","relatedPostId":10,"relatedPostTitle":null,"relatedCommentId":20,"relatedCommentPreview":null,"relatedUserId":2,"relatedUsername":null,"actionUrl":"/posts/10","actionText":"View","isRead":false,"createdAt":"2026-05-02T10:00:00Z","readAt":null}
+```
+### GET `/api/notifications`
+
+Get notifications.
+
+**Auth:** User
+
+**Query/path parameters**
+
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/notifications?page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
 ```
 
----
-
-## GET `/api/notifications`
-
-Get all notifications for the authenticated user (paginated).
-
-### Query Parameters
-
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| page  | int  | 0       | Page number |
-| size  | int  | 20      | Page size   |
-
-### Response `200 OK`
+**Response**
 
 ```json
-{
-  "content": [
-    {
-      "id": 100,
-      "type": "COMMENT_REPLY",
-      "title": "New reply to your comment",
-      "message": "john_doe replied to your comment",
-      "isRead": false,
-      "createdAt": "2026-02-07T14:30:00Z"
-    }
-  ],
-  "pageable": {
-    "pageNumber": 0,
-    "pageSize": 20,
-    "totalElements": 1,
-    "totalPages": 1
-  }
-}
+{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+```
+### GET `/api/notifications/unread`
+
+Get unread notifications.
+
+**Auth:** User
+
+**Query/path parameters**
+
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/notifications/unread?page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
 ```
 
----
-
-## GET `/api/notifications/unread`
-
-Get only unread notifications for the authenticated user.
-
-### Query Parameters
-
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| page  | int  | 0       | Page number |
-| size  | int  | 20      | Page size   |
-
-### Response `200 OK`
-
-Same shape as GET `/api/notifications` but only contains unread items.
-
----
-
-## PUT `/api/notifications/{notificationId}/read`
-
-Mark a specific notification as read.
-
-### Path Parameters
-
-| Param          | Type | Description |
-|----------------|------|-------------|
-| notificationId | Long | Notification ID |
-
-### Response `200 OK`
-
-Empty response body.
-
-### Error Responses
-
-| Status | Condition                      |
-|--------|--------------------------------|
-| 404    | Notification not found         |
-| 403    | Notification belongs to other user |
-
----
-
-## PUT `/api/notifications/read-all`
-
-Mark all notifications for the authenticated user as read.
-
-### Response `200 OK`
-
-Empty response body.
-
----
-
-## DELETE `/api/notifications/{notificationId}`
-
-Delete a specific notification.
-
-### Path Parameters
-
-| Param          | Type | Description |
-|----------------|------|-------------|
-| notificationId | Long | Notification ID |
-
-### Response `204 No Content`
-
-### Error Responses
-
-| Status | Condition                      |
-|--------|--------------------------------|
-| 404    | Notification not found         |
-| 403    | Notification belongs to other user |
-
----
-
-## DELETE `/api/notifications`
-
-Delete all notifications for the authenticated user.
-
-### Response `204 No Content`
-
----
-
-## GET `/api/notifications/count/unread`
-
-Get the count of unread notifications for the authenticated user.
-
-### Response `200 OK`
+**Response**
 
 ```json
-5
+{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+```
+### PUT `/api/notifications/{notificationId}/read`
+
+Mark one notification read.
+
+**Auth:** User
+
+**cURL**
+
+```bash
+curl -X PUT 'http://localhost:9500/api/notifications/1/read' \
+  -H 'Authorization: Bearer <token>'
 ```
 
----
+**Response**
 
-## GET `/api/notifications/type/{type}`
+`200 OK` with an empty body
+### PUT `/api/notifications/read-all`
 
-Get notifications of a specific type.
+Mark all notifications read.
 
-### Path Parameters
+**Auth:** User
 
-| Param | Type   | Description |
-|-------|--------|-------------|
-| type  | String | Notification type |
+**cURL**
 
-### Query Parameters
+```bash
+curl -X PUT 'http://localhost:9500/api/notifications/read-all' \
+  -H 'Authorization: Bearer <token>'
+```
 
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| page  | int  | 0       | Page number |
-| size  | int  | 20      | Page size   |
+**Response**
 
-### Response `200 OK`
+`200 OK` with an empty body
+### DELETE `/api/notifications/{notificationId}`
 
-Paginated notifications of the specified type.
+Delete notification.
 
----
+**Auth:** User
 
-## Notification Types
+**cURL**
 
-| Type              | Description                              | Triggered By                     |
-|--------------------|------------------------------------------|----------------------------------|
-| COMMENT_REPLY     | Reply to user's comment                 | CommentService                    |
-| POST_UPVOTE       | User's post received upvote             | VoteService                       |
-| COMMENT_UPVOTE    | User's comment received upvote          | VoteService                       |
-| POST_MENTION      | User mentioned in post                  | ContentModerationAspect           |
-| COMMENT_MENTION   | User mentioned in comment               | ContentModerationAspect           |
-| SUBREDDIT_INVITE  | Invited to moderate sublambrk          | SublambrkService                  |
-| MODERATOR_ACTION  | Moderator action on user's content      | AdminService                      |
-| SYSTEM_ANNOUNCEMENT| System-wide announcement              | Admin/Manual                      |
-| CONTENT_MODERATION| Content moderation result              | ContentModerationAspect           |
+```bash
+curl -X DELETE 'http://localhost:9500/api/notifications/1' \
+  -H 'Authorization: Bearer <token>'
+```
 
----
+**Response**
 
-## Real-Time Updates
+`204 No Content`
+### DELETE `/api/notifications`
 
-Notifications are also sent via **WebSocket**:
+Delete all notifications.
 
-- **Topic**: `/user/{username}/queue/notifications`
-- **Event**: Real-time notification delivery
-- **Connection**: WebSocket endpoint `/ws`
+**Auth:** User
 
-Example WebSocket message:
+**cURL**
+
+```bash
+curl -X DELETE 'http://localhost:9500/api/notifications' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
+
+`204 No Content`
+### GET `/api/notifications/count/unread`
+
+Get unread count.
+
+**Auth:** User
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/notifications/count/unread' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
+
 ```json
-{
-  "id": 101,
-  "type": "POST_UPVOTE",
-  "title": "Your post received an upvote",
-  "message": "jane_smith upvoted your post",
-  "isRead": false,
-  "createdAt": "2026-02-07T14:35:00Z"
-}
+0
+```
+### GET `/api/notifications/type/{type}`
+
+Get notifications by type. Current implementation returns an empty page.
+
+**Auth:** User
+
+**Query/path parameters**
+
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `page` | integer | no | `0` | Zero-based page index. |
+| `size` | integer | no | `20` | Page size. |
+
+**cURL**
+
+```bash
+curl -X GET 'http://localhost:9500/api/notifications/type/COMMENT_REPLY?page=0&size=20' \
+  -H 'Authorization: Bearer <token>'
 ```
 
----
+**Response**
 
-## Performance
-
-- **Caching**: Notification lists cached for 3 minutes
-- **Rate Limiting**: 100 requests per minute
-- **Real-time**: WebSocket updates for instant delivery
-- **Batching**: Bulk operations for read/delete all
-
----
-
-## Error Handling
-
-| Status | Condition                      |
-|--------|--------------------------------|
-| 400    | Invalid notification data      |
-| 401    | Not authenticated              |
-| 403    | Access to other user's data   |
-| 404    | Notification not found         |
-| 429    | Rate limit exceeded            |
-
----
-
-## Metrics
-
-All notification endpoints emit these metrics:
-
-- `notifications.created` - New notifications created
-- `notifications.viewed` - Notification lists viewed
-- `notifications.unread.viewed` - Unread notifications viewed
-- `notifications.read` - Notifications marked as read
-- `notifications.read.all` - All notifications marked as read
-- `notifications.deleted` - Individual notifications deleted
-- `notifications.deleted.all` - All notifications deleted
-- `notifications.count.unread` - Unread count requests
+```json
+{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+```

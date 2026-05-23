@@ -1,299 +1,157 @@
 # Feed API
 
-Base URL: `/api/feed`
+Base path: `/api/feed`. JWT required with `USER` role.
 
-All endpoints require **JWT authentication**.
+### GET `/api/feed`
 
-The Feed API provides personalized content feeds based on user interactions, preferences, and an algorithmic ranking system.
+Get personalized feed.
 
----
+**Auth:** User role
 
-## GET `/api/feed`
+**Query/path parameters**
 
-Get a personalized feed of posts and suggested users.
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `limit` | integer | no | `20` | Number of posts. |
+| `sortBy` | string | no | `algorithm` | `algorithm`, `hot`, `new`, `top`. |
+| `includeNsfw` | boolean | no | `false` | Include NSFW content. |
+| `fromFollowingOnly` | boolean | no | `false` | Only followed communities. |
+| `timeDecayFactor` | number | no | `1.0` | Ranking freshness factor. |
 
-### Query Parameters
-
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| limit | int | 20 | Number of posts to return (1-100) |
-| sortBy | String | algorithm | Sort method: `algorithm`, `hot`, `new`, `top` |
-| includeNsfw | boolean | false | Include NSFW content |
-| fromFollowingOnly | boolean | false | Only show posts from subscribed subreddits |
-| timeDecayFactor | double | 1.0 | Time decay factor for freshness (0.1-3.0) |
-
-### cURL Example
+**cURL**
 
 ```bash
-curl "http://localhost:9500/api/feed?limit=20&sortBy=algorithm&includeNsfw=false" \
-  -H "Authorization: Bearer <access_token>"
+curl -X GET 'http://localhost:9500/api/feed?limit=20&sortBy=algorithm&includeNsfw=false' \
+  -H 'Authorization: Bearer <token>'
 ```
 
-### Response `200 OK`
+**Response**
 
 ```json
-{
-  "posts": [
-    {
-      "id": 1,
-      "title": "Advanced Spring Boot Patterns",
-      "content": "Virtual threads are amazing for high-concurrency workloads...",
-      "url": null,
-      "postType": "TEXT",
-      "thumbnailUrl": null,
-      "flairText": "Tutorial",
-      "isSpoiler": false,
-      "isOver18": false,
-      "score": 245,
-      "upvoteCount": 250,
-      "downvoteCount": 5,
-      "commentCount": 42,
-      "viewCount": 1200,
-      "algorithmScore": 87.5,
-      "reasons": [
-        "From your subscribed community",
-        "Popular post",
-        "Matches your content preferences",
-        "Fresh content"
-      ],
-      "author": {
-        "id": 2,
-        "username": "expert_dev",
-        "displayName": "Expert Developer",
-        "avatarUrl": "https://...",
-        "karma": 15000,
-        "isVerified": true,
-        "type": "VERIFIED"
-      },
-      "subreddit": {
-        "id": 1,
-        "name": "programming",
-        "title": "Programming",
-        "iconImageUrl": "https://...",
-        "isUserSubscribed": true
-      },
-      "createdAt": "2026-02-07T14:00:00Z",
-      "userInteraction": {
-        "hasUpvoted": false,
-        "hasDownvoted": false,
-        "hasCommented": false,
-        "hasViewed": false,
-        "isSaved": false,
-        "isHidden": false,
-        "viewCount": 0,
-        "lastInteractionAt": null
-      }
-    }
-  ],
-  "suggestedUsers": [
-    {
-      "id": 5,
-      "username": "java_master",
-      "displayName": "Java Master",
-      "bio": "Java enthusiast and Spring Boot expert",
-      "avatarUrl": "https://...",
-      "karma": 8500,
-      "isVerified": true,
-      "type": "VERIFIED",
-      "relevanceScore": 78.5,
-      "reasons": [
-        "Active in 3 communities you follow",
-        "Verified user"
-      ],
-      "mutualSubreddits": 3,
-      "commonInterests": ["programming", "java", "springboot"]
-    }
-  ],
-  "algorithmInfo": {
-    "sortMethod": "algorithm",
-    "timeDecayFactor": 1.0,
-    "freshnessHours": 24,
-    "factorsConsidered": [
-      "User engagement history",
-      "Post popularity (upvotes/downvotes)",
-      "Time decay (freshness)",
-      "Subreddit affinity",
-      "Content type preferences",
-      "Author reputation"
-    ],
-    "processingTimeMs": 45
-  },
-  "totalAvailable": 150,
-  "hasMore": true
-}
+{"posts":[],"suggestedUsers":[],"algorithmInfo":{"sortMethod":"algorithm","timeDecayFactor":1.0,"freshnessHours":24,"factorsConsidered":["score","freshness"],"processingTimeMs":10},"totalAvailable":0,"hasMore":false}
+```
+### POST `/api/feed`
+
+Get feed with advanced filters.
+
+**Auth:** User role
+
+**Request body**
+
+```json
+{"userId":1,"limit":20,"sortBy":"algorithm","postTypes":["TEXT"],"includeNsfw":false,"includeFromFollowingOnly":false,"timeDecayFactor":1.0}
 ```
 
----
+**cURL**
 
-## POST `/api/feed`
-
-Get personalized feed with advanced filtering options.
-
-### Request Body
-
-```json
-{
+```bash
+curl -X POST 'http://localhost:9500/api/feed' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
   "userId": 1,
   "limit": 20,
   "sortBy": "algorithm",
-  "postTypes": ["TEXT", "IMAGE", "VIDEO"],
+  "postTypes": [
+    "TEXT"
+  ],
   "includeNsfw": false,
   "includeFromFollowingOnly": false,
-  "timeDecayFactor": 1.0
-}
+  "timeDecayFactor": 1
+}'
 ```
 
-### cURL Example
+**Response**
+
+```json
+{"posts":[],"suggestedUsers":[],"algorithmInfo":{"sortMethod":"algorithm","timeDecayFactor":1.0,"freshnessHours":24,"factorsConsidered":["score","freshness"],"processingTimeMs":10},"totalAvailable":0,"hasMore":false}
+```
+### GET `/api/feed/hot`
+
+Get hot feed.
+
+**Auth:** User role
+
+**Query/path parameters**
+
+| `limit` | integer | no | `20` | Number of posts. |
+
+**cURL**
 
 ```bash
-curl -X POST http://localhost:9500/api/feed \
-  -H "Authorization: Bearer <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "limit": 30,
-    "sortBy": "algorithm",
-    "postTypes": ["TEXT", "IMAGE"],
-    "includeNsfw": false,
-    "timeDecayFactor": 1.5
-  }'
+curl -X GET 'http://localhost:9500/api/feed/hot?limit=20' \
+  -H 'Authorization: Bearer <token>'
 ```
 
-### Response `200 OK`
+**Response**
 
-Same as GET endpoint.
+```json
+{"posts":[],"suggestedUsers":[],"algorithmInfo":{"sortMethod":"algorithm","timeDecayFactor":1.0,"freshnessHours":24,"factorsConsidered":["score","freshness"],"processingTimeMs":10},"totalAvailable":0,"hasMore":false}
+```
+### GET `/api/feed/new`
 
----
+Get newest feed.
 
-## GET `/api/feed/hot`
+**Auth:** User role
 
-Get trending posts based on popularity and recent activity.
+**Query/path parameters**
 
-### Query Parameters
+| `limit` | integer | no | `20` | Number of posts. |
 
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| limit | int | 20 | Number of posts to return |
-
-### cURL Example
+**cURL**
 
 ```bash
-curl "http://localhost:9500/api/feed/hot?limit=20" \
-  -H "Authorization: Bearer <access_token>"
+curl -X GET 'http://localhost:9500/api/feed/new?limit=20' \
+  -H 'Authorization: Bearer <token>'
 ```
 
----
+**Response**
 
-## GET `/api/feed/new`
+```json
+{"posts":[],"suggestedUsers":[],"algorithmInfo":{"sortMethod":"algorithm","timeDecayFactor":1.0,"freshnessHours":24,"factorsConsidered":["score","freshness"],"processingTimeMs":10},"totalAvailable":0,"hasMore":false}
+```
+### GET `/api/feed/top`
 
-Get the most recent posts with minimal algorithmic ranking.
+Get top feed.
 
-### Query Parameters
+**Auth:** User role
 
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| limit | int | 20 | Number of posts to return |
+**Query/path parameters**
 
-### cURL Example
+| `limit` | integer | no | `20` | Number of posts. |
+| `timePeriod` | string | no | `all` | Accepted by controller. |
+
+**cURL**
 
 ```bash
-curl "http://localhost:9500/api/feed/new?limit=20" \
-  -H "Authorization: Bearer <access_token>"
+curl -X GET 'http://localhost:9500/api/feed/top?limit=20&timePeriod=all' \
+  -H 'Authorization: Bearer <token>'
 ```
 
----
+**Response**
 
-## GET `/api/feed/top`
+```json
+{"posts":[],"suggestedUsers":[],"algorithmInfo":{"sortMethod":"algorithm","timeDecayFactor":1.0,"freshnessHours":24,"factorsConsidered":["score","freshness"],"processingTimeMs":10},"totalAvailable":0,"hasMore":false}
+```
+### GET `/api/feed/discover`
 
-Get highest scoring posts.
+Get discovery feed.
 
-### Query Parameters
+**Auth:** User role
 
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| limit | int | 20 | Number of posts to return |
-| timePeriod | String | all | Time period: `all`, `day`, `week`, `month`, `year` |
+**Query/path parameters**
 
-### cURL Example
+| `limit` | integer | no | `20` | Number of posts. |
+
+**cURL**
 
 ```bash
-curl "http://localhost:9500/api/feed/top?limit=20&timePeriod=week" \
-  -H "Authorization: Bearer <access_token>"
+curl -X GET 'http://localhost:9500/api/feed/discover?limit=20' \
+  -H 'Authorization: Bearer <token>'
 ```
 
----
+**Response**
 
-## GET `/api/feed/discover`
-
-Discover new content from subreddits you don't follow.
-
-### Query Parameters
-
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| limit | int | 20 | Number of posts to return |
-
-### cURL Example
-
-```bash
-curl "http://localhost:9500/api/feed/discover?limit=20" \
-  -H "Authorization: Bearer <access_token>"
+```json
+{"posts":[],"suggestedUsers":[],"algorithmInfo":{"sortMethod":"algorithm","timeDecayFactor":1.0,"freshnessHours":24,"factorsConsidered":["score","freshness"],"processingTimeMs":10},"totalAvailable":0,"hasMore":false}
 ```
-
----
-
-## Algorithm Details
-
-### Scoring Factors
-
-The algorithm considers multiple factors when ranking posts:
-
-| Factor | Weight | Description |
-|--------|--------|-------------|
-| Popularity | 25% | Based on upvotes, downvotes, comments, views |
-| Freshness | 20% | Time decay for newer content |
-| Subreddit Affinity | 25% | Your subscribed communities and activity |
-| Content Type | 15% | Your preferred post types (TEXT, IMAGE, VIDEO, etc.) |
-| Author Reputation | 10% | Author's karma and verification status |
-
-### User Types
-
-Users are categorized into types based on their activity:
-
-| Type | Criteria |
-|------|----------|
-| REGULAR | Normal user |
-| INFLUENCER | Karma > 10,000 |
-| VERIFIED | Verified account |
-| NEW_USER | Recently joined |
-| MODERATOR | Subreddit moderator |
-| ADMIN | Site admin |
-
-### Time Decay
-
-The `timeDecayFactor` parameter controls how quickly posts lose relevance:
-
-- **0.1**: Minimal decay (newest first)
-- **1.0**: Normal decay (default)
-- **2.0**: Fast decay (hot/trending)
-- **3.0**: Very fast decay (real-time)
-
----
-
-## Error Responses
-
-| Status | Condition |
-|--------|-----------|
-| 400 | Invalid request parameters |
-| 401 | Not authenticated |
-| 429 | Rate limit exceeded |
-| 503 | Feed generation failed |
-
----
-
-## Metrics
-
-All feed endpoints emit these metrics:
-
-- `lambrk.feed.generated` - Feed generation count
-- `lambrk.feed.error` - Feed generation failures
-- `lambrk.recommendation.error` - Recommendation errors

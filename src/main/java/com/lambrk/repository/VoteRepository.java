@@ -13,9 +13,10 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface VoteRepository extends JpaRepository<Vote, Long>, JpaSpecificationExecutor<Vote> {
+public interface VoteRepository extends JpaRepository<Vote, UUID>, JpaSpecificationExecutor<Vote> {
 
     Optional<Vote> findByUserAndPost(User user, Post post);
 
@@ -28,22 +29,22 @@ public interface VoteRepository extends JpaRepository<Vote, Long>, JpaSpecificat
     List<Vote> findByComment(Comment comment);
 
     @Query("SELECT v FROM Vote v WHERE v.user.id = :userId AND v.post IS NOT NULL")
-    List<Vote> findPostVotesByUser(@Param("userId") Long userId);
+    List<Vote> findPostVotesByUser(@Param("userId") UUID userId);
 
     @Query("SELECT v FROM Vote v WHERE v.user.id = :userId AND v.comment IS NOT NULL")
-    List<Vote> findCommentVotesByUser(@Param("userId") Long userId);
+    List<Vote> findCommentVotesByUser(@Param("userId") UUID userId);
 
-    @Query("SELECT COUNT(v) FROM Vote v WHERE v.post.id = :postId AND v.voteType = 'UPVOTE'")
-    long countUpvotesByPost(@Param("postId") Long postId);
+    @Query("SELECT COUNT(v) FROM Vote v WHERE v.post.id = :postId AND v.voteType = 'LIKE'")
+    long countLikesByPost(@Param("postId") UUID postId);
 
-    @Query("SELECT COUNT(v) FROM Vote v WHERE v.post.id = :postId AND v.voteType = 'DOWNVOTE'")
-    long countDownvotesByPost(@Param("postId") Long postId);
+    @Query("SELECT COUNT(v) FROM Vote v WHERE v.post.id = :postId AND v.voteType = 'DISLIKE'")
+    long countDislikesByPost(@Param("postId") UUID postId);
 
-    @Query("SELECT COUNT(v) FROM Vote v WHERE v.comment.id = :commentId AND v.voteType = 'UPVOTE'")
-    long countUpvotesByComment(@Param("commentId") Long commentId);
+    @Query("SELECT COUNT(v) FROM Vote v WHERE v.comment.id = :commentId AND v.voteType = 'LIKE'")
+    long countLikesByComment(@Param("commentId") UUID commentId);
 
-    @Query("SELECT COUNT(v) FROM Vote v WHERE v.comment.id = :commentId AND v.voteType = 'DOWNVOTE'")
-    long countDownvotesByComment(@Param("commentId") Long commentId);
+    @Query("SELECT COUNT(v) FROM Vote v WHERE v.comment.id = :commentId AND v.voteType = 'DISLIKE'")
+    long countDislikesByComment(@Param("commentId") UUID commentId);
 
     @Query("SELECT v FROM Vote v WHERE v.createdAt >= :since")
     List<Vote> findVotesSince(@Param("since") Instant since);
@@ -52,13 +53,13 @@ public interface VoteRepository extends JpaRepository<Vote, Long>, JpaSpecificat
     List<Vote> findVotesByIpSince(@Param("ipAddress") String ipAddress, @Param("since") Instant since);
 
     @Query("SELECT COUNT(v) FROM Vote v WHERE v.user.id = :userId AND v.createdAt >= :since")
-    long countUserVotesSince(@Param("userId") Long userId, @Param("since") Instant since);
+    long countUserVotesSince(@Param("userId") UUID userId, @Param("since") Instant since);
 
     @Query("SELECT v FROM Vote v WHERE v.post.id = :postId ORDER BY v.createdAt DESC")
-    List<Vote> findVotesByPostOrdered(@Param("postId") Long postId);
+    List<Vote> findVotesByPostOrdered(@Param("postId") UUID postId);
 
     @Query("SELECT v FROM Vote v WHERE v.comment.id = :commentId ORDER BY v.createdAt DESC")
-    List<Vote> findVotesByCommentOrdered(@Param("commentId") Long commentId);
+    List<Vote> findVotesByCommentOrdered(@Param("commentId") UUID commentId);
 
     @Query("SELECT v FROM Vote v WHERE v.voteType = :voteType AND v.createdAt >= :since")
     List<Vote> findVotesByTypeSince(@Param("voteType") Vote.VoteType voteType, @Param("since") Instant since);
@@ -66,9 +67,9 @@ public interface VoteRepository extends JpaRepository<Vote, Long>, JpaSpecificat
     @Query("SELECT COUNT(v) FROM Vote v WHERE v.createdAt >= :since")
     long countVotesSince(@Param("since") Instant since);
 
-    @Query("SELECT COUNT(v) FROM Vote v WHERE v.voteType = 'UPVOTE' AND v.createdAt >= :since")
-    long countUpvotesSince(@Param("since") Instant since);
+    @Query("SELECT COUNT(v) FROM Vote v WHERE v.voteType = 'LIKE' AND v.createdAt >= :since")
+    long countLikesSince(@Param("since") Instant since);
 
-    @Query("SELECT COUNT(v) FROM Vote v WHERE v.voteType = 'DOWNVOTE' AND v.createdAt >= :since")
-    long countDownvotesSince(@Param("since") Instant since);
+    @Query("SELECT COUNT(v) FROM Vote v WHERE v.voteType = 'DISLIKE' AND v.createdAt >= :since")
+    long countDislikesSince(@Param("since") Instant since);
 }

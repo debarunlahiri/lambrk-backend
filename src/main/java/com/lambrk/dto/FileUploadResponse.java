@@ -2,10 +2,11 @@ package com.lambrk.dto;
 
 import com.lambrk.domain.FileUpload;
 import java.time.Instant;
+import java.util.UUID;
 
 public record FileUploadResponse(
     
-    Long fileId,
+    UUID fileId,
     
     String fileName,
     
@@ -29,7 +30,7 @@ public record FileUploadResponse(
     
     String altText,
     
-    Long uploadedBy,
+    UUID uploadedBy,
     
     Instant uploadedAt,
     

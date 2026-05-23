@@ -1,108 +1,56 @@
-# Error Handling
+# Error Responses
 
-All error responses use the **RFC 7807 Problem Detail** format.
+Most API failures return Spring `ProblemDetail` JSON. Feed-specific exceptions may return a map-shaped error, and feed generation failures return an empty successful feed response.
 
----
+## Standard Error Response
 
-## Error Response Shape
+**Example request**
+
+```bash
+curl -X GET 'http://localhost:9500/api/users/999999' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Response**
 
 ```json
-{
-  "type": "https://api.lambrk-backend.com/errors/not-found",
-  "title": "Resource Not Found",
-  "status": 404,
-  "detail": "Post not found with id: '999'",
-  "instance": "/api/posts/999",
-  "timestamp": "2026-02-07T14:00:00Z"
-}
+{"type":"https://api.reddit-backend.com/errors/not-found","title":"Resource Not Found","status":404,"detail":"User not found with id: 999999","timestamp":"2026-05-02T10:00:00Z"}
 ```
 
-Validation errors include an extra `fieldErrors` map:
+## Validation Error Response
+
+**Example request**
+
+```bash
+curl -X POST 'http://localhost:9500/api/auth/register' \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"ab","email":"bad","password":"short"}'
+```
+
+**Response**
 
 ```json
-{
-  "type": "https://api.lambrk-backend.com/errors/validation",
-  "title": "Validation Error",
-  "status": 400,
-  "detail": "Validation failed",
-  "fieldErrors": {
-    "title": "Title is required",
-    "sublambrkId": "must not be null"
-  },
-  "timestamp": "2026-02-07T14:00:00Z"
-}
+{"type":"https://api.reddit-backend.com/errors/validation","title":"Validation Error","status":400,"detail":"Validation failed","timestamp":"2026-05-02T10:00:00Z","fieldErrors":{"username":"Username must be between 3 and 50 characters","email":"Email should be valid","password":"Password must be at least 8 characters"}}
 ```
 
-Content moderation errors include `violationCategories`:
+## Error Types
+
+| HTTP | Title | Type suffix | Trigger |
+| --- | --- | --- | --- |
+| 400 | Validation Error | `/errors/validation` | Bean validation failure. |
+| 401 | Authentication Failed | `/errors/bad-credentials` | Bad credentials. |
+| 403 | Access Denied | `/errors/access-denied` | Missing role or denied access. |
+| 403 | Unauthorized Action | `/errors/unauthorized-action` | Domain permission failure. |
+| 404 | Resource Not Found | `/errors/not-found` | Missing entity. |
+| 409 | Duplicate Resource | `/errors/duplicate` | Unique/conflict condition. |
+| 422 | Content Moderation Violation | `/errors/content-moderation` | Moderation rejection. |
+| 429 | Rate Limit Exceeded | `/errors/rate-limit` | Resilience4j rate limiter. |
+| 429 | Bulkhead Full | `/errors/bulkhead` | Too many concurrent requests. |
+| 503 | Service Unavailable | `/errors/circuit-breaker` | Circuit breaker open. |
+| 500 | Internal Server Error | `/errors/internal` | Unhandled exception. |
+
+## Feed Map Error
 
 ```json
-{
-  "type": "https://api.lambrk-backend.com/errors/content-moderation",
-  "title": "Content Moderation Violation",
-  "status": 422,
-  "detail": "Content rejected: hate speech detected",
-  "violationCategories": ["hate_speech"],
-  "timestamp": "2026-02-07T14:00:00Z"
-}
+{"timestamp":"2026-05-02T10:00:00Z","status":400,"error":"Bad Request","message":"Invalid request"}
 ```
-
----
-
-## Error Catalogue
-
-| Status | Type Slug              | Title                        | When                                      |
-|--------|------------------------|------------------------------|-------------------------------------------|
-| 400    | `validation`           | Validation Error             | Request body fails bean validation        |
-| 401    | `bad-credentials`      | Authentication Failed        | Invalid username/password                 |
-| 403    | `access-denied`        | Access Denied                | Missing required role                     |
-| 403    | `unauthorized-action`  | Unauthorized Action          | E.g. editing another user's post          |
-| 404    | `not-found`            | Resource Not Found           | Entity does not exist                     |
-| 409    | `duplicate`            | Duplicate Resource           | Username/email/sublambrk name taken       |
-| 422    | `content-moderation`   | Content Moderation Violation | AI moderation rejected the content        |
-| 429    | `rate-limit`           | Rate Limit Exceeded          | Resilience4j RateLimiter triggered        |
-| 429    | `bulkhead`             | Bulkhead Full                | Too many concurrent requests              |
-| 503    | `circuit-breaker`      | Service Unavailable          | Circuit breaker is open                   |
-| 500    | `internal`             | Internal Server Error        | Unhandled exception                       |
-
----
-
-## Rate Limits
-
-| Endpoint Group    | Limit        | Window |
-|-------------------|--------------|--------|
-| Post creation     | 100 requests | 1 min  |
-| Comment creation  | 500 requests | 1 min  |
-| Vote casting      | 1000 requests| 1 min  |
-| User registration | 10 requests  | 1 min  |
-| Search            | 50 requests  | 1 min  |
-| File upload       | 20 requests  | 1 min  |
-
-When a rate limit is exceeded the response includes no `Retry-After` header — clients should implement exponential backoff.
-
----
-
-## Circuit Breaker States
-
-| Service         | Failure Threshold | Window | Open Duration |
-|-----------------|-------------------|--------|---------------|
-| postService     | 50%               | 10     | 30 s          |
-| commentService  | 60%               | 20     | 45 s          |
-| userService     | 40%               | 15     | 20 s          |
-| kafkaProducer   | 70%               | 5      | 60 s          |
-
----
-
-## Observability
-
-Every error increments a Micrometer counter:
-
-```
-errors_total{type="not_found"}
-errors_total{type="validation"}
-errors_total{type="rate_limit"}
-errors_total{type="circuit_breaker"}
-errors_total{type="content_moderation"}
-errors_total{type="internal"}
-```
-
-These are available at `/actuator/prometheus`.
