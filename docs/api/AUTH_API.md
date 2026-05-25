@@ -30,7 +30,7 @@ curl -X POST 'http://localhost:9500/api/auth/register' \
 **Response**
 
 ```json
-{"accessToken":"<jwt>","refreshToken":"<jwt>","tokenType":"Bearer","expiresIn":86400,"user":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":0,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}}
+{"accessToken":"<jwt>","refreshToken":"<jwt>","tokenType":"Bearer","expiresIn":86400,"user":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":0,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}}
 ```
 ### POST `/api/auth/login`
 
@@ -58,7 +58,7 @@ curl -X POST 'http://localhost:9500/api/auth/login' \
 **Response**
 
 ```json
-{"accessToken":"<jwt>","refreshToken":"<jwt>","tokenType":"Bearer","expiresIn":86400,"user":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":0,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}}
+{"accessToken":"<jwt>","refreshToken":"<jwt>","tokenType":"Bearer","expiresIn":86400,"user":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":0,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}}
 ```
 ### POST `/api/auth/refresh`
 
@@ -83,5 +83,5 @@ curl -X POST 'http://localhost:9500/api/auth/refresh' \
 **Response**
 
 ```json
-{"accessToken":"<jwt>","refreshToken":"<jwt>","tokenType":"Bearer","expiresIn":86400,"user":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":0,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}}
+{"accessToken":"<jwt>","refreshToken":"<jwt>","tokenType":"Bearer","expiresIn":86400,"user":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":0,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}}
 ```

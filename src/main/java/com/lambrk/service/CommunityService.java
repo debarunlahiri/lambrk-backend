@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.lambrk.util.UuidV7Generator;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
@@ -64,7 +65,7 @@ public class CommunityService {
             : new HashSet<>();
 
         Community community = new Community(
-            null, request.name(), request.title(), request.description(), request.sidebarText(),
+            UuidV7Generator.generate(), request.name(), request.title(), request.description(), request.sidebarText(),
             null, null, request.isPublic(), request.isRestricted(), request.isOver18(),
             1, 1, 0, new HashSet<>(), Set.of(creator), Set.of(creator), categorySet, creator,
             Instant.now(), Instant.now()
@@ -84,9 +85,9 @@ public class CommunityService {
         boolean moderator = false;
         if (currentUserId != null) {
             Set<Community> userSubs = communityRepository.findSubscribedCommunitiesByUser(currentUserId);
-            subscribed = userSubs.stream().anyMatch(s -> s.id().equals(communityId));
+            subscribed = userSubs.stream().anyMatch(s -> s.getId().equals(communityId));
             Set<Community> modSubs = communityRepository.findModeratedCommunitiesByUser(currentUserId);
-            moderator = modSubs.stream().anyMatch(s -> s.id().equals(communityId));
+            moderator = modSubs.stream().anyMatch(s -> s.getId().equals(communityId));
         }
         return CommunityResponse.from(sub, subscribed, moderator);
     }
@@ -95,7 +96,7 @@ public class CommunityService {
     public CommunityResponse getCommunityByName(String name, UUID currentUserId) {
         Community sub = communityRepository.findByName(name)
             .orElseThrow(() -> new ResourceNotFoundException("Community", "name", name));
-        return getCommunity(sub.id(), currentUserId);
+        return getCommunity(sub.getId(), currentUserId);
     }
 
     @Cacheable(value = "trendingCommunities", key = "#pageable.pageNumber")
@@ -124,7 +125,7 @@ public class CommunityService {
             .orElseThrow(() -> new ResourceNotFoundException("Community", "id", communityId));
 
         Set<Community> modSubs = communityRepository.findModeratedCommunitiesByUser(currentUserId);
-        boolean isMod = modSubs.stream().anyMatch(s -> s.id().equals(communityId));
+        boolean isMod = modSubs.stream().anyMatch(s -> s.getId().equals(communityId));
         if (!isMod) {
             throw new UnauthorizedActionException("Only moderators can update community settings");
         }
@@ -134,14 +135,14 @@ public class CommunityService {
                 .map(id -> categoryRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Category", "id", id)))
                 .collect(Collectors.toSet())
-            : sub.categories();
+            : sub.getCategories();
 
         Community updated = new Community(
-            sub.id(), sub.name(), request.title(), request.description(), request.sidebarText(),
-            sub.headerImageUrl(), sub.iconImageUrl(), request.isPublic(), request.isRestricted(),
-            request.isOver18(), sub.memberCount(), sub.subscriberCount(), sub.activeUserCount(),
-            sub.posts(), sub.members(), sub.moderators(), categorySet, sub.createdBy(),
-            sub.createdAt(), Instant.now()
+            sub.getId(), sub.getName(), request.title(), request.description(), request.sidebarText(),
+            sub.getHeaderImageUrl(), sub.getIconImageUrl(), request.isPublic(), request.isRestricted(),
+            request.isOver18(), sub.getMemberCount(), sub.getSubscriberCount(), sub.getActiveUserCount(),
+            sub.getPosts(), sub.getMembers(), sub.getModerators(), categorySet, sub.getCreatedBy(),
+            sub.getCreatedAt(), Instant.now()
         );
         Community saved = communityRepository.save(updated);
         return CommunityResponse.from(saved, true, true);

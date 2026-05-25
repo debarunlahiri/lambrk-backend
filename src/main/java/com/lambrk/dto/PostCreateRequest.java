@@ -7,7 +7,6 @@ import java.util.UUID;
 
 public record PostCreateRequest(
     
-    @NotBlank(message = "Title is required")
     @Size(max = 300, message = "Title must be less than 300 characters")
     String title,
     

@@ -110,13 +110,13 @@ public class SearchService {
         }
         
         return posts.stream()
-            .filter(post -> post.createdAt().isAfter(since))
-            .filter(post -> request.minScore() == null || post.score() >= request.minScore())
-            .filter(post -> request.minComments() == null || post.commentCount() >= request.minComments())
+            .filter(post -> post.getCreatedAt().isAfter(since))
+            .filter(post -> request.minScore() == null || post.getScore() >= request.minScore())
+            .filter(post -> request.minComments() == null || post.getCommentCount() >= request.minComments())
             .filter(post -> request.includeNSFW() || !post.isOver18())
             .filter(post -> request.includeOver18() || !post.isOver18())
             .filter(post -> request.flairs().isEmpty() || 
-                (post.flairText() != null && request.flairs().contains(post.flairText())))
+                (post.getFlairText() != null && request.flairs().contains(post.getFlairText())))
             .map(PostResponse::from)
             .toList();
     }
@@ -128,8 +128,8 @@ public class SearchService {
         Page<Comment> comments = commentRepository.searchComments(request.query(), pageable);
         
         return comments.stream()
-            .filter(comment -> comment.createdAt().isAfter(since))
-            .filter(comment -> request.minScore() == null || comment.score() >= request.minScore())
+            .filter(comment -> comment.getCreatedAt().isAfter(since))
+            .filter(comment -> request.minScore() == null || comment.getScore() >= request.minScore())
             .filter(comment -> request.includeNSFW() || !comment.isOver18())
             .filter(comment -> request.includeOver18() || !comment.isOver18())
             .map(CommentResponse::from)
@@ -142,7 +142,7 @@ public class SearchService {
         Page<User> users = userRepository.searchActiveUsers(request.query(), pageable);
         
         return users.stream()
-            .filter(user -> request.minScore() == null || user.karma() >= request.minScore())
+            .filter(user -> request.minScore() == null || user.getKarma() >= request.minScore())
             .map(UserResponse::from)
             .toList();
     }

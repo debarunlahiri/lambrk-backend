@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Component
@@ -69,10 +70,14 @@ public class JwtTokenProvider {
         try {
             return tokenGenerationTimer.recordCallable(() -> {
                 UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
+                UUID userId = null;
+                if (userPrincipal instanceof UserPrincipal) {
+                    userId = ((UserPrincipal) userPrincipal).getUserId();
+                }
                 Instant now = Instant.now();
                 Instant expiryDate = now.plus(jwtExpirationInSeconds, ChronoUnit.SECONDS);
 
-                return Jwts.builder()
+                var builder = Jwts.builder()
                     .subject(userPrincipal.getUsername())
                     .issuer(jwtIssuer)
                     .audience().add(jwtAudience).and()
@@ -81,9 +86,13 @@ public class JwtTokenProvider {
                     .claim("roles", userPrincipal.getAuthorities().stream()
                         .map(auth -> auth.getAuthority())
                         .toList())
-                    .claim("tokenType", "access")
-                    .signWith(key, SignatureAlgorithm.HS512)
-                    .compact();
+                    .claim("tokenType", "access");
+
+                if (userId != null) {
+                    builder.claim("userId", userId.toString());
+                }
+
+                return builder.signWith(key, SignatureAlgorithm.HS512).compact();
             });
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate token", e);
@@ -117,6 +126,13 @@ public class JwtTokenProvider {
 
     public List<String> getRolesFromJWT(String token) {
         return getClaimFromToken(token, claims -> claims.get("roles", List.class));
+    }
+
+    public UUID getUserIdFromJWT(String token) {
+        return getClaimFromToken(token, claims -> {
+            String userIdStr = claims.get("userId", String.class);
+            return userIdStr != null ? UUID.fromString(userIdStr) : null;
+        });
     }
 
     public String getTokenTypeFromJWT(String token) {
@@ -192,27 +208,10 @@ public class JwtTokenProvider {
         }
     }
 
-    public String refreshToken(String refreshToken) {
+    public String validateRefreshTokenAndGetUsername(String refreshToken) {
         if (!validateToken(refreshToken) || !isRefreshToken(refreshToken)) {
             throw new IllegalArgumentException("Invalid refresh token");
         }
-
-        String username = getUsernameFromJWT(refreshToken);
-        return generateTokenFromUsername(username);
-    }
-
-    private String generateTokenFromUsername(String username) {
-        Instant now = Instant.now();
-        Instant expiryDate = now.plus(jwtExpirationInSeconds, ChronoUnit.SECONDS);
-
-        return Jwts.builder()
-            .subject(username)
-            .issuer(jwtIssuer)
-            .audience().add(jwtAudience).and()
-            .issuedAt(Date.from(now))
-            .expiration(Date.from(expiryDate))
-            .claim("tokenType", "access")
-            .signWith(key, SignatureAlgorithm.HS512)
-            .compact();
+        return getUsernameFromJWT(refreshToken);
     }
 }

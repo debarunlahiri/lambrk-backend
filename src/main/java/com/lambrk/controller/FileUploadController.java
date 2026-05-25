@@ -18,8 +18,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import com.lambrk.config.UserPrincipal;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -43,7 +44,7 @@ public class FileUploadController {
     public ResponseEntity<FileUploadResponse> uploadFile(
             @RequestParam("file") MultipartFile file,
             @Valid @ModelAttribute FileUploadRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID userId = getUserId(userDetails);
         FileUploadResponse response = fileUploadService.uploadFile(file, request, userId);
@@ -56,7 +57,7 @@ public class FileUploadController {
     @Timed(value = "files.metadata.duration")
     public ResponseEntity<FileUploadResponse> getFileMetadata(
             @PathVariable @SpanTag UUID fileId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID userId = getUserId(userDetails);
         FileUploadResponse response = fileUploadService.getFile(fileId, userId);
@@ -69,7 +70,7 @@ public class FileUploadController {
     @Timed(value = "files.download.duration")
     public ResponseEntity<Resource> downloadFile(
             @PathVariable @SpanTag UUID fileId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID userId = getUserId(userDetails);
         
@@ -101,7 +102,7 @@ public class FileUploadController {
     public ResponseEntity<Page<FileUploadResponse>> getUserFiles(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID userId = getUserId(userDetails);
         Pageable pageable = PageRequest.of(page, size);
@@ -117,7 +118,7 @@ public class FileUploadController {
             @PathVariable @SpanTag FileUploadRequest.FileType type,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         Pageable pageable = PageRequest.of(page, size);
         Page<FileUploadResponse> files = fileUploadService.getFilesByType(type, pageable);
@@ -131,7 +132,7 @@ public class FileUploadController {
     public ResponseEntity<Page<FileUploadResponse>> getPublicFiles(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         Pageable pageable = PageRequest.of(page, size);
         Page<FileUploadResponse> files = fileUploadService.getFilesByType(FileUploadRequest.FileType.POST_IMAGE, pageable);
@@ -145,7 +146,7 @@ public class FileUploadController {
     public ResponseEntity<FileUploadResponse> updateFileMetadata(
             @PathVariable @SpanTag UUID fileId,
             @Valid @RequestBody FileUploadRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID userId = getUserId(userDetails);
         FileUploadResponse response = fileUploadService.updateFileMetadata(fileId, request, userId);
@@ -158,7 +159,7 @@ public class FileUploadController {
     @Timed(value = "files.delete.duration")
     public ResponseEntity<Void> deleteFile(
             @PathVariable @SpanTag UUID fileId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID userId = getUserId(userDetails);
         fileUploadService.deleteFile(fileId, userId);
@@ -170,7 +171,7 @@ public class FileUploadController {
     @Counted(value = "files.stats.viewed")
     @Timed(value = "files.stats.duration")
     public ResponseEntity<Object> getFileStats(
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID userId = getUserId(userDetails);
         
@@ -193,7 +194,7 @@ public class FileUploadController {
     public ResponseEntity<List<FileUploadResponse>> searchFiles(
             @RequestParam @SpanTag String query,
             @RequestParam(defaultValue = "20") int limit,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         // This would need to be implemented in FileUploadService
         List<FileUploadResponse> results = List.of(); // Placeholder
@@ -206,15 +207,14 @@ public class FileUploadController {
     @Timed(value = "files.recent.duration")
     public ResponseEntity<List<FileUploadResponse>> getRecentFiles(
             @RequestParam(defaultValue = "10") int limit,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         // This would need to be implemented in FileUploadService
         List<FileUploadResponse> results = List.of(); // Placeholder
         return ResponseEntity.ok(results);
     }
 
-    private UUID getUserId(UserDetails userDetails) {
-        // In a real implementation, extract user ID from UserDetails
-        return java.util.UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"); // Placeholder
+    private UUID getUserId(UserPrincipal userPrincipal) {
+        return userPrincipal != null ? userPrincipal.getUserId() : null;
     }
 }

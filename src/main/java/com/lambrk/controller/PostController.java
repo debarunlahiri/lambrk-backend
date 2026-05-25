@@ -13,8 +13,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import com.lambrk.config.UserPrincipal;
 
 import jakarta.validation.Valid;
 import java.util.List;
@@ -36,7 +37,7 @@ public class PostController {
     @Timed(value = "posts.create.duration", description = "Time taken to create a post")
     public ResponseEntity<PostResponse> createPost(
             @Valid @RequestBody PostCreateRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID authorId = getUserIdFromUserDetails(userDetails);
         PostResponse response = postService.createPost(request, authorId);
@@ -48,7 +49,7 @@ public class PostController {
     @Timed(value = "posts.get.duration", description = "Time taken to get a post")
     public ResponseEntity<PostResponse> getPost(
             @PathVariable @SpanTag UUID postId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID currentUserId = getUserIdFromUserDetails(userDetails);
         PostResponse response = postService.getPost(postId, currentUserId);
@@ -61,7 +62,7 @@ public class PostController {
     public ResponseEntity<Page<PostResponse>> getHotPosts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "score"));
         UUID currentUserId = getUserIdFromUserDetails(userDetails);
@@ -75,7 +76,7 @@ public class PostController {
     public ResponseEntity<Page<PostResponse>> getNewPosts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         UUID currentUserId = getUserIdFromUserDetails(userDetails);
@@ -89,7 +90,7 @@ public class PostController {
     public ResponseEntity<Page<PostResponse>> getTopPosts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "score"));
         UUID currentUserId = getUserIdFromUserDetails(userDetails);
@@ -104,7 +105,7 @@ public class PostController {
             @PathVariable @SpanTag UUID communityId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         UUID currentUserId = getUserIdFromUserDetails(userDetails);
@@ -119,7 +120,7 @@ public class PostController {
             @PathVariable @SpanTag UUID userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         UUID currentUserId = getUserIdFromUserDetails(userDetails);
@@ -134,7 +135,7 @@ public class PostController {
             @RequestParam @SpanTag String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "score"));
         UUID currentUserId = getUserIdFromUserDetails(userDetails);
@@ -148,7 +149,7 @@ public class PostController {
     public ResponseEntity<PostResponse> updatePost(
             @PathVariable @SpanTag UUID postId,
             @Valid @RequestBody PostCreateRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID currentUserId = getUserIdFromUserDetails(userDetails);
         PostResponse response = postService.updatePost(postId, request, currentUserId);
@@ -160,7 +161,7 @@ public class PostController {
     @Timed(value = "posts.delete.duration", description = "Time taken to delete a post")
     public ResponseEntity<Void> deletePost(
             @PathVariable @SpanTag UUID postId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID currentUserId = getUserIdFromUserDetails(userDetails);
         postService.deletePost(postId, currentUserId);
@@ -172,19 +173,14 @@ public class PostController {
     @Timed(value = "posts.stickied.duration", description = "Time taken to get stickied posts")
     public ResponseEntity<List<PostResponse>> getStickiedPosts(
             @RequestParam(required = false) UUID communityId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID currentUserId = getUserIdFromUserDetails(userDetails);
         List<PostResponse> response = postService.getStickiedPosts(communityId, currentUserId);
         return ResponseEntity.ok(response);
     }
 
-    private UUID getUserIdFromUserDetails(UserDetails userDetails) {
-        if (userDetails == null) {
-            return null;
-        }
-        // In a real implementation, you would extract the user ID from the JWT token or user details
-        // For now, we'll use a placeholder implementation
-        return java.util.UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"); // This should be replaced with actual user ID extraction
+    private UUID getUserIdFromUserDetails(UserPrincipal userPrincipal) {
+        return userPrincipal != null ? userPrincipal.getUserId() : null;
     }
 }

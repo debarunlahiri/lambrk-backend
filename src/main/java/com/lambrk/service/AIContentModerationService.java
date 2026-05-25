@@ -207,12 +207,12 @@ public class AIContentModerationService {
         List<String> interactedCommunities = getUserInteractedCommunities(userId);
         
         for (Post post : userPosts.getContent()) {
-            Community community = post.community();
-            if (!interactedCommunities.contains(community.name())) {
+            Community community = post.getCommunity();
+            if (!interactedCommunities.contains(community.getName())) {
                 recommendations.add(new Recommendation(
-                    community.id(),
+                    community.getId(),
                     "community",
-                    community.name(),
+                    community.getName(),
                     0.6,
                     "Related to your activity"
                 ));
@@ -221,13 +221,13 @@ public class AIContentModerationService {
         
         List<Vote> userVotes = voteRepository.findPostVotesByUser(userId);
         for (Vote vote : userVotes.stream().limit(20).toList()) {
-            if (vote.post() != null) {
-                Post post = vote.post();
+            if (vote.getPost() != null) {
+                Post post = vote.getPost();
                 for (Post similarPost : findSimilarPosts(post, 3)) {
                     recommendations.add(new Recommendation(
-                        similarPost.id(),
+                        similarPost.getId(),
                         "post",
-                        similarPost.title(),
+                        similarPost.getTitle(),
                         0.7,
                         "Similar to posts you've liked"
                     ));
@@ -244,7 +244,7 @@ public class AIContentModerationService {
         
         Page<Post> posts = postRepository.findUserPostsSince(userId, thirtyDaysAgo, pageable);
         return posts.getContent().stream()
-            .map(post -> post.community().name())
+            .map(post -> post.getCommunity().getName())
             .distinct()
             .collect(Collectors.toList());
     }
@@ -252,14 +252,14 @@ public class AIContentModerationService {
     private List<Post> findSimilarPosts(Post post, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
         
-        String textToAnalyze = (post.title() != null ? post.title() : "") + " " + (post.content() != null ? post.content() : "");
+        String textToAnalyze = (post.getTitle() != null ? post.getTitle() : "") + " " + (post.getContent() != null ? post.getContent() : "");
         List<String> keywords = extractKeywords(textToAnalyze);
         
-        return postRepository.findByCommunity(post.community(), pageable).getContent().stream()
-            .filter(p -> !p.id().equals(post.id()))
+        return postRepository.findByCommunity(post.getCommunity(), pageable).getContent().stream()
+            .filter(p -> !p.getId().equals(post.getId()))
             .filter(p -> keywords.stream().anyMatch(k -> 
-                p.title().toLowerCase().contains(k.toLowerCase()) || 
-                (p.content() != null && p.content().toLowerCase().contains(k.toLowerCase()))))
+                p.getTitle().toLowerCase().contains(k.toLowerCase()) || 
+                (p.getContent() != null && p.getContent().toLowerCase().contains(k.toLowerCase()))))
             .toList();
     }
 
@@ -282,9 +282,9 @@ public class AIContentModerationService {
         return trendingPosts.getContent().stream()
             .filter(post -> !post.isOver18())
             .map(post -> new Recommendation(
-                post.id(),
+                post.getId(),
                 "post",
-                post.title(),
+                post.getTitle(),
                 calculateTrendingScore(post),
                 "Trending in your feed"
             ))
@@ -292,11 +292,11 @@ public class AIContentModerationService {
     }
 
     private double calculateTrendingScore(Post post) {
-        double timeWeight = ChronoUnit.HOURS.between(post.createdAt(), Instant.now());
+        double timeWeight = ChronoUnit.HOURS.between(post.getCreatedAt(), Instant.now());
         timeWeight = Math.max(1, 24 - timeWeight) / 24;
         
-        double scoreWeight = Math.min(post.score() / 1000.0, 1.0);
-        double commentWeight = Math.min(post.commentCount() / 50.0, 1.0);
+        double scoreWeight = Math.min(post.getScore() / 1000.0, 1.0);
+        double commentWeight = Math.min(post.getCommentCount() / 50.0, 1.0);
         
         return (timeWeight * 0.4 + scoreWeight * 0.4 + commentWeight * 0.2);
     }
@@ -313,9 +313,9 @@ public class AIContentModerationService {
         if (userVotes.isEmpty()) return List.of();
         
         Set<UUID> likedPostIds = userVotes.stream()
-            .filter(v -> v.voteType() == Vote.VoteType.LIKE)
-            .filter(v -> v.post() != null)
-            .map(v -> v.post().id())
+            .filter(v -> v.getVoteType() == Vote.VoteType.LIKE)
+            .filter(v -> v.getPost() != null)
+            .map(v -> v.getPost().getId())
             .collect(Collectors.toSet());
         
         if (likedPostIds.isEmpty()) return List.of();
@@ -324,22 +324,22 @@ public class AIContentModerationService {
         List<Recommendation> recommendations = new ArrayList<>();
         
         Set<Post> likedPosts = userVotes.stream()
-            .filter(v -> v.post() != null)
-            .map(Vote::post)
+            .filter(v -> v.getPost() != null)
+            .map(Vote::getPost)
             .collect(Collectors.toSet());
         
         for (Post post : posts) {
-            if (!likedPostIds.contains(post.id()) && !post.isArchived()) {
+            if (!likedPostIds.contains(post.getId()) && !post.isArchived()) {
                 long sharedCommunities = posts.stream()
                     .filter(p -> likedPosts.contains(p) &&
-                                p.community().id().equals(post.community().id()))
+                                p.getCommunity().getId().equals(post.getCommunity().getId()))
                     .count();
                 
                 if (sharedCommunities > 0) {
                     recommendations.add(new Recommendation(
-                        post.id(),
+                        post.getId(),
                         "post",
-                        post.title(),
+                        post.getTitle(),
                         Math.min(sharedCommunities / 5.0, 0.8),
                         "Popular among similar users"
                     ));
@@ -352,22 +352,22 @@ public class AIContentModerationService {
 
     private List<Recommendation> getSubscribedCommunitiesContent(UUID userId, int limit) {
         User user = userRepository.findById(userId).orElse(null);
-        if (user == null || user.subscribedCommunities() == null) return List.of();
+        if (user == null || user.getSubscribedCommunities() == null) return List.of();
         
         Pageable pageable = PageRequest.of(0, limit);
         
         List<Recommendation> recommendations = new ArrayList<>();
         
-        for (Community community : user.subscribedCommunities()) {
+        for (Community community : user.getSubscribedCommunities()) {
             Page<Post> posts = postRepository.findByCommunityAndIsArchivedFalse(community, pageable);
             for (Post post : posts.getContent()) {
                 if (!post.isOver18()) {
                     recommendations.add(new Recommendation(
-                        post.id(),
+                        post.getId(),
                         "post",
-                        post.title(),
+                        post.getTitle(),
                         0.8,
-                        "From your subscribed community: " + community.name()
+                        "From your subscribed community: " + community.getName()
                     ));
                 }
             }

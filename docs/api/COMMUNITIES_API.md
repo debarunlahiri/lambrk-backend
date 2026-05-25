@@ -71,7 +71,7 @@ Get community by id.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/communities/1' \
+curl -X GET 'http://localhost:9500/api/communities/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>'
 ```
 
@@ -164,7 +164,7 @@ Update community.
 **cURL**
 
 ```bash
-curl -X PUT 'http://localhost:9500/api/communities/1' \
+curl -X PUT 'http://localhost:9500/api/communities/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -193,7 +193,7 @@ Subscribe current user.
 **cURL**
 
 ```bash
-curl -X POST 'http://localhost:9500/api/communities/1/subscribe' \
+curl -X POST 'http://localhost:9500/api/communities/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11/subscribe' \
   -H 'Authorization: Bearer <token>'
 ```
 
@@ -209,7 +209,7 @@ Unsubscribe current user.
 **cURL**
 
 ```bash
-curl -X POST 'http://localhost:9500/api/communities/1/unsubscribe' \
+curl -X POST 'http://localhost:9500/api/communities/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11/unsubscribe' \
   -H 'Authorization: Bearer <token>'
 ```
 

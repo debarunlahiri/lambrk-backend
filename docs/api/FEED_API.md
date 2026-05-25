@@ -39,7 +39,7 @@ Get feed with advanced filters.
 **Request body**
 
 ```json
-{"userId":1,"limit":20,"sortBy":"algorithm","postTypes":["TEXT"],"includeNsfw":false,"includeFromFollowingOnly":false,"timeDecayFactor":1.0}
+{"userId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","limit":20,"sortBy":"algorithm","postTypes":["TEXT"],"includeNsfw":false,"includeFromFollowingOnly":false,"timeDecayFactor":1.0}
 ```
 
 **cURL**
@@ -49,7 +49,7 @@ curl -X POST 'http://localhost:9500/api/feed' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "userId": 1,
+  "userId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   "limit": 20,
   "sortBy": "algorithm",
   "postTypes": [
@@ -74,6 +74,8 @@ Get hot feed.
 
 **Query/path parameters**
 
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
 | `limit` | integer | no | `20` | Number of posts. |
 
 **cURL**
@@ -96,6 +98,8 @@ Get newest feed.
 
 **Query/path parameters**
 
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
 | `limit` | integer | no | `20` | Number of posts. |
 
 **cURL**
@@ -118,6 +122,8 @@ Get top feed.
 
 **Query/path parameters**
 
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
 | `limit` | integer | no | `20` | Number of posts. |
 | `timePeriod` | string | no | `all` | Accepted by controller. |
 
@@ -141,6 +147,8 @@ Get discovery feed.
 
 **Query/path parameters**
 
+| Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
 | `limit` | integer | no | `20` | Number of posts. |
 
 **cURL**

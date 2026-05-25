@@ -10,8 +10,9 @@ import io.micrometer.tracing.annotation.SpanTag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import com.lambrk.config.UserPrincipal;
 
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class SearchController {
     @Timed(value = "search.advanced.duration")
     public ResponseEntity<SearchResponse> advancedSearch(
             @Valid @RequestBody SearchRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         SearchResponse response = searchService.search(request);
         return ResponseEntity.ok(response);
@@ -53,7 +54,7 @@ public class SearchController {
             @RequestParam(defaultValue = "false") boolean includeOver18,
             @RequestParam(required = false) Integer minScore,
             @RequestParam(required = false) Integer minComments,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         SearchRequest request = new SearchRequest(
             query,
@@ -88,7 +89,7 @@ public class SearchController {
             @RequestParam(defaultValue = "false") boolean includeNSFW,
             @RequestParam(defaultValue = "false") boolean includeOver18,
             @RequestParam(required = false) Integer minScore,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         SearchRequest request = new SearchRequest(
             query,
@@ -120,7 +121,7 @@ public class SearchController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "RELEVANCE") SearchRequest.SortBy sort,
             @RequestParam(required = false) Integer minScore,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         SearchRequest request = new SearchRequest(
             query,
@@ -153,7 +154,7 @@ public class SearchController {
             @RequestParam(defaultValue = "RELEVANCE") SearchRequest.SortBy sort,
             @RequestParam(defaultValue = "false") boolean includeNSFW,
             @RequestParam(defaultValue = "false") boolean includeOver18,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         SearchRequest request = new SearchRequest(
             query,
@@ -191,7 +192,7 @@ public class SearchController {
             @RequestParam(defaultValue = "false") boolean includeOver18,
             @RequestParam(required = false) Integer minScore,
             @RequestParam(required = false) Integer minComments,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         SearchRequest request = new SearchRequest(
             query,
@@ -252,7 +253,7 @@ public class SearchController {
     public ResponseEntity<SearchResponse> getTrendingSearches(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         // This would return trending search terms
         SearchResponse response = new SearchResponse(

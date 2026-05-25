@@ -10,53 +10,67 @@ import java.time.YearMonth;
 import java.util.UUID;
 
 @Entity
-@org.hibernate.annotations.GenericGenerator(name = "uuid7", strategy = "com.lambrk.util.UuidV7Generator")
 @Table(name = "free_tier_usage", indexes = {
     @Index(name = "idx_free_tier_user_id", columnList = "user_id"),
     @Index(name = "idx_free_tier_period", columnList = "period_year, period_month"),
     @Index(name = "idx_free_tier_user_period", columnList = "user_id, period_year, period_month", unique = true)
 })
 @EntityListeners(AuditingEntityListener.class)
-public record FreeTierUsage(
+public class FreeTierUsage {
 
     @Id
-    @GeneratedValue(generator = "uuid7")
-    UUID id,
+    private UUID id;
 
     @Column(name = "user_id", nullable = false)
-    UUID userId,
+    private UUID userId;
 
     @Column(name = "period_year", nullable = false)
-    int periodYear,
+    private int periodYear;
 
     @Column(name = "period_month", nullable = false)
-    int periodMonth,
+    private int periodMonth;
 
     @Column(name = "storage_bytes_used", nullable = false)
-    long storageBytesUsed,
+    private long storageBytesUsed;
 
     @Column(name = "uploads_count", nullable = false)
-    int uploadsCount,
+    private int uploadsCount;
 
     @Column(name = "bandwidth_bytes", nullable = false)
-    long bandwidthBytes,
+    private long bandwidthBytes;
 
     @Column(name = "is_free_tier", nullable = false)
-    boolean isFreeTier,
+    private boolean isFreeTier;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    Instant createdAt,
+    private Instant createdAt;
 
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
-    Instant updatedAt
-) {
+    private Instant updatedAt;
+
+    protected FreeTierUsage() {}
+
+    public FreeTierUsage(UUID id, UUID userId, int periodYear, int periodMonth, long storageBytesUsed,
+                         int uploadsCount, long bandwidthBytes, boolean isFreeTier,
+                         Instant createdAt, Instant updatedAt) {
+        this.id = id;
+        this.userId = userId;
+        this.periodYear = periodYear;
+        this.periodMonth = periodMonth;
+        this.storageBytesUsed = storageBytesUsed;
+        this.uploadsCount = uploadsCount;
+        this.bandwidthBytes = bandwidthBytes;
+        this.isFreeTier = isFreeTier;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 
     public FreeTierUsage(UUID userId, int periodYear, int periodMonth, long storageBytesUsed,
                          int uploadsCount, long bandwidthBytes, boolean isFreeTier,
                          Instant createdAt, Instant updatedAt) {
-        this(null, userId, periodYear, periodMonth, storageBytesUsed, uploadsCount,
+        this(com.lambrk.util.UuidV7Generator.generate(), userId, periodYear, periodMonth, storageBytesUsed, uploadsCount,
              bandwidthBytes, isFreeTier, createdAt, updatedAt);
     }
 
@@ -102,4 +116,25 @@ public record FreeTierUsage(
             Instant.now()
         );
     }
+
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
+    public UUID getUserId() { return userId; }
+    public void setUserId(UUID userId) { this.userId = userId; }
+    public int getPeriodYear() { return periodYear; }
+    public void setPeriodYear(int periodYear) { this.periodYear = periodYear; }
+    public int getPeriodMonth() { return periodMonth; }
+    public void setPeriodMonth(int periodMonth) { this.periodMonth = periodMonth; }
+    public long getStorageBytesUsed() { return storageBytesUsed; }
+    public void setStorageBytesUsed(long storageBytesUsed) { this.storageBytesUsed = storageBytesUsed; }
+    public int getUploadsCount() { return uploadsCount; }
+    public void setUploadsCount(int uploadsCount) { this.uploadsCount = uploadsCount; }
+    public long getBandwidthBytes() { return bandwidthBytes; }
+    public void setBandwidthBytes(long bandwidthBytes) { this.bandwidthBytes = bandwidthBytes; }
+    public boolean isFreeTier() { return isFreeTier; }
+    public void setFreeTier(boolean freeTier) { this.isFreeTier = freeTier; }
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }

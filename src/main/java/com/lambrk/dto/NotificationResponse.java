@@ -41,22 +41,22 @@ public record NotificationResponse(
     
     public static NotificationResponse from(Notification notification) {
         return new NotificationResponse(
-            notification.id(),
-            notification.type(),
-            notification.recipient().id(),
-            notification.title(),
-            notification.message(),
-            notification.relatedPostId(),
+            notification.getId(),
+            notification.getType(),
+            notification.getRecipient().getId(),
+            notification.getTitle(),
+            notification.getMessage(),
+            notification.getRelatedPostId(),
             null, // Will be populated by service
-            notification.relatedCommentId(),
+            notification.getRelatedCommentId(),
             null, // Will be populated by service
-            notification.relatedUserId(),
+            notification.getRelatedUserId(),
             null, // Will be populated by service
-            notification.actionUrl(),
-            notification.actionText(),
+            notification.getActionUrl(),
+            notification.getActionText(),
             notification.isRead(),
-            notification.createdAt(),
-            notification.readAt()
+            notification.getCreatedAt(),
+            notification.getReadAt()
         );
     }
 }

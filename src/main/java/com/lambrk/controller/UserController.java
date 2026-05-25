@@ -14,8 +14,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import com.lambrk.config.UserPrincipal;
 import java.util.UUID;
 
 @RestController
@@ -49,9 +50,9 @@ public class UserController {
     @GetMapping("/me")
     @NewSpan("get-current-user")
     @Timed(value = "users.me.duration")
-    public ResponseEntity<UserResponse> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
-        User user = userRepository.findByUsername(userDetails.getUsername())
-            .orElseThrow(() -> new ResourceNotFoundException("User", "username", userDetails.getUsername()));
+    public ResponseEntity<UserResponse> getCurrentUser(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        User user = userRepository.findByUsername(userPrincipal.getUsername())
+            .orElseThrow(() -> new ResourceNotFoundException("User", "username", userPrincipal.getUsername()));
         return ResponseEntity.ok(UserResponse.from(user));
     }
 

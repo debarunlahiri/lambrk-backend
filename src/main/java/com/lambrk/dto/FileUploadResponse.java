@@ -39,21 +39,21 @@ public record FileUploadResponse(
     
     public static FileUploadResponse from(FileUpload fileUpload) {
         return new FileUploadResponse(
-            fileUpload.id(),
-            fileUpload.fileName(),
-            fileUpload.originalFileName(),
-            fileUpload.fileUrl(),
-            fileUpload.thumbnailUrl(),
-            fileUpload.type(),
-            fileUpload.fileSize(),
-            fileUpload.mimeType(),
-            fileUpload.description(),
+            fileUpload.getId(),
+            fileUpload.getFileName(),
+            fileUpload.getOriginalFileName(),
+            fileUpload.getFileUrl(),
+            fileUpload.getThumbnailUrl(),
+            fileUpload.getType(),
+            fileUpload.getFileSize(),
+            fileUpload.getMimeType(),
+            fileUpload.getDescription(),
             fileUpload.isPublic(),
             fileUpload.isNSFW(),
-            fileUpload.altText(),
-            fileUpload.uploadedBy().id(),
-            fileUpload.uploadedAt(),
-            fileUpload.checksum()
+            fileUpload.getAltText(),
+            fileUpload.getUploadedBy().getId(),
+            fileUpload.getUploadedAt(),
+            fileUpload.getChecksum()
         );
     }
 }

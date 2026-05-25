@@ -7,7 +7,7 @@ Most API failures return Spring `ProblemDetail` JSON. Feed-specific exceptions m
 **Example request**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/users/999999' \
+curl -X GET 'http://localhost:9500/api/users/f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a99' \
   -H 'Authorization: Bearer <token>'
 ```
 

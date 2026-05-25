@@ -14,101 +14,146 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@org.hibernate.annotations.GenericGenerator(name = "uuid7", strategy = "com.lambrk.util.UuidV7Generator")
 @Table(name = "users", indexes = {
     @Index(name = "idx_user_username", columnList = "username"),
     @Index(name = "idx_user_email", columnList = "email"),
     @Index(name = "idx_user_created_at", columnList = "created_at")
 })
 @EntityListeners(AuditingEntityListener.class)
-public record User(
-    
+public class User {
+
     @Id
-    @GeneratedValue(generator = "uuid7")
-    UUID id,
-    
+    private UUID id;
+
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     @Column(unique = true, nullable = false, length = 50)
-    String username,
-    
+    private String username;
+
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     @Column(unique = true, nullable = false, length = 100)
-    String email,
-    
+    private String email;
+
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters")
     @Column(nullable = false)
-    String password,
-    
+    private String password;
+
     @Column(name = "display_name", length = 100)
-    String displayName,
-    
+    private String displayName;
+
     @Column(columnDefinition = "TEXT")
-    String bio,
-    
+    private String bio;
+
     @Column(name = "avatar_url", length = 500)
-    String avatarUrl,
-    
+    private String avatarUrl;
+
     @Column(name = "is_active", nullable = false)
-    boolean isActive,
-    
+    private boolean isActive = true;
+
     @Column(name = "is_verified", nullable = false)
-    boolean isVerified,
-    
+    private boolean isVerified = false;
+
     @Column(name = "karma", nullable = false)
-    int karma,
-    
+    private int karma = 0;
+
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    Set<Post> posts,
-    
+    private Set<Post> posts = new HashSet<>();
+
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    Set<Comment> comments,
-    
+    private Set<Comment> comments = new HashSet<>();
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    Set<Vote> votes,
-    
+    private Set<Vote> votes = new HashSet<>();
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "user_community_memberships",
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "community_id")
     )
-    Set<Community> subscribedCommunities,
-    
+    private Set<Community> subscribedCommunities = new HashSet<>();
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "user_community_moderators",
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "community_id")
     )
-    Set<Community> moderatedCommunities,
-    
+    private Set<Community> moderatedCommunities = new HashSet<>();
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    Instant createdAt,
-    
+    private Instant createdAt;
+
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
-    Instant updatedAt
-) {
-    
-    public User {
-        if (posts == null) posts = new HashSet<>();
-        if (comments == null) comments = new HashSet<>();
-        if (votes == null) votes = new HashSet<>();
-        if (subscribedCommunities == null) subscribedCommunities = new HashSet<>();
-        if (moderatedCommunities == null) moderatedCommunities = new HashSet<>();
-        isActive = true;
-        isVerified = false;
-        karma = 0;
+    private Instant updatedAt;
+
+    protected User() {}
+
+    public User(UUID id, String username, String email, String password, String displayName, String bio,
+                String avatarUrl, boolean isActive, boolean isVerified, int karma, Set<Post> posts,
+                Set<Comment> comments, Set<Vote> votes, Set<Community> subscribedCommunities,
+                Set<Community> moderatedCommunities, Instant createdAt, Instant updatedAt) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.displayName = displayName;
+        this.bio = bio;
+        this.avatarUrl = avatarUrl;
+        this.isActive = isActive;
+        this.isVerified = isVerified;
+        this.karma = karma;
+        this.posts = posts != null ? posts : new HashSet<>();
+        this.comments = comments != null ? comments : new HashSet<>();
+        this.votes = votes != null ? votes : new HashSet<>();
+        this.subscribedCommunities = subscribedCommunities != null ? subscribedCommunities : new HashSet<>();
+        this.moderatedCommunities = moderatedCommunities != null ? moderatedCommunities : new HashSet<>();
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
-    
+
     public User(String username, String email, String password) {
-        this(null, username, email, password, null, null, null, true, false, 0,
+        this(com.lambrk.util.UuidV7Generator.generate(), username, email, password, null, null, null, true, false, 0,
              new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(),
              Instant.now(), Instant.now());
     }
-    
+
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    public String getDisplayName() { return displayName; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { this.isActive = active; }
+    public boolean isVerified() { return isVerified; }
+    public void setVerified(boolean verified) { this.isVerified = verified; }
+    public int getKarma() { return karma; }
+    public void setKarma(int karma) { this.karma = karma; }
+    public Set<Post> getPosts() { return posts; }
+    public void setPosts(Set<Post> posts) { this.posts = posts; }
+    public Set<Comment> getComments() { return comments; }
+    public void setComments(Set<Comment> comments) { this.comments = comments; }
+    public Set<Vote> getVotes() { return votes; }
+    public void setVotes(Set<Vote> votes) { this.votes = votes; }
+    public Set<Community> getSubscribedCommunities() { return subscribedCommunities; }
+    public void setSubscribedCommunities(Set<Community> subscribedCommunities) { this.subscribedCommunities = subscribedCommunities; }
+    public Set<Community> getModeratedCommunities() { return moderatedCommunities; }
+    public void setModeratedCommunities(Set<Community> moderatedCommunities) { this.moderatedCommunities = moderatedCommunities; }
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }

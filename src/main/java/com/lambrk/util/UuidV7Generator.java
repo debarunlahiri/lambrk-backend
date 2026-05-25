@@ -1,8 +1,5 @@
 package com.lambrk.util;
 
-import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.id.IdentifierGenerator;
-
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.time.Instant;
@@ -12,14 +9,9 @@ import java.util.UUID;
  * UUIDv7 generator combining Unix timestamp (ms) + random data.
  * Sortable, time-ordered, and ideal for database primary keys.
  */
-public class UuidV7Generator implements IdentifierGenerator {
+public class UuidV7Generator {
 
     private static final SecureRandom RANDOM = new SecureRandom();
-
-    @Override
-    public Object generate(SharedSessionContractImplementor session, Object object) {
-        return generate();
-    }
 
     public static UUID generate() {
         long timestamp = Instant.now().toEpochMilli();

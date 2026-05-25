@@ -10,7 +10,6 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@org.hibernate.annotations.GenericGenerator(name = "uuid7", strategy = "com.lambrk.util.UuidV7Generator")
 @Table(name = "votes", indexes = {
     @Index(name = "idx_vote_user", columnList = "user_id"),
     @Index(name = "idx_vote_post", columnList = "post_id"),
@@ -20,47 +19,43 @@ import java.util.UUID;
     @Index(name = "idx_vote_user_comment", columnList = "user_id, comment_id")
 })
 @EntityListeners(AuditingEntityListener.class)
-public record Vote(
-    
+public class Vote {
+
     @Id
-    @GeneratedValue(generator = "uuid7")
-    UUID id,
-    
+    private UUID id;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "vote_type", nullable = false)
-    VoteType voteType,
-    
+    private VoteType voteType;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    User user,
-    
+    private User user;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
-    Post post,
-    
+    private Post post;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id")
-    Comment comment,
-    
+    private Comment comment;
+
     @Column(name = "ip_address", length = 45)
-    String ipAddress,
-    
+    private String ipAddress;
+
     @Column(name = "user_agent", length = 500)
-    String userAgent,
-    
+    private String userAgent;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    Instant createdAt,
-    
+    private Instant createdAt;
+
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
-    Instant updatedAt
-) {
-    
-    public Vote(VoteType voteType, User user, Post post, Comment comment) {
-        this(null, voteType, user, post, comment, null, null, Instant.now(), Instant.now());
-    }
-    
+    private Instant updatedAt;
+
+    protected Vote() {}
+
     public Vote(UUID id, VoteType voteType, User user, Post post, Comment comment,
                 String ipAddress, String userAgent, Instant createdAt, Instant updatedAt) {
         this.id = id;
@@ -73,8 +68,31 @@ public record Vote(
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
-    
+
+    public Vote(VoteType voteType, User user, Post post, Comment comment) {
+        this(com.lambrk.util.UuidV7Generator.generate(), voteType, user, post, comment, null, null, Instant.now(), Instant.now());
+    }
+
     public enum VoteType {
         LIKE, DISLIKE
     }
+
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
+    public VoteType getVoteType() { return voteType; }
+    public void setVoteType(VoteType voteType) { this.voteType = voteType; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+    public Post getPost() { return post; }
+    public void setPost(Post post) { this.post = post; }
+    public Comment getComment() { return comment; }
+    public void setComment(Comment comment) { this.comment = comment; }
+    public String getIpAddress() { return ipAddress; }
+    public void setIpAddress(String ipAddress) { this.ipAddress = ipAddress; }
+    public String getUserAgent() { return userAgent; }
+    public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }

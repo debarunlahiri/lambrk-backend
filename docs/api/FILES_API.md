@@ -28,7 +28,7 @@ curl -X POST 'http://localhost:9500/api/files/upload' \
 **Response**
 
 ```json
-{"fileId":1,"fileName":"stored-file.png","originalFileName":"file.png","fileUrl":"https://example.com/files/stored-file.png","thumbnailUrl":null,"type":"POST_IMAGE","fileSize":1024,"mimeType":"image/png","description":"Post image","isPublic":true,"isNSFW":false,"altText":"Screenshot","uploadedBy":1,"uploadedAt":"2026-05-02T10:00:00Z","checksum":"abc123"}
+{"fileId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","fileName":"stored-file.png","originalFileName":"file.png","fileUrl":"https://example.com/files/stored-file.png","thumbnailUrl":null,"type":"POST_IMAGE","fileSize":1024,"mimeType":"image/png","description":"Post image","isPublic":true,"isNSFW":false,"altText":"Screenshot","uploadedBy":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","uploadedAt":"2026-05-02T10:00:00Z","checksum":"abc123"}
 ```
 ### GET `/api/files/{fileId}`
 
@@ -39,14 +39,14 @@ Get file metadata.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/files/1' \
+curl -X GET 'http://localhost:9500/api/files/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>'
 ```
 
 **Response**
 
 ```json
-{"fileId":1,"fileName":"stored-file.png","originalFileName":"file.png","fileUrl":"https://example.com/files/stored-file.png","thumbnailUrl":null,"type":"POST_IMAGE","fileSize":1024,"mimeType":"image/png","description":"Post image","isPublic":true,"isNSFW":false,"altText":"Screenshot","uploadedBy":1,"uploadedAt":"2026-05-02T10:00:00Z","checksum":"abc123"}
+{"fileId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","fileName":"stored-file.png","originalFileName":"file.png","fileUrl":"https://example.com/files/stored-file.png","thumbnailUrl":null,"type":"POST_IMAGE","fileSize":1024,"mimeType":"image/png","description":"Post image","isPublic":true,"isNSFW":false,"altText":"Screenshot","uploadedBy":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","uploadedAt":"2026-05-02T10:00:00Z","checksum":"abc123"}
 ```
 ### GET `/api/files/{fileId}/content`
 
@@ -57,7 +57,7 @@ Download file content.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/files/1/content' \
+curl -X GET 'http://localhost:9500/api/files/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11/content' \
   -H 'Authorization: Bearer <token>'
 ```
 
@@ -154,7 +154,7 @@ Update file metadata.
 **cURL**
 
 ```bash
-curl -X PUT 'http://localhost:9500/api/files/1' \
+curl -X PUT 'http://localhost:9500/api/files/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -170,7 +170,7 @@ curl -X PUT 'http://localhost:9500/api/files/1' \
 **Response**
 
 ```json
-{"fileId":1,"fileName":"stored-file.png","originalFileName":"file.png","fileUrl":"https://example.com/files/stored-file.png","thumbnailUrl":null,"type":"POST_IMAGE","fileSize":1024,"mimeType":"image/png","description":"Post image","isPublic":true,"isNSFW":false,"altText":"Screenshot","uploadedBy":1,"uploadedAt":"2026-05-02T10:00:00Z","checksum":"abc123"}
+{"fileId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","fileName":"stored-file.png","originalFileName":"file.png","fileUrl":"https://example.com/files/stored-file.png","thumbnailUrl":null,"type":"POST_IMAGE","fileSize":1024,"mimeType":"image/png","description":"Post image","isPublic":true,"isNSFW":false,"altText":"Screenshot","uploadedBy":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","uploadedAt":"2026-05-02T10:00:00Z","checksum":"abc123"}
 ```
 ### DELETE `/api/files/{fileId}`
 
@@ -181,7 +181,7 @@ Delete file.
 **cURL**
 
 ```bash
-curl -X DELETE 'http://localhost:9500/api/files/1' \
+curl -X DELETE 'http://localhost:9500/api/files/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>'
 ```
 

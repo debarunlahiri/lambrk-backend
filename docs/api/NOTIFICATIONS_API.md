@@ -11,7 +11,7 @@ Create notification.
 **Request body**
 
 ```json
-{"type":"COMMENT_REPLY","recipientId":1,"title":"New reply","message":"Someone replied","relatedPostId":10,"relatedCommentId":20,"relatedUserId":2,"actionUrl":"/posts/10","actionText":"View","isRead":false}
+{"type":"COMMENT_REPLY","recipientId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","title":"New reply","message":"Someone replied","relatedPostId":"a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","relatedCommentId":"c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","relatedUserId":"d3eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","actionUrl":"/posts/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","actionText":"View","isRead":false}
 ```
 
 **cURL**
@@ -22,13 +22,13 @@ curl -X POST 'http://localhost:9500/api/notifications' \
   -H 'Content-Type: application/json' \
   -d '{
   "type": "COMMENT_REPLY",
-  "recipientId": 1,
+  "recipientId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   "title": "New reply",
   "message": "Someone replied",
-  "relatedPostId": 10,
-  "relatedCommentId": 20,
-  "relatedUserId": 2,
-  "actionUrl": "/posts/10",
+  "relatedPostId": "a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "relatedCommentId": "c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "relatedUserId": "d3eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "actionUrl": "/posts/a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   "actionText": "View",
   "isRead": false
 }'
@@ -37,7 +37,7 @@ curl -X POST 'http://localhost:9500/api/notifications' \
 **Response**
 
 ```json
-{"id":1,"type":"COMMENT_REPLY","recipientId":1,"title":"New reply","message":"Someone replied","relatedPostId":10,"relatedPostTitle":null,"relatedCommentId":20,"relatedCommentPreview":null,"relatedUserId":2,"relatedUsername":null,"actionUrl":"/posts/10","actionText":"View","isRead":false,"createdAt":"2026-05-02T10:00:00Z","readAt":null}
+{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","type":"COMMENT_REPLY","recipientId":1,"title":"New reply","message":"Someone replied","relatedPostId":10,"relatedPostTitle":null,"relatedCommentId":20,"relatedCommentPreview":null,"relatedUserId":2,"relatedUsername":null,"actionUrl":"/posts/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","actionText":"View","isRead":false,"createdAt":"2026-05-02T10:00:00Z","readAt":null}
 ```
 ### GET `/api/notifications`
 
@@ -98,7 +98,7 @@ Mark one notification read.
 **cURL**
 
 ```bash
-curl -X PUT 'http://localhost:9500/api/notifications/1/read' \
+curl -X PUT 'http://localhost:9500/api/notifications/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11/read' \
   -H 'Authorization: Bearer <token>'
 ```
 
@@ -130,7 +130,7 @@ Delete notification.
 **cURL**
 
 ```bash
-curl -X DELETE 'http://localhost:9500/api/notifications/1' \
+curl -X DELETE 'http://localhost:9500/api/notifications/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>'
 ```
 

@@ -31,17 +31,17 @@ public record AdminActionResponse(
     
     public static AdminActionResponse from(AdminAction action) {
         return new AdminActionResponse(
-            action.id(),
-            action.type(),
-            action.targetId(),
-            action.targetType(),
-            action.reason(),
-            action.notes(),
-            action.performedBy(),
-            action.createdAt(),
-            action.expiresAt(),
+            action.getId(),
+            action.getType(),
+            action.getTargetId(),
+            action.getTargetType(),
+            action.getReason(),
+            action.getNotes(),
+            action.getPerformedBy(),
+            action.getCreatedAt(),
+            action.getExpiresAt(),
             action.isActive(),
-            action.result()
+            action.getResult()
         );
     }
 }

@@ -30,16 +30,16 @@ public record UserResponse(
     
     public static UserResponse from(User user) {
         return new UserResponse(
-            user.id(),
-            user.username(),
-            user.displayName(),
-            user.bio(),
-            user.avatarUrl(),
+            user.getId(),
+            user.getUsername(),
+            user.getDisplayName(),
+            user.getBio(),
+            user.getAvatarUrl(),
             user.isActive(),
             user.isVerified(),
-            user.karma(),
-            user.createdAt(),
-            user.updatedAt()
+            user.getKarma(),
+            user.getCreatedAt(),
+            user.getUpdatedAt()
         );
     }
 }

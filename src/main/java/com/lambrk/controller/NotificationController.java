@@ -13,8 +13,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import com.lambrk.config.UserPrincipal;
 import java.util.UUID;
 
 @RestController
@@ -33,7 +34,7 @@ public class NotificationController {
     @Timed(value = "notifications.create.duration")
     public ResponseEntity<NotificationResponse> createNotification(
             @Valid @RequestBody NotificationRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         NotificationResponse response = notificationService.createNotification(request);
         return ResponseEntity.ok(response);
@@ -46,7 +47,7 @@ public class NotificationController {
     public ResponseEntity<Page<NotificationResponse>> getUserNotifications(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID userId = getUserId(userDetails);
         Pageable pageable = PageRequest.of(page, size);
@@ -61,7 +62,7 @@ public class NotificationController {
     public ResponseEntity<Page<NotificationResponse>> getUnreadNotifications(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID userId = getUserId(userDetails);
         Pageable pageable = PageRequest.of(page, size);
@@ -75,7 +76,7 @@ public class NotificationController {
     @Timed(value = "notifications.read.duration")
     public ResponseEntity<Void> markNotificationAsRead(
             @PathVariable @SpanTag UUID notificationId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID userId = getUserId(userDetails);
         notificationService.markNotificationAsRead(notificationId, userId);
@@ -87,7 +88,7 @@ public class NotificationController {
     @Counted(value = "notifications.read.all")
     @Timed(value = "notifications.read.all.duration")
     public ResponseEntity<Void> markAllNotificationsAsRead(
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID userId = getUserId(userDetails);
         notificationService.markAllNotificationsAsRead(userId);
@@ -100,7 +101,7 @@ public class NotificationController {
     @Timed(value = "notifications.delete.duration")
     public ResponseEntity<Void> deleteNotification(
             @PathVariable @SpanTag UUID notificationId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID userId = getUserId(userDetails);
         notificationService.deleteNotification(notificationId, userId);
@@ -112,7 +113,7 @@ public class NotificationController {
     @Counted(value = "notifications.deleted.all")
     @Timed(value = "notifications.delete.all.duration")
     public ResponseEntity<Void> deleteAllNotifications(
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID userId = getUserId(userDetails);
         notificationService.deleteAllNotifications(userId);
@@ -124,7 +125,7 @@ public class NotificationController {
     @Counted(value = "notifications.count.unread")
     @Timed(value = "notifications.count.unread.duration")
     public ResponseEntity<Long> getUnreadNotificationCount(
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID userId = getUserId(userDetails);
         Pageable pageable = PageRequest.of(0, 1);
@@ -141,7 +142,7 @@ public class NotificationController {
             @PathVariable @SpanTag NotificationRequest.NotificationType type,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         // This would need to be implemented in NotificationService
         // For now, return empty page
@@ -150,8 +151,7 @@ public class NotificationController {
         return ResponseEntity.ok(notifications);
     }
 
-    private UUID getUserId(UserDetails userDetails) {
-        // In a real implementation, extract user ID from UserDetails
-        return java.util.UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"); // Placeholder
+    private UUID getUserId(UserPrincipal userPrincipal) {
+        return userPrincipal != null ? userPrincipal.getUserId() : null;
     }
 }

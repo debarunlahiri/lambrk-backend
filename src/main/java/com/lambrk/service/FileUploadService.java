@@ -160,7 +160,7 @@ public class FileUploadService {
             .orElseThrow(() -> new RuntimeException(String.format(ERROR_FILE_NOT_FOUND, fileId)));
         
         // Check if user has access to this file
-        if (!fileUpload.isPublic() && !fileUpload.uploadedBy().id().equals(userId)) {
+        if (!fileUpload.isPublic() && !fileUpload.getUploadedBy().getId().equals(userId)) {
             throw new RuntimeException(String.format(ERROR_ACCESS_DENIED, fileId));
         }
         
@@ -185,19 +185,19 @@ public class FileUploadService {
         FileUpload fileUpload = fileUploadRepository.findById(fileId)
             .orElseThrow(() -> new RuntimeException(String.format(ERROR_FILE_NOT_FOUND, fileId)));
 
-        if (!fileUpload.uploadedBy().id().equals(userId)) {
+        if (!fileUpload.getUploadedBy().getId().equals(userId)) {
             throw new RuntimeException(String.format(ERROR_ACCESS_DENIED, fileId));
         }
 
         // Delete from S3 or local storage
         if (s3Enabled) {
-            s3StorageService.deleteFile(fileUpload.fileName());
+            s3StorageService.deleteFile(fileUpload.getFileName());
         } else {
             try {
-                Path filePath = Paths.get(uploadDirectory, fileUpload.fileName());
+                Path filePath = Paths.get(uploadDirectory, fileUpload.getFileName());
                 Files.deleteIfExists(filePath);
 
-                Path thumbnailPath = Paths.get(uploadDirectory, "thumbnails", fileUpload.fileName());
+                Path thumbnailPath = Paths.get(uploadDirectory, "thumbnails", fileUpload.getFileName());
                 Files.deleteIfExists(thumbnailPath);
             } catch (IOException e) {
                 System.err.println("Failed to delete file from disk: " + e.getMessage());
@@ -205,7 +205,7 @@ public class FileUploadService {
         }
 
         // Record file deletion for free tier tracking
-        freeTierLimitService.recordFileDeletion(userId, fileUpload.fileSize());
+        freeTierLimitService.recordFileDeletion(userId, fileUpload.getFileSize());
 
         // Delete database record
         fileUploadRepository.delete(fileUpload);
@@ -216,27 +216,27 @@ public class FileUploadService {
         FileUpload fileUpload = fileUploadRepository.findById(fileId)
             .orElseThrow(() -> new RuntimeException(String.format(ERROR_FILE_NOT_FOUND, fileId)));
         
-        if (!fileUpload.uploadedBy().id().equals(userId)) {
+        if (!fileUpload.getUploadedBy().getId().equals(userId)) {
             throw new RuntimeException(String.format(ERROR_ACCESS_DENIED, fileId));
         }
         
         FileUpload updated = new FileUpload(
-            fileUpload.id(),
-            fileUpload.fileName(),
-            fileUpload.originalFileName(),
-            fileUpload.fileUrl(),
-            fileUpload.thumbnailUrl(),
-            fileUpload.type(),
-            fileUpload.fileSize(),
-            fileUpload.mimeType(),
+            fileUpload.getId(),
+            fileUpload.getFileName(),
+            fileUpload.getOriginalFileName(),
+            fileUpload.getFileUrl(),
+            fileUpload.getThumbnailUrl(),
+            fileUpload.getType(),
+            fileUpload.getFileSize(),
+            fileUpload.getMimeType(),
             request.description(),
             request.isPublic(),
             request.isNSFW(),
             request.altText(),
-            fileUpload.uploadedBy(),
-            fileUpload.uploadedAt(),
+            fileUpload.getUploadedBy(),
+            fileUpload.getUploadedAt(),
             Instant.now(),
-            fileUpload.checksum()
+            fileUpload.getChecksum()
         );
         
         FileUpload saved = fileUploadRepository.save(updated);
@@ -247,13 +247,13 @@ public class FileUploadService {
         FileUpload fileUpload = fileUploadRepository.findByFileName(filename)
             .orElseThrow(() -> new RuntimeException(String.format(ERROR_FILE_NOT_FOUND, filename)));
 
-        if (!fileUpload.isPublic() && !fileUpload.uploadedBy().id().equals(userId)) {
+        if (!fileUpload.isPublic() && !fileUpload.getUploadedBy().getId().equals(userId)) {
             throw new RuntimeException(String.format(ERROR_ACCESS_DENIED, filename));
         }
 
         byte[] content;
         if (s3Enabled) {
-            content = s3StorageService.downloadFile(fileUpload.fileName());
+            content = s3StorageService.downloadFile(fileUpload.getFileName());
         } else {
             Path filePath = Paths.get(uploadDirectory, filename);
             content = Files.readAllBytes(filePath);

@@ -25,9 +25,9 @@ Auth tokens are returned by [Auth API](docs/api/AUTH_API.md). The application is
 | --- | --- | --- |
 | Authentication | [AUTH_API.md](docs/api/AUTH_API.md) | `/api/auth` |
 | Users | [USERS_API.md](docs/api/USERS_API.md) | `/api/users` |
- | Communities | [COMMUNITIES_API.md](docs/api/COMMUNITIES_API.md) | `/api/communities` |
- | Categories | [CATEGORIES_API.md](docs/api/CATEGORIES_API.md) | `/api/categories` |
- | Posts | [POSTS_API.md](docs/api/POSTS_API.md) | `/api/posts` |
+| Communities | [COMMUNITIES_API.md](docs/api/COMMUNITIES_API.md) | `/api/communities` |
+| Categories | [CATEGORIES_API.md](docs/api/CATEGORIES_API.md) | `/api/categories` |
+| Posts | [POSTS_API.md](docs/api/POSTS_API.md) | `/api/posts` |
 | Comments | [COMMENTS_API.md](docs/api/COMMENTS_API.md) | `/api/comments` |
 | Votes | [VOTES_API.md](docs/api/VOTES_API.md) | `/api/votes` |
 | Feed | [FEED_API.md](docs/api/FEED_API.md) | `/api/feed` |
@@ -63,14 +63,14 @@ Auth tokens are returned by [Auth API](docs/api/AUTH_API.md). The application is
 | PUT | `/api/communities/{communityId}` | Moderator/Admin | Update community. |
 | POST | `/api/communities/{communityId}/subscribe` | User | Subscribe. |
 | POST | `/api/communities/{communityId}/unsubscribe` | User | Unsubscribe. |
- | GET | `/api/communities/user/subscriptions` | User | Current user's subscriptions. |
- | POST | `/api/categories` | Admin | Create category. |
- | GET | `/api/categories` | User | List all categories. |
- | GET | `/api/categories/{categoryId}` | User | Get category by id. |
- | GET | `/api/categories/slug/{slug}` | User | Get category by slug. |
- | PUT | `/api/categories/{categoryId}` | Admin | Update category. |
- | DELETE | `/api/categories/{categoryId}` | Admin | Delete category. |
- | POST | `/api/posts` | User | Create post. |
+| GET | `/api/communities/user/subscriptions` | User | Current user's subscriptions. |
+| POST | `/api/categories` | Admin | Create category. |
+| GET | `/api/categories` | User | List all categories. |
+| GET | `/api/categories/{categoryId}` | User | Get category by id. |
+| GET | `/api/categories/slug/{slug}` | User | Get category by slug. |
+| PUT | `/api/categories/{categoryId}` | Admin | Update category. |
+| DELETE | `/api/categories/{categoryId}` | Admin | Delete category. |
+| POST | `/api/posts` | User | Create post. |
 | GET | `/api/posts/{postId}` | User | Get post. |
 | GET | `/api/posts/hot` | User | Hot posts. |
 | GET | `/api/posts/new` | User | New posts. |

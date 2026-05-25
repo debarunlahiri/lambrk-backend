@@ -29,15 +29,12 @@ public class UserDetailsService implements org.springframework.security.core.use
             throw new UsernameNotFoundException("User account is disabled: " + username);
         }
 
-        return org.springframework.security.core.userdetails.User.builder()
-            .username(user.username())
-            .password(user.password())
-            .disabled(!user.isActive())
-            .accountExpired(false)
-            .accountLocked(false)
-            .credentialsExpired(false)
-            .authorities(getAuthorities(user))
-            .build();
+        return new UserPrincipal(
+            user.getId(),
+            user.getUsername(),
+            user.getPassword(),
+            getAuthorities(user)
+        );
     }
 
     private List<SimpleGrantedAuthority> getAuthorities(User user) {
@@ -49,7 +46,7 @@ public class UserDetailsService implements org.springframework.security.core.use
         }
         
         // Add admin role for admin user
-        if ("admin".equals(user.username())) {
+        if ("admin".equals(user.getUsername())) {
             authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
             authorities.add(new SimpleGrantedAuthority("ROLE_MODERATOR"));
         }

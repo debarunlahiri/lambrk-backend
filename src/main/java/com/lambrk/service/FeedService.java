@@ -124,30 +124,30 @@ public class FeedService {
         // Get user's voting history
         List<Vote> userVotes = voteRepository.findByUser(user);
         Set<UUID> likedPostIds = userVotes.stream()
-            .filter(v -> v.voteType() == Vote.VoteType.LIKE)
-            .map(v -> v.post().id())
+            .filter(v -> v.getVoteType() == Vote.VoteType.LIKE)
+            .map(v -> v.getPost().getId())
             .collect(Collectors.toSet());
         Set<UUID> dislikedPostIds = userVotes.stream()
-            .filter(v -> v.voteType() == Vote.VoteType.DISLIKE)
-            .map(v -> v.post().id())
+            .filter(v -> v.getVoteType() == Vote.VoteType.DISLIKE)
+            .map(v -> v.getPost().getId())
             .collect(Collectors.toSet());
 
         // Get user's subscribed communities
-        Set<Community> subscribedCommunities = communityRepository.findSubscribedCommunitiesByUser(user.id());
+        Set<Community> subscribedCommunities = communityRepository.findSubscribedCommunitiesByUser(user.getId());
         Set<UUID> subscribedCommunityIds = subscribedCommunities.stream()
-            .map(Community::id)
+            .map(Community::getId)
             .collect(Collectors.toSet());
 
         // Get user's post history
         List<Post> userPosts = postRepository.findByAuthor(user, PageRequest.of(0, 100)).getContent();
         Set<Post.PostType> preferredPostTypes = userPosts.stream()
-            .map(Post::postType)
+            .map(Post::getPostType)
             .collect(Collectors.toSet());
 
         // Get active communities from post history
         Map<UUID, Integer> communityActivityScore = new HashMap<>();
         userPosts.forEach(post -> {
-            UUID communityId = post.community().id();
+            UUID communityId = post.getCommunity().getId();
             communityActivityScore.merge(communityId, 1, (a, b) -> a + b);
         });
 
@@ -171,7 +171,7 @@ public class FeedService {
             // Use findAll and filter since findByCommunityIdIn doesn't exist
             candidatePosts = postRepository.findAll(pageable).getContent()
                 .stream()
-                .filter(p -> interactionData.subscribedCommunityIds().contains(p.community().id()))
+                .filter(p -> interactionData.subscribedCommunityIds().contains(p.getCommunity().getId()))
                 .collect(Collectors.toList());
         } else {
             candidatePosts = postRepository.findAll(pageable).getContent();
@@ -211,14 +211,14 @@ public class FeedService {
         score += contentTypeScore * 0.15;
         
         // 5. Author reputation (0-100)
-        double authorScore = calculateAuthorScore(post.author());
+        double authorScore = calculateAuthorScore(post.getAuthor());
         score += authorScore * 0.10;
         
         // 6. Personalization boosts
-        if (interactionData.likedPostIds().contains(post.id())) {
+        if (interactionData.likedPostIds().contains(post.getId())) {
             score *= 0.3; // Penalize already seen/liked posts
         }
-        if (interactionData.dislikedPostIds().contains(post.id())) {
+        if (interactionData.dislikedPostIds().contains(post.getId())) {
             score *= 0.1; // Heavily penalize disliked posts
         }
         
@@ -227,8 +227,8 @@ public class FeedService {
 
     private double calculatePopularityScore(Post post) {
         // Score based on likes, dislikes, comments, views
-        int netVotes = post.likeCount() - post.dislikeCount();
-        int engagement = post.commentCount() + post.viewCount() / 100;
+        int netVotes = post.getLikeCount() - post.getDislikeCount();
+        int engagement = post.getCommentCount() + post.getViewCount() / 100;
         
         double score = Math.min(100, (netVotes * 2) + (engagement * 0.5));
         return Math.max(0, score);
@@ -236,7 +236,7 @@ public class FeedService {
 
     private double calculateFreshnessScore(Post post, double timeDecayFactor) {
         Instant now = Instant.now();
-        Duration age = Duration.between(post.createdAt(), now);
+        Duration age = Duration.between(post.getCreatedAt(), now);
         double hoursOld = age.toHours();
         
         // Exponential decay: score = 100 * e^(-λt)
@@ -248,7 +248,7 @@ public class FeedService {
     }
 
     private double calculateCommunityAffinity(Post post, UserInteractionData interactionData) {
-        UUID communityId = post.community().id();
+        UUID communityId = post.getCommunity().getId();
         
         if (interactionData.subscribedCommunityIds().contains(communityId)) {
             return 100.0; // Subscribed community - high affinity
@@ -268,7 +268,7 @@ public class FeedService {
             return 50.0; // Neutral if no preference data
         }
         
-        if (interactionData.preferredPostTypes().contains(post.postType())) {
+        if (interactionData.preferredPostTypes().contains(post.getPostType())) {
             return 80.0 + (20.0 * Math.random()); // Boost for preferred types
         }
         
@@ -277,7 +277,7 @@ public class FeedService {
 
     private double calculateAuthorScore(User author) {
         // Score based on author's karma and verification
-        int karma = author.karma();
+        int karma = author.getKarma();
         double baseScore = Math.min(100, karma / 100.0); // 1 point per 100 karma
         
         if (author.isVerified()) {
@@ -290,28 +290,28 @@ public class FeedService {
     private List<String> generateScoreReasons(Post post, UserInteractionData interactionData, double score) {
         List<String> reasons = new ArrayList<>();
         
-        if (interactionData.subscribedCommunityIds().contains(post.community().id())) {
+        if (interactionData.subscribedCommunityIds().contains(post.getCommunity().getId())) {
             reasons.add("From your subscribed community");
         }
         
-        if (post.likeCount() > 100) {
+        if (post.getLikeCount() > 100) {
             reasons.add("Popular post");
         }
         
-        if (post.commentCount() > 50) {
+        if (post.getCommentCount() > 50) {
             reasons.add("Trending discussion");
         }
         
-        Duration age = Duration.between(post.createdAt(), Instant.now());
+        Duration age = Duration.between(post.getCreatedAt(), Instant.now());
         if (age.toHours() < 6) {
             reasons.add("Fresh content");
         }
         
-        if (interactionData.preferredPostTypes().contains(post.postType())) {
+        if (interactionData.preferredPostTypes().contains(post.getPostType())) {
             reasons.add("Matches your content preferences");
         }
         
-        if (post.author().isVerified()) {
+        if (post.getAuthor().isVerified()) {
             reasons.add("From verified user");
         }
         
@@ -326,8 +326,8 @@ public class FeedService {
             communityRepository.findById(communityId).ifPresent(sub -> {
                 List<Post> postsInCommunity = postRepository.findByCommunity(sub, PageRequest.of(0, 20)).getContent();
                 postsInCommunity.forEach(post -> {
-                    if (!post.author().id().equals(user.id())) {
-                        similarUsers.add(post.author().id());
+                    if (!post.getAuthor().getId().equals(user.getId())) {
+                        similarUsers.add(post.getAuthor().getId());
                     }
                 });
             });
@@ -350,11 +350,11 @@ public class FeedService {
         List<String> commonInterests = new ArrayList<>();
         
         // Check mutual communities
-        Set<Community> theirCommunities = communityRepository.findSubscribedCommunitiesByUser(suggestedUser.id());
+        Set<Community> theirCommunities = communityRepository.findSubscribedCommunitiesByUser(suggestedUser.getId());
         for (Community sub : theirCommunities) {
             if (interactionData.subscribedCommunities().contains(sub)) {
                 mutualCommunities++;
-                commonInterests.add(sub.name());
+                commonInterests.add(sub.getName());
             }
         }
         
@@ -364,7 +364,7 @@ public class FeedService {
         }
         
         // Author reputation
-        if (suggestedUser.karma() > 1000) {
+        if (suggestedUser.getKarma() > 1000) {
             score += 30.0;
             reasons.add("Active contributor");
         }
@@ -378,12 +378,12 @@ public class FeedService {
         FeedResponse.UserType userType = determineUserType(suggestedUser);
         
         return new FeedResponse.SuggestedUser(
-            suggestedUser.id(),
-            suggestedUser.username(),
-            suggestedUser.displayName(),
-            suggestedUser.bio(),
-            suggestedUser.avatarUrl(),
-            suggestedUser.karma(),
+            suggestedUser.getId(),
+            suggestedUser.getUsername(),
+            suggestedUser.getDisplayName(),
+            suggestedUser.getBio(),
+            suggestedUser.getAvatarUrl(),
+            suggestedUser.getKarma(),
             suggestedUser.isVerified(),
             userType,
             Math.min(100, score),
@@ -394,7 +394,7 @@ public class FeedService {
     }
 
     private FeedResponse.UserType determineUserType(User user) {
-        if (user.karma() > 10000) {
+        if (user.getKarma() > 10000) {
             return FeedResponse.UserType.INFLUENCER;
         } else if (user.isVerified()) {
             return FeedResponse.UserType.VERIFIED;
@@ -405,26 +405,26 @@ public class FeedService {
 
     private FeedResponse.FeedPost convertToFeedPost(Post post, double score, List<String> reasons, UserInteractionData interactionData) {
         FeedResponse.PostUserInfo authorInfo = new FeedResponse.PostUserInfo(
-            post.author().id(),
-            post.author().username(),
-            post.author().displayName(),
-            post.author().avatarUrl(),
-            post.author().karma(),
-            post.author().isVerified(),
-            determineUserType(post.author())
+            post.getAuthor().getId(),
+            post.getAuthor().getUsername(),
+            post.getAuthor().getDisplayName(),
+            post.getAuthor().getAvatarUrl(),
+            post.getAuthor().getKarma(),
+            post.getAuthor().isVerified(),
+            determineUserType(post.getAuthor())
         );
         
         FeedResponse.CommunityInfo communityInfo = new FeedResponse.CommunityInfo(
-            post.community().id(),
-            post.community().name(),
-            post.community().title(),
-            post.community().iconImageUrl(),
-            interactionData.subscribedCommunityIds().contains(post.community().id())
+            post.getCommunity().getId(),
+            post.getCommunity().getName(),
+            post.getCommunity().getTitle(),
+            post.getCommunity().getIconImageUrl(),
+            interactionData.subscribedCommunityIds().contains(post.getCommunity().getId())
         );
         
         FeedResponse.UserInteraction userInteraction = new FeedResponse.UserInteraction(
-            interactionData.likedPostIds().contains(post.id()),
-            interactionData.dislikedPostIds().contains(post.id()),
+            interactionData.likedPostIds().contains(post.getId()),
+            interactionData.dislikedPostIds().contains(post.getId()),
             false, // hasCommented - would need comment repository
             false, // hasViewed - would need view tracking
             false, // isSaved
@@ -434,25 +434,25 @@ public class FeedService {
         );
         
         return new FeedResponse.FeedPost(
-            post.id(),
-            post.title(),
-            post.content(),
-            post.url(),
-            post.postType(),
-            post.thumbnailUrl(),
-            post.flairText(),
+            post.getId(),
+            post.getTitle(),
+            post.getContent(),
+            post.getUrl(),
+            post.getPostType(),
+            post.getThumbnailUrl(),
+            post.getFlairText(),
             post.isSpoiler(),
             post.isOver18(),
-            post.score(),
-            post.likeCount(),
-            post.dislikeCount(),
-            post.commentCount(),
-            post.viewCount(),
+            post.getScore(),
+            post.getLikeCount(),
+            post.getDislikeCount(),
+            post.getCommentCount(),
+            post.getViewCount(),
             score,
             reasons,
             authorInfo,
             communityInfo,
-            post.createdAt(),
+            post.getCreatedAt(),
             userInteraction
         );
     }

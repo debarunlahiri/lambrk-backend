@@ -11,7 +11,7 @@ Create a comment or reply.
 **Request body**
 
 ```json
-{"content":"Great post","postId":1,"parentCommentId":null}
+{"content":"Great post","postId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","parentCommentId":null}
 ```
 
 **cURL**
@@ -22,7 +22,7 @@ curl -X POST 'http://localhost:9500/api/comments' \
   -H 'Content-Type: application/json' \
   -d '{
   "content": "Great post",
-  "postId": 1,
+  "postId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   "parentCommentId": null
 }'
 ```
@@ -30,7 +30,7 @@ curl -X POST 'http://localhost:9500/api/comments' \
 **Response**
 
 ```json
-{"id":1,"content":"Great post","flairText":null,"isEdited":false,"isDeleted":false,"isRemoved":false,"isCollapsed":false,"isStickied":false,"score":1,"likeCount":1,"dislikeCount":0,"replyCount":0,"awardCount":0,"depthLevel":0,"author":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"postId":1,"parentId":null,"replies":[],"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","editedAt":null,"userVote":null}
+{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","content":"Great post","flairText":null,"isEdited":false,"isDeleted":false,"isRemoved":false,"isCollapsed":false,"isStickied":false,"score":1,"likeCount":1,"dislikeCount":0,"replyCount":0,"awardCount":0,"depthLevel":0,"author":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"postId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","parentId":null,"replies":[],"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","editedAt":null,"userVote":null}
 ```
 ### GET `/api/comments/{commentId}`
 
@@ -41,14 +41,14 @@ Get one comment.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/comments/1' \
+curl -X GET 'http://localhost:9500/api/comments/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>'
 ```
 
 **Response**
 
 ```json
-{"id":1,"content":"Great post","flairText":null,"isEdited":false,"isDeleted":false,"isRemoved":false,"isCollapsed":false,"isStickied":false,"score":1,"likeCount":1,"dislikeCount":0,"replyCount":0,"awardCount":0,"depthLevel":0,"author":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"postId":1,"parentId":null,"replies":[],"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","editedAt":null,"userVote":null}
+{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","content":"Great post","flairText":null,"isEdited":false,"isDeleted":false,"isRemoved":false,"isCollapsed":false,"isStickied":false,"score":1,"likeCount":1,"dislikeCount":0,"replyCount":0,"awardCount":0,"depthLevel":0,"author":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"postId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","parentId":null,"replies":[],"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","editedAt":null,"userVote":null}
 ```
 ### GET `/api/comments/post/{postId}`
 
@@ -66,7 +66,7 @@ Get comments for a post.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/comments/post/1?page=0&size=20' \
+curl -X GET 'http://localhost:9500/api/comments/post/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11?page=0&size=20' \
   -H 'Authorization: Bearer <token>'
 ```
 
@@ -84,7 +84,7 @@ Get replies for a comment.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/comments/1/replies' \
+curl -X GET 'http://localhost:9500/api/comments/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11/replies' \
   -H 'Authorization: Bearer <token>'
 ```
 
@@ -109,7 +109,7 @@ Get comments by user.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/comments/user/1?page=0&size=20' \
+curl -X GET 'http://localhost:9500/api/comments/user/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11?page=0&size=20' \
   -H 'Authorization: Bearer <token>'
 ```
 
@@ -133,7 +133,7 @@ Updated comment text
 **cURL**
 
 ```bash
-curl -X PUT 'http://localhost:9500/api/comments/1' \
+curl -X PUT 'http://localhost:9500/api/comments/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: text/plain' \
   -H 'Content-Type: application/json' \
@@ -143,7 +143,7 @@ curl -X PUT 'http://localhost:9500/api/comments/1' \
 **Response**
 
 ```json
-{"id":1,"content":"Great post","flairText":null,"isEdited":false,"isDeleted":false,"isRemoved":false,"isCollapsed":false,"isStickied":false,"score":1,"likeCount":1,"dislikeCount":0,"replyCount":0,"awardCount":0,"depthLevel":0,"author":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"postId":1,"parentId":null,"replies":[],"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","editedAt":null,"userVote":null}
+{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","content":"Great post","flairText":null,"isEdited":false,"isDeleted":false,"isRemoved":false,"isCollapsed":false,"isStickied":false,"score":1,"likeCount":1,"dislikeCount":0,"replyCount":0,"awardCount":0,"depthLevel":0,"author":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"postId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","parentId":null,"replies":[],"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","editedAt":null,"userVote":null}
 ```
 ### DELETE `/api/comments/{commentId}`
 
@@ -154,7 +154,7 @@ Delete comment.
 **cURL**
 
 ```bash
-curl -X DELETE 'http://localhost:9500/api/comments/1' \
+curl -X DELETE 'http://localhost:9500/api/comments/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>'
 ```
 

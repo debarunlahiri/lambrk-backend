@@ -14,8 +14,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import com.lambrk.config.UserPrincipal;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +37,7 @@ public class CommentController {
     @Timed(value = "comments.create.duration")
     public ResponseEntity<CommentResponse> createComment(
             @Valid @RequestBody CommentCreateRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         UUID authorId = getUserId(userDetails);
         return ResponseEntity.ok(commentService.createComment(request, authorId));
     }
@@ -46,7 +47,7 @@ public class CommentController {
     @Timed(value = "comments.get.duration")
     public ResponseEntity<CommentResponse> getComment(
             @PathVariable @SpanTag UUID commentId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         return ResponseEntity.ok(commentService.getComment(commentId, getUserId(userDetails)));
     }
 
@@ -57,7 +58,7 @@ public class CommentController {
             @PathVariable @SpanTag UUID postId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "score"));
         return ResponseEntity.ok(commentService.getCommentsByPost(postId, pageable, getUserId(userDetails)));
     }
@@ -67,7 +68,7 @@ public class CommentController {
     @Timed(value = "comments.replies.duration")
     public ResponseEntity<List<CommentResponse>> getReplies(
             @PathVariable @SpanTag UUID commentId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         return ResponseEntity.ok(commentService.getReplies(commentId, getUserId(userDetails)));
     }
 
@@ -78,7 +79,7 @@ public class CommentController {
             @PathVariable @SpanTag UUID userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         return ResponseEntity.ok(commentService.getCommentsByUser(userId, pageable, getUserId(userDetails)));
     }
@@ -89,7 +90,7 @@ public class CommentController {
     public ResponseEntity<CommentResponse> updateComment(
             @PathVariable @SpanTag UUID commentId,
             @RequestBody String newContent,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         return ResponseEntity.ok(commentService.updateComment(commentId, newContent, getUserId(userDetails)));
     }
 
@@ -98,7 +99,7 @@ public class CommentController {
     @Timed(value = "comments.delete.duration")
     public ResponseEntity<Void> deleteComment(
             @PathVariable @SpanTag UUID commentId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         commentService.deleteComment(commentId, getUserId(userDetails));
         return ResponseEntity.noContent().build();
     }
@@ -110,12 +111,12 @@ public class CommentController {
             @RequestParam @SpanTag String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "score"));
         return ResponseEntity.ok(commentService.searchComments(query, pageable, getUserId(userDetails)));
     }
 
-    private UUID getUserId(UserDetails userDetails) {
-        return userDetails != null ? java.util.UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11") : null; // Replace with actual user ID extraction
+    private UUID getUserId(UserPrincipal userPrincipal) {
+        return userPrincipal != null ? userPrincipal.getUserId() : null;
     }
 }

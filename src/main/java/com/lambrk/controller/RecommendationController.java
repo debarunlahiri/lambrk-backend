@@ -10,8 +10,9 @@ import io.micrometer.tracing.annotation.SpanTag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import com.lambrk.config.UserPrincipal;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +33,7 @@ public class RecommendationController {
     @Timed(value = "recommendations.duration")
     public ResponseEntity<RecommendationResponse> getRecommendations(
             @Valid @RequestBody RecommendationRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         RecommendationResponse response = recommendationService.getRecommendations(request);
         return ResponseEntity.ok(response);
@@ -51,7 +52,7 @@ public class RecommendationController {
             @RequestParam(defaultValue = "false") boolean includeOver18,
             @RequestParam(required = false) String contextCommunityId,
             @RequestParam(required = false) String contextPostId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         RecommendationRequest request = new RecommendationRequest(
             userId,
@@ -79,7 +80,7 @@ public class RecommendationController {
             @RequestParam(required = false) List<String> excludeCommunities,
             @RequestParam(defaultValue = "false") boolean includeNSFW,
             @RequestParam(defaultValue = "false") boolean includeOver18,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         RecommendationRequest request = new RecommendationRequest(
             userId,
@@ -105,7 +106,7 @@ public class RecommendationController {
             @PathVariable @SpanTag UUID userId,
             @RequestParam(defaultValue = "20") Integer limit,
             @RequestParam(required = false) List<String> excludeUsers,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         RecommendationRequest request = new RecommendationRequest(
             userId,
@@ -130,7 +131,7 @@ public class RecommendationController {
     public ResponseEntity<RecommendationResponse> getCommentRecommendations(
             @PathVariable @SpanTag UUID userId,
             @RequestParam(defaultValue = "20") Integer limit,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         RecommendationRequest request = new RecommendationRequest(
             userId,
@@ -158,7 +159,7 @@ public class RecommendationController {
             @RequestParam(required = false) String contextPostId,
             @RequestParam(defaultValue = "posts") String type,
             @RequestParam(defaultValue = "20") Integer limit,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         RecommendationRequest.RecommendationType recType = switch (type.toLowerCase()) {
             case "posts" -> RecommendationRequest.RecommendationType.POSTS;
@@ -191,7 +192,7 @@ public class RecommendationController {
     public ResponseEntity<RecommendationResponse> getTrendingRecommendations(
             @RequestParam(defaultValue = "posts") String type,
             @RequestParam(defaultValue = "20") Integer limit,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         // This would return trending content for all users
         RecommendationRequest.RecommendationType recType = switch (type.toLowerCase()) {

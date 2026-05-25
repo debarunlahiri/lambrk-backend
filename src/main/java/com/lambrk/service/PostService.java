@@ -56,8 +56,9 @@ public class PostService {
         try {
             User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-            Community community = communityRepository.findById(request.communityId())
-                .orElseThrow(() -> new RuntimeException("Community not found"));
+            Community community = request.communityId() != null
+                ? communityRepository.findById(request.communityId()).orElse(null)
+                : null;
 
             Post post = new Post(
                 request.title(),
@@ -69,12 +70,12 @@ public class PostService {
             );
 
             post = new Post(
-                post.id(),
-                post.title(),
-                post.content(),
-                post.url(),
-                post.postType(),
-                post.thumbnailUrl(),
+                post.getId(),
+                post.getTitle(),
+                post.getContent(),
+                post.getUrl(),
+                post.getPostType(),
+                post.getThumbnailUrl(),
                 request.flairText(),
                 request.flairCssClass(),
                 request.isSpoiler(),
@@ -83,19 +84,19 @@ public class PostService {
                 post.isArchived(),
                 post.isRemoved(),
                 request.isOver18(),
-            post.score(),
-            post.likeCount(),
-            post.dislikeCount(),
-                post.commentCount(),
-                post.viewCount(),
-                post.awardCount(),
+            post.getScore(),
+            post.getLikeCount(),
+            post.getDislikeCount(),
+                post.getCommentCount(),
+                post.getViewCount(),
+                post.getAwardCount(),
                 author,
                 community,
-                post.comments(),
-                post.votes(),
-                post.createdAt(),
-                post.updatedAt(),
-                post.archivedAt()
+                post.getComments(),
+                post.getVotes(),
+                post.getCreatedAt(),
+                post.getUpdatedAt(),
+                post.getArchivedAt()
             );
 
             Post savedPost = postRepository.save(post);
@@ -128,7 +129,7 @@ public class PostService {
             User currentUser = userRepository.findById(currentUserId).orElse(null);
             if (currentUser != null) {
                 userVote = voteRepository.findByUserAndPost(currentUser, post)
-                    .map(vote -> vote.voteType().name())
+                    .map(vote -> vote.getVoteType().name())
                     .orElse(null);
             }
         }
@@ -207,17 +208,17 @@ public class PostService {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("Post not found"));
 
-        if (!post.author().id().equals(currentUserId)) {
+        if (!post.getAuthor().getId().equals(currentUserId)) {
             throw new RuntimeException("You can only edit your own posts");
         }
 
         Post updatedPost = new Post(
-            post.id(),
+            post.getId(),
             request.title(),
             request.content(),
             request.url(),
             request.postType(),
-            post.thumbnailUrl(),
+            post.getThumbnailUrl(),
             request.flairText(),
             request.flairCssClass(),
             request.isSpoiler(),
@@ -226,19 +227,19 @@ public class PostService {
             post.isArchived(),
             post.isRemoved(),
             request.isOver18(),
-            post.score(),
-                post.likeCount(),
-                post.dislikeCount(),
-            post.commentCount(),
-            post.viewCount(),
-            post.awardCount(),
-            post.author(),
-            post.community(),
-            post.comments(),
-            post.votes(),
-            post.createdAt(),
+            post.getScore(),
+                post.getLikeCount(),
+                post.getDislikeCount(),
+            post.getCommentCount(),
+            post.getViewCount(),
+            post.getAwardCount(),
+            post.getAuthor(),
+            post.getCommunity(),
+            post.getComments(),
+            post.getVotes(),
+            post.getCreatedAt(),
             Instant.now(),
-            post.archivedAt()
+            post.getArchivedAt()
         );
 
         Post savedPost = postRepository.save(updatedPost);
@@ -254,7 +255,7 @@ public class PostService {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("Post not found"));
 
-        if (!post.author().id().equals(currentUserId)) {
+        if (!post.getAuthor().getId().equals(currentUserId)) {
             throw new RuntimeException("You can only delete your own posts");
         }
 
@@ -282,7 +283,7 @@ public class PostService {
         if (currentUser == null) return null;
         
         return voteRepository.findByUserAndPost(currentUser, post)
-            .map(vote -> vote.voteType().name())
+            .map(vote -> vote.getVoteType().name())
             .orElse(null);
     }
 }

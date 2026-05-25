@@ -11,14 +11,14 @@ Get a user by id.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/users/1' \
+curl -X GET 'http://localhost:9500/api/users/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>'
 ```
 
 **Response**
 
 ```json
-{"id":1,"username":"johndoe","displayName":"John Doe","bio":"Builder","avatarUrl":"https://example.com/avatar.png","isActive":true,"isVerified":false,"karma":42,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}
+{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":"Builder","avatarUrl":"https://example.com/avatar.png","isActive":true,"isVerified":false,"karma":42,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}
 ```
 ### GET `/api/users/username/{username}`
 
@@ -36,7 +36,7 @@ curl -X GET 'http://localhost:9500/api/users/username/johndoe' \
 **Response**
 
 ```json
-{"id":1,"username":"johndoe","displayName":"John Doe","bio":"Builder","avatarUrl":"https://example.com/avatar.png","isActive":true,"isVerified":false,"karma":42,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}
+{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":"Builder","avatarUrl":"https://example.com/avatar.png","isActive":true,"isVerified":false,"karma":42,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}
 ```
 ### GET `/api/users/me`
 
@@ -54,7 +54,7 @@ curl -X GET 'http://localhost:9500/api/users/me' \
 **Response**
 
 ```json
-{"id":1,"username":"johndoe","displayName":"John Doe","bio":"Builder","avatarUrl":"https://example.com/avatar.png","isActive":true,"isVerified":false,"karma":42,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}
+{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":"Builder","avatarUrl":"https://example.com/avatar.png","isActive":true,"isVerified":false,"karma":42,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"}
 ```
 ### GET `/api/users/top`
 
@@ -116,7 +116,7 @@ Delete a user.
 **cURL**
 
 ```bash
-curl -X DELETE 'http://localhost:9500/api/users/1' \
+curl -X DELETE 'http://localhost:9500/api/users/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>'
 ```
 

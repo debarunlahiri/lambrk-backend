@@ -9,5 +9,6 @@ CREATE TABLE IF NOT EXISTS event_publication (
     correlation_key VARCHAR(255),
     sequence_number BIGINT DEFAULT 0,
     content VARCHAR(4000),
-    published BOOLEAN DEFAULT FALSE
+    published BOOLEAN DEFAULT FALSE,
+    completion_date TIMESTAMP
 );

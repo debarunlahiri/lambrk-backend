@@ -4,7 +4,7 @@ Production-grade Lambrk-like backend showcasing every advanced topic a senior/le
 
 | Stack | Version |
 |-------|---------|
-| Java | 25 (preview features enabled) |
+| Java | 21 |
 | Spring Boot | 3.5.0 |
 | Spring Security | 6+ (JWT / OAuth2 Resource Server) |
 | Spring Cloud Stream | 2024.0.0 (Kafka binder) |
@@ -27,8 +27,8 @@ Production-grade Lambrk-like backend showcasing every advanced topic a senior/le
 # 1. Start infrastructure
 docker-compose up -d
 
-# 2. Run the app (dev profile, H2 in-memory)
-mvn spring-boot:run -Dspring-boot.run.jvmArguments="--enable-preview"
+# 2. Run the app (prod profile, PostgreSQL)
+mvn spring-boot:run
 
 # 3. Or build a native image
 mvn clean package -Pnative -DskipTests
@@ -36,6 +36,11 @@ mvn clean package -Pnative -DskipTests
 ```
 
 The app starts on **http://localhost:9500**.
+
+Active profiles:
+- `prod` (default) — PostgreSQL on localhost:5432
+- `dev` — H2 file-based (`./data/lambrk-dev`)
+- `test` — H2 in-memory
 
 Default seed users (password for all: `password`):
 
@@ -73,6 +78,7 @@ Additional architecture docs:
 
 | Document | Contents |
 |----------|----------|
+| [DATABASE_FLYWAY.md](docs/DATABASE_FLYWAY.md) | Build, run, Flyway commands, troubleshooting, migration overview |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System diagram, package structure, request flow, design decisions |
 | [KAFKA_EVENTS.md](docs/KAFKA_EVENTS.md) | Event schemas, topic list, consumer examples |
 

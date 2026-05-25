@@ -11,7 +11,7 @@ Vote on a post.
 **Request body**
 
 ```json
-{"voteType":"LIKE","postId":1,"commentId":null}
+{"voteType":"LIKE","postId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","commentId":null}
 ```
 
 **cURL**
@@ -22,7 +22,7 @@ curl -X POST 'http://localhost:9500/api/votes/post' \
   -H 'Content-Type: application/json' \
   -d '{
   "voteType": "LIKE",
-  "postId": 1,
+  "postId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   "commentId": null
 }'
 ```
@@ -39,7 +39,7 @@ Vote on a comment.
 **Request body**
 
 ```json
-{"voteType":"DISLIKE","postId":null,"commentId":1}
+{"voteType":"DISLIKE","postId":null,"commentId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"}
 ```
 
 **cURL**
@@ -51,7 +51,7 @@ curl -X POST 'http://localhost:9500/api/votes/comment' \
   -d '{
   "voteType": "DISLIKE",
   "postId": null,
-  "commentId": 1
+  "commentId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
 }'
 ```
 

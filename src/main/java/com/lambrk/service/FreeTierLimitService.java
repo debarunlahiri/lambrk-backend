@@ -52,21 +52,21 @@ public class FreeTierLimitService {
 
         // Check storage limit
         long storageLimitBytes = storageLimitMB * 1024 * 1024;
-        long projectedStorage = usage.storageBytesUsed() + fileSizeBytes;
+        long projectedStorage = usage.getStorageBytesUsed() + fileSizeBytes;
 
         if (projectedStorage > storageLimitBytes) {
             throw new FreeTierLimitExceededException(
                 "Storage limit exceeded. Free tier limit: " + storageLimitMB + "MB. " +
-                "Current usage: " + (usage.storageBytesUsed() / 1024 / 1024) + "MB, " +
+                "Current usage: " + (usage.getStorageBytesUsed() / 1024 / 1024) + "MB, " +
                 "File size: " + (fileSizeBytes / 1024 / 1024) + "MB"
             );
         }
 
         // Check monthly upload limit
-        if (usage.uploadsCount() >= monthlyUploadLimit) {
+        if (usage.getUploadsCount() >= monthlyUploadLimit) {
             throw new FreeTierLimitExceededException(
                 "Monthly upload limit exceeded. Free tier limit: " + monthlyUploadLimit + " uploads/month. " +
-                "Current uploads: " + usage.uploadsCount()
+                "Current uploads: " + usage.getUploadsCount()
             );
         }
     }
@@ -90,7 +90,7 @@ public class FreeTierLimitService {
 
         FreeTierUsage saved = freeTierUsageRepository.save(updated);
         logger.info("Recorded upload for user {}: {} bytes. Total storage: {} bytes, Uploads: {}",
-            userId, fileSizeBytes, saved.storageBytesUsed(), saved.uploadsCount());
+            userId, fileSizeBytes, saved.getStorageBytesUsed(), saved.getUploadsCount());
 
         return saved;
     }
@@ -127,12 +127,12 @@ public class FreeTierLimitService {
 
         // Check bandwidth limit
         long bandwidthLimitBytes = monthlyBandwidthGB * 1024L * 1024L * 1024L;
-        long projectedBandwidth = usage.bandwidthBytes() + bytesTransferred;
+        long projectedBandwidth = usage.getBandwidthBytes() + bytesTransferred;
 
         if (projectedBandwidth > bandwidthLimitBytes) {
             throw new FreeTierLimitExceededException(
                 "Monthly bandwidth limit exceeded. Free tier limit: " + monthlyBandwidthGB + "GB/month. " +
-                "Current bandwidth: " + (usage.bandwidthBytes() / 1024 / 1024 / 1024) + "GB"
+                "Current bandwidth: " + (usage.getBandwidthBytes() / 1024 / 1024 / 1024) + "GB"
             );
         }
 
@@ -180,16 +180,16 @@ public class FreeTierLimitService {
         long storageLimitBytes = getStorageLimitBytes();
         long bandwidthLimitBytes = getMonthlyBandwidthLimitBytes();
 
-        boolean withinLimits = usage.storageBytesUsed() < storageLimitBytes &&
-                              usage.uploadsCount() < monthlyUploadLimit &&
-                              usage.bandwidthBytes() < bandwidthLimitBytes;
+        boolean withinLimits = usage.getStorageBytesUsed() < storageLimitBytes &&
+                              usage.getUploadsCount() < monthlyUploadLimit &&
+                              usage.getBandwidthBytes() < bandwidthLimitBytes;
 
         return new FreeTierStatus(
-            usage.storageBytesUsed(),
+            usage.getStorageBytesUsed(),
             storageLimitBytes,
-            usage.uploadsCount(),
+            usage.getUploadsCount(),
             monthlyUploadLimit,
-            usage.bandwidthBytes(),
+            usage.getBandwidthBytes(),
             bandwidthLimitBytes,
             usage.isFreeTier(),
             withinLimits

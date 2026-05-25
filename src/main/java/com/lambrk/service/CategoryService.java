@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.lambrk.util.UuidV7Generator;
 import java.util.UUID;
 
 @Service
@@ -41,7 +42,7 @@ public class CategoryService {
         }
 
         Category category = new Category(
-            null, request.name(), request.description(), request.iconUrl(),
+            UuidV7Generator.generate(), request.name(), request.description(), request.iconUrl(),
             request.imageUrl(), request.color(), request.slug(), request.sortOrder(),
             null, null, null
         );
@@ -78,9 +79,9 @@ public class CategoryService {
             .orElseThrow(() -> new ResourceNotFoundException("Category", "id", categoryId));
 
         Category updated = new Category(
-            category.id(), request.name(), request.description(), request.iconUrl(),
+            category.getId(), request.name(), request.description(), request.iconUrl(),
             request.imageUrl(), request.color(), request.slug(), request.sortOrder(),
-            category.communities(), category.createdAt(), null
+            category.getCommunities(), category.getCreatedAt(), null
         );
 
         Category saved = categoryRepository.save(updated);

@@ -23,6 +23,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.lambrk.util.UuidV7Generator;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -106,19 +107,19 @@ public class AdminService {
             .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
         User updated = new User(
-            user.id(), user.username(), user.email(), user.password(),
-            user.displayName(), user.bio(), user.avatarUrl(),
-            false, user.isVerified(), user.karma(),
-            user.posts(), user.comments(), user.votes(),
-            user.subscribedCommunities(), user.moderatedCommunities(),
-            user.createdAt(), now
+            user.getId(), user.getUsername(), user.getEmail(), user.getPassword(),
+            user.getDisplayName(), user.getBio(), user.getAvatarUrl(),
+            false, user.isVerified(), user.getKarma(),
+            user.getPosts(), user.getComments(), user.getVotes(),
+            user.getSubscribedCommunities(), user.getModeratedCommunities(),
+            user.getCreatedAt(), now
         );
 
         userRepository.save(updated);
 
         return new AdminAction(
-            null, AdminAction.AdminActionType.BAN_USER, userId, "User",
-            reason, null, admin.id(), now, expiresAt, expiresAt == null, "User banned successfully"
+            UuidV7Generator.generate(), AdminAction.AdminActionType.BAN_USER, userId, "User",
+            reason, null, admin.getId(), now, expiresAt, expiresAt == null, "User banned successfully"
         );
     }
 
@@ -130,8 +131,8 @@ public class AdminService {
         // For now, we'll just create the action record
 
         return new AdminAction(
-            null, AdminAction.AdminActionType.SUSPEND_USER, userId, "User",
-            reason, null, admin.id(), now, expiresAt, expiresAt == null, "User suspended"
+            UuidV7Generator.generate(), AdminAction.AdminActionType.SUSPEND_USER, userId, "User",
+            reason, null, admin.getId(), now, expiresAt, expiresAt == null, "User suspended"
         );
     }
 
@@ -141,20 +142,20 @@ public class AdminService {
 
         // Soft delete by marking as removed
         Post updated = new Post(
-            post.id(), post.title(), post.content(), post.url(), post.postType(),
-            post.thumbnailUrl(), post.flairText(), post.flairCssClass(),
+            post.getId(), post.getTitle(), post.getContent(), post.getUrl(), post.getPostType(),
+            post.getThumbnailUrl(), post.getFlairText(), post.getFlairCssClass(),
             post.isSpoiler(), post.isStickied(), post.isLocked(), post.isArchived(),
             post.isOver18(), true, // Mark as removed
-            post.score(), post.likeCount(), post.dislikeCount(), post.commentCount(),
-            post.viewCount(), post.awardCount(), post.author(), post.community(),
-            post.comments(), post.votes(), post.createdAt(), now, post.archivedAt()
+            post.getScore(), post.getLikeCount(), post.getDislikeCount(), post.getCommentCount(),
+            post.getViewCount(), post.getAwardCount(), post.getAuthor(), post.getCommunity(),
+            post.getComments(), post.getVotes(), post.getCreatedAt(), now, post.getArchivedAt()
         );
 
         postRepository.save(updated);
 
         return new AdminAction(
-            null, AdminAction.AdminActionType.DELETE_POST, postId, "Post",
-            reason, null, admin.id(), now, null, true, "Post deleted"
+            UuidV7Generator.generate(), AdminAction.AdminActionType.DELETE_POST, postId, "Post",
+            reason, null, admin.getId(), now, null, true, "Post deleted"
         );
     }
 
@@ -164,21 +165,21 @@ public class AdminService {
 
         // Soft delete by marking as removed
         Comment updated = new Comment(
-            comment.id(), comment.content(), comment.flairText(), comment.isEdited(),
+            comment.getId(), comment.getContent(), comment.getFlairText(), comment.isEdited(),
             comment.isDeleted(), true, // Mark as removed
             comment.isCollapsed(), comment.isStickied(), comment.isOver18(),
-            comment.score(), comment.likeCount(), comment.dislikeCount(),
-            comment.replyCount(), comment.awardCount(), comment.depthLevel(),
-            comment.author(), comment.post(), comment.parent(), comment.replies(),
-            comment.votes(), comment.createdAt(), now, comment.editedAt(),
-            comment.deletedAt(), now
+            comment.getScore(), comment.getLikeCount(), comment.getDislikeCount(),
+            comment.getReplyCount(), comment.getAwardCount(), comment.getDepthLevel(),
+            comment.getAuthor(), comment.getPost(), comment.getParent(), comment.getReplies(),
+            comment.getVotes(), comment.getCreatedAt(), now, comment.getEditedAt(),
+            comment.getDeletedAt(), now
         );
 
         commentRepository.save(updated);
 
         return new AdminAction(
-            null, AdminAction.AdminActionType.DELETE_COMMENT, commentId, "Comment",
-            reason, null, admin.id(), now, null, true, "Comment deleted"
+            UuidV7Generator.generate(), AdminAction.AdminActionType.DELETE_COMMENT, commentId, "Comment",
+            reason, null, admin.getId(), now, null, true, "Comment deleted"
         );
     }
 
@@ -187,20 +188,20 @@ public class AdminService {
             .orElseThrow(() -> new RuntimeException("Post not found: " + postId));
 
         Post updated = new Post(
-            post.id(), post.title(), post.content(), post.url(), post.postType(),
-            post.thumbnailUrl(), post.flairText(), post.flairCssClass(),
+            post.getId(), post.getTitle(), post.getContent(), post.getUrl(), post.getPostType(),
+            post.getThumbnailUrl(), post.getFlairText(), post.getFlairCssClass(),
             post.isSpoiler(), post.isStickied(), true, // Lock the post
             post.isArchived(), post.isOver18(), post.isRemoved(),
-            post.score(), post.likeCount(), post.dislikeCount(), post.commentCount(),
-            post.viewCount(), post.awardCount(), post.author(), post.community(),
-            post.comments(), post.votes(), post.createdAt(), now, post.archivedAt()
+            post.getScore(), post.getLikeCount(), post.getDislikeCount(), post.getCommentCount(),
+            post.getViewCount(), post.getAwardCount(), post.getAuthor(), post.getCommunity(),
+            post.getComments(), post.getVotes(), post.getCreatedAt(), now, post.getArchivedAt()
         );
 
         postRepository.save(updated);
 
         return new AdminAction(
-            null, AdminAction.AdminActionType.LOCK_POST, postId, "Post",
-            reason, null, admin.id(), now, expiresAt, expiresAt == null, "Post locked"
+            UuidV7Generator.generate(), AdminAction.AdminActionType.LOCK_POST, postId, "Post",
+            reason, null, admin.getId(), now, expiresAt, expiresAt == null, "Post locked"
         );
     }
 
@@ -209,21 +210,21 @@ public class AdminService {
             .orElseThrow(() -> new RuntimeException("Comment not found: " + commentId));
 
         Comment updated = new Comment(
-            comment.id(), comment.content(), comment.flairText(), comment.isEdited(),
+            comment.getId(), comment.getContent(), comment.getFlairText(), comment.isEdited(),
             comment.isDeleted(), comment.isRemoved(), comment.isCollapsed(),
             true, // Lock the comment
-            comment.isOver18(), comment.score(), comment.likeCount(), comment.dislikeCount(),
-            comment.replyCount(), comment.awardCount(), comment.depthLevel(),
-            comment.author(), comment.post(), comment.parent(), comment.replies(),
-            comment.votes(), comment.createdAt(), now, comment.editedAt(),
-            comment.deletedAt(), comment.removedAt()
+            comment.isOver18(), comment.getScore(), comment.getLikeCount(), comment.getDislikeCount(),
+            comment.getReplyCount(), comment.getAwardCount(), comment.getDepthLevel(),
+            comment.getAuthor(), comment.getPost(), comment.getParent(), comment.getReplies(),
+            comment.getVotes(), comment.getCreatedAt(), now, comment.getEditedAt(),
+            comment.getDeletedAt(), comment.getRemovedAt()
         );
 
         commentRepository.save(updated);
 
         return new AdminAction(
-            null, AdminAction.AdminActionType.LOCK_COMMENT, commentId, "Comment",
-            reason, null, admin.id(), now, expiresAt, expiresAt == null, "Comment locked"
+            UuidV7Generator.generate(), AdminAction.AdminActionType.LOCK_COMMENT, commentId, "Comment",
+            reason, null, admin.getId(), now, expiresAt, expiresAt == null, "Comment locked"
         );
     }
 
@@ -233,19 +234,19 @@ public class AdminService {
 
         // Remove from all moderated communities
         User updated = new User(
-            user.id(), user.username(), user.email(), user.password(),
-            user.displayName(), user.bio(), user.avatarUrl(),
-            user.isActive(), user.isVerified(), user.karma(),
-            user.posts(), user.comments(), user.votes(),
-            user.subscribedCommunities(), Set.of(), // Clear moderated communities
-            user.createdAt(), now
+            user.getId(), user.getUsername(), user.getEmail(), user.getPassword(),
+            user.getDisplayName(), user.getBio(), user.getAvatarUrl(),
+            user.isActive(), user.isVerified(), user.getKarma(),
+            user.getPosts(), user.getComments(), user.getVotes(),
+            user.getSubscribedCommunities(), Set.of(), // Clear moderated communities
+            user.getCreatedAt(), now
         );
 
         userRepository.save(updated);
 
         return new AdminAction(
-            null, AdminAction.AdminActionType.REMOVE_MODERATOR, userId, "User",
-            reason, null, admin.id(), now, null, true, "Moderator privileges removed"
+            UuidV7Generator.generate(), AdminAction.AdminActionType.REMOVE_MODERATOR, userId, "User",
+            reason, null, admin.getId(), now, null, true, "Moderator privileges removed"
         );
     }
 
@@ -257,8 +258,8 @@ public class AdminService {
         // For now, we'll just create the action record
 
         return new AdminAction(
-            null, AdminAction.AdminActionType.ADD_MODERATOR, userId, "User",
-            reason, null, admin.id(), now, null, true, "Moderator privileges added"
+            UuidV7Generator.generate(), AdminAction.AdminActionType.ADD_MODERATOR, userId, "User",
+            reason, null, admin.getId(), now, null, true, "Moderator privileges added"
         );
     }
 
@@ -270,8 +271,8 @@ public class AdminService {
         // For now, we'll just create the action record
 
         return new AdminAction(
-            null, AdminAction.AdminActionType.BAN_COMMUNITY, communityId, "Community",
-            reason, null, admin.id(), now, expiresAt, expiresAt == null, "Community banned"
+            UuidV7Generator.generate(), AdminAction.AdminActionType.BAN_COMMUNITY, communityId, "Community",
+            reason, null, admin.getId(), now, expiresAt, expiresAt == null, "Community banned"
         );
     }
 
@@ -281,21 +282,21 @@ public class AdminService {
 
         // Mark as quarantined (similar to removed but with different meaning)
         Post updated = new Post(
-            post.id(), post.title(), post.content(), post.url(), post.postType(),
-            post.thumbnailUrl(), post.flairText(), post.flairCssClass(),
+            post.getId(), post.getTitle(), post.getContent(), post.getUrl(), post.getPostType(),
+            post.getThumbnailUrl(), post.getFlairText(), post.getFlairCssClass(),
             post.isSpoiler(), post.isStickied(), post.isLocked(), post.isArchived(),
             true, // Mark as over18/quarantined
-            post.isRemoved(), post.score(), post.likeCount(), post.dislikeCount(),
-            post.commentCount(), post.viewCount(), post.awardCount(), post.author(),
-            post.community(), post.comments(), post.votes(), post.createdAt(), now,
-            post.archivedAt()
+            post.isRemoved(), post.getScore(), post.getLikeCount(), post.getDislikeCount(),
+            post.getCommentCount(), post.getViewCount(), post.getAwardCount(), post.getAuthor(),
+            post.getCommunity(), post.getComments(), post.getVotes(), post.getCreatedAt(), now,
+            post.getArchivedAt()
         );
 
         postRepository.save(updated);
 
         return new AdminAction(
-            null, AdminAction.AdminActionType.QUARANTINE_POST, postId, "Post",
-            reason, null, admin.id(), now, null, true, "Post quarantined"
+            UuidV7Generator.generate(), AdminAction.AdminActionType.QUARANTINE_POST, postId, "Post",
+            reason, null, admin.getId(), now, null, true, "Post quarantined"
         );
     }
 
@@ -305,21 +306,21 @@ public class AdminService {
 
         // Mark as quarantined
         Comment updated = new Comment(
-            comment.id(), comment.content(), comment.flairText(), comment.isEdited(),
+            comment.getId(), comment.getContent(), comment.getFlairText(), comment.isEdited(),
             comment.isDeleted(), comment.isRemoved(), comment.isCollapsed(),
             comment.isStickied(), true, // Mark as over18/quarantined
-            comment.score(), comment.likeCount(), comment.dislikeCount(),
-            comment.replyCount(), comment.awardCount(), comment.depthLevel(),
-            comment.author(), comment.post(), comment.parent(), comment.replies(),
-            comment.votes(), comment.createdAt(), now, comment.editedAt(),
-            comment.deletedAt(), comment.removedAt()
+            comment.getScore(), comment.getLikeCount(), comment.getDislikeCount(),
+            comment.getReplyCount(), comment.getAwardCount(), comment.getDepthLevel(),
+            comment.getAuthor(), comment.getPost(), comment.getParent(), comment.getReplies(),
+            comment.getVotes(), comment.getCreatedAt(), now, comment.getEditedAt(),
+            comment.getDeletedAt(), comment.getRemovedAt()
         );
 
         commentRepository.save(updated);
 
         return new AdminAction(
-            null, AdminAction.AdminActionType.QUARANTINE_COMMENT, commentId, "Comment",
-            reason, null, admin.id(), now, null, true, "Comment quarantined"
+            UuidV7Generator.generate(), AdminAction.AdminActionType.QUARANTINE_COMMENT, commentId, "Comment",
+            reason, null, admin.getId(), now, null, true, "Comment quarantined"
         );
     }
 
@@ -340,7 +341,7 @@ public class AdminService {
 
     private void sendActionNotification(AdminAction action) {
         try {
-            String title = switch (action.type()) {
+            String title = switch (action.getType()) {
                 case BAN_USER -> "Account Suspended";
                 case SUSPEND_USER -> "Account Temporarily Suspended";
                 case DELETE_POST -> "Post Removed";
@@ -354,7 +355,7 @@ public class AdminService {
                 case QUARANTINE_COMMENT -> "Comment Quarantined";
             };
 
-            String message = String.format("Your content has been moderated. Reason: %s", action.reason());
+            String message = String.format("Your content has been moderated. Reason: %s", action.getReason());
 
             // Create notification for the affected user
             // This would need to be adapted based on the action type

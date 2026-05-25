@@ -3,8 +3,6 @@ package com.lambrk.service;
 import com.lambrk.domain.LogEntry;
 import com.lambrk.repository.LogRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,16 +12,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.ContentCachingRequestWrapper;
-import org.springframework.web.util.ContentCachingResponseWrapper;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -65,20 +56,59 @@ public class LoggingService {
         this.sensitiveHeaders.addAll(Arrays.asList(sensitiveHeaders));
     }
 
+    public record LogContext(
+        String method,
+        String endpoint,
+        String fullUrl,
+        String queryString,
+        String requestHeaders,
+        String requestBody,
+        String responseHeaders,
+        String responseBody,
+        int statusCode,
+        Long responseTimeMs,
+        String ipAddress,
+        String userAgent,
+        String correlationId,
+        UUID userId,
+        String username,
+        boolean isAuthenticated,
+        String exceptionMessage,
+        String exceptionStackTrace
+    ) {}
+
     @Async("taskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void logRequestResponse(HttpServletRequest request, HttpServletResponse response,
-                                   ContentCachingRequestWrapper requestWrapper,
-                                   ContentCachingResponseWrapper responseWrapper,
-                                   UUID userId, String username, boolean isAuthenticated,
-                                   Long startTime, Throwable exception) {
+    public void logRequestResponse(LogContext context) {
         if (!loggingEnabled) {
             return;
         }
 
         try {
-            LogEntry logEntry = buildLogEntry(request, response, requestWrapper, responseWrapper,
-                userId, username, isAuthenticated, startTime, exception);
+            LogEntry logEntry = LogEntry.builder()
+                .correlationId(context.correlationId())
+                .timestamp(Instant.now())
+                .logLevel(determineLogLevel(context.statusCode(), context.exceptionMessage()))
+                .method(context.method())
+                .endpoint(context.endpoint())
+                .fullUrl(context.fullUrl())
+                .queryString(context.queryString())
+                .requestHeaders(context.requestHeaders())
+                .requestBody(context.requestBody())
+                .responseHeaders(context.responseHeaders())
+                .responseBody(context.responseBody())
+                .statusCode(context.statusCode())
+                .responseTimeMs(context.responseTimeMs())
+                .ipAddress(context.ipAddress())
+                .userAgent(context.userAgent())
+                .userId(context.userId())
+                .username(context.username())
+                .isAuthenticated(context.isAuthenticated())
+                .exceptionMessage(context.exceptionMessage())
+                .exceptionStackTrace(context.exceptionStackTrace())
+                .source("API")
+                .serviceName("reddit-backend")
+                .build();
 
             // Save to database asynchronously
             logRepository.save(logEntry);
@@ -91,53 +121,18 @@ public class LoggingService {
         }
     }
 
-    private LogEntry buildLogEntry(HttpServletRequest request, HttpServletResponse response,
-                                   ContentCachingRequestWrapper requestWrapper,
-                                   ContentCachingResponseWrapper responseWrapper,
-                                   UUID userId, String username, boolean isAuthenticated,
-                                   Long startTime, Throwable exception) {
-
-        Long responseTimeMs = System.currentTimeMillis() - startTime;
-        String correlationId = getCorrelationId(request);
-
-        return LogEntry.builder()
-            .correlationId(correlationId)
-            .timestamp(Instant.now())
-            .logLevel(determineLogLevel(response, exception))
-            .method(request.getMethod())
-            .endpoint(request.getRequestURI())
-            .fullUrl(request.getRequestURL().toString())
-            .queryString(request.getQueryString())
-            .requestHeaders(getHeadersAsString(request))
-            .requestBody(logRequestBody ? getRequestBody(requestWrapper) : null)
-            .responseHeaders(getResponseHeadersAsString(response))
-            .responseBody(logResponseBody ? getResponseBody(responseWrapper) : null)
-            .statusCode(response.getStatus())
-            .responseTimeMs(responseTimeMs)
-            .ipAddress(getClientIpAddress(request))
-            .userAgent(request.getHeader("User-Agent"))
-            .userId(userId)
-            .username(username)
-            .isAuthenticated(isAuthenticated)
-            .exceptionMessage(exception != null ? exception.getMessage() : null)
-            .exceptionStackTrace(exception != null ? getStackTraceAsString(exception) : null)
-            .source("API")
-            .serviceName("reddit-backend")
-            .build();
-    }
-
     private void logToFile(LogEntry entry) {
         try {
-            String exceptionPart = entry.exceptionMessage() != null ? ERROR_PREFIX + entry.exceptionMessage() : "";
+            String exceptionPart = entry.getExceptionMessage() != null ? ERROR_PREFIX + entry.getExceptionMessage() : "";
             fileLogger.info(LOG_FORMAT,
-                entry.timestamp(),
-                entry.method(),
-                entry.endpoint(),
-                entry.correlationId(),
-                entry.statusCode(),
-                entry.responseTimeMs(),
-                entry.ipAddress(),
-                entry.isAuthenticated() ? entry.username() : ANONYMOUS,
+                entry.getTimestamp(),
+                entry.getMethod(),
+                entry.getEndpoint(),
+                entry.getCorrelationId(),
+                entry.getStatusCode(),
+                entry.getResponseTimeMs(),
+                entry.getIpAddress(),
+                entry.isAuthenticated() ? entry.getUsername() : ANONYMOUS,
                 exceptionPart
             );
 
@@ -149,113 +144,24 @@ public class LoggingService {
         }
     }
 
-    private String getCorrelationId(HttpServletRequest request) {
-        String correlationId = request.getHeader("X-Correlation-Id");
-        if (correlationId == null || correlationId.isEmpty()) {
-            correlationId = UUID.randomUUID().toString();
-        }
-        return correlationId;
-    }
-
-    private String determineLogLevel(HttpServletResponse response, Throwable exception) {
-        if (exception != null) {
+    private String determineLogLevel(int statusCode, String exceptionMessage) {
+        if (exceptionMessage != null) {
             return "ERROR";
         }
-        int status = response.getStatus();
-        if (status >= 500) {
+        if (statusCode >= 500) {
             return "ERROR";
-        } else if (status >= 400) {
+        } else if (statusCode >= 400) {
             return "WARN";
         }
         return "INFO";
     }
 
-    private String getHeadersAsString(HttpServletRequest request) {
-        Map<String, String> headers = new HashMap<>();
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            headers.put(headerName, isSensitiveHeader(headerName) ? REDACTED : request.getHeader(headerName));
-        }
-        try {
-            return objectMapper.writeValueAsString(headers);
-        } catch (IOException e) {
-            return "{}";
-        }
-    }
-
-    private String getResponseHeadersAsString(HttpServletResponse response) {
-        Map<String, String> headers = new HashMap<>();
-        for (String headerName : response.getHeaderNames()) {
-            headers.put(headerName, response.getHeader(headerName));
-        }
-        try {
-            return objectMapper.writeValueAsString(headers);
-        } catch (IOException e) {
-            return "{}";
-        }
-    }
-
-    private boolean isSensitiveHeader(String headerName) {
-        return sensitiveHeaders.contains(headerName);
-    }
-
-    private String getRequestBody(ContentCachingRequestWrapper request) {
-        byte[] content = request.getContentAsByteArray();
-        if (content.length == 0) {
-            return null;
-        }
-        try {
-            String body = new String(content, request.getCharacterEncoding());
-            return truncateIfNeeded(body);
-        } catch (UnsupportedEncodingException e) {
-            return "[Unable to read request body]";
-        }
-    }
-
-    private String getResponseBody(ContentCachingResponseWrapper response) {
-        byte[] content = response.getContentAsByteArray();
-        if (content.length == 0) {
-            return null;
-        }
-        try {
-            String body = new String(content, response.getCharacterEncoding());
-            return truncateIfNeeded(body);
-        } catch (UnsupportedEncodingException e) {
-            return "[Unable to read response body]";
-        }
-    }
-
     private String truncateIfNeeded(String body) {
+        if (body == null) return null;
         if (body.length() > maxBodySize) {
             return body.substring(0, maxBodySize) + TRUNCATED;
         }
         return body;
-    }
-
-    private String getClientIpAddress(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (xRealIp != null && !xRealIp.isEmpty()) {
-            return xRealIp;
-        }
-        return request.getRemoteAddr();
-    }
-
-    private String getStackTraceAsString(Throwable exception) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(exception.toString()).append("\n");
-        for (StackTraceElement element : exception.getStackTrace()) {
-            sb.append("\tat ").append(element.toString()).append("\n");
-            if (sb.length() > maxBodySize) {
-                sb.append("...[truncated]");
-                break;
-            }
-        }
-        return sb.toString();
     }
 
     // Public API methods for querying logs

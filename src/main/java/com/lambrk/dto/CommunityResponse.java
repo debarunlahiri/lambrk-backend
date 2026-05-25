@@ -49,25 +49,25 @@ public record CommunityResponse(
     
     public static CommunityResponse from(Community community) {
         return new CommunityResponse(
-            community.id(),
-            community.name(),
-            community.title(),
-            community.description(),
-            community.sidebarText(),
-            community.headerImageUrl(),
-            community.iconImageUrl(),
+            community.getId(),
+            community.getName(),
+            community.getTitle(),
+            community.getDescription(),
+            community.getSidebarText(),
+            community.getHeaderImageUrl(),
+            community.getIconImageUrl(),
             community.isPublic(),
             community.isRestricted(),
             community.isOver18(),
-            community.memberCount(),
-            community.subscriberCount(),
-            community.activeUserCount(),
-            UserResponse.from(community.createdBy()),
-            community.categories() != null
-                ? community.categories().stream().map(CategoryResponse::from).toList()
+            community.getMemberCount(),
+            community.getSubscriberCount(),
+            community.getActiveUserCount(),
+            UserResponse.from(community.getCreatedBy()),
+            community.getCategories() != null
+                ? community.getCategories().stream().map(CategoryResponse::from).toList()
                 : List.of(),
-            community.createdAt(),
-            community.updatedAt(),
+            community.getCreatedAt(),
+            community.getUpdatedAt(),
             false,
             false
         );
@@ -75,25 +75,25 @@ public record CommunityResponse(
 
     public static CommunityResponse from(Community community, boolean isUserSubscribed, boolean isUserModerator) {
         return new CommunityResponse(
-            community.id(),
-            community.name(),
-            community.title(),
-            community.description(),
-            community.sidebarText(),
-            community.headerImageUrl(),
-            community.iconImageUrl(),
+            community.getId(),
+            community.getName(),
+            community.getTitle(),
+            community.getDescription(),
+            community.getSidebarText(),
+            community.getHeaderImageUrl(),
+            community.getIconImageUrl(),
             community.isPublic(),
             community.isRestricted(),
             community.isOver18(),
-            community.memberCount(),
-            community.subscriberCount(),
-            community.activeUserCount(),
-            UserResponse.from(community.createdBy()),
-            community.categories() != null
-                ? community.categories().stream().map(CategoryResponse::from).toList()
+            community.getMemberCount(),
+            community.getSubscriberCount(),
+            community.getActiveUserCount(),
+            UserResponse.from(community.getCreatedBy()),
+            community.getCategories() != null
+                ? community.getCategories().stream().map(CategoryResponse::from).toList()
                 : List.of(),
-            community.createdAt(),
-            community.updatedAt(),
+            community.getCreatedAt(),
+            community.getUpdatedAt(),
             isUserSubscribed,
             isUserModerator
         );

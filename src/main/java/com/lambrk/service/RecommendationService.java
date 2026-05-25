@@ -195,7 +195,7 @@ public class RecommendationService {
     private List<Post> findTrendingPosts(User user, RecommendationRequest request) {
         List<Community> userCommunities = getUserCommunityPreferences(user);
         List<String> communityNames = userCommunities.stream()
-            .map(Community::name)
+            .map(Community::getName)
             .toList();
         
         Pageable pageable = PageRequest.of(0, request.limit(), Sort.by(Sort.Direction.DESC, "score"));
@@ -241,7 +241,7 @@ public class RecommendationService {
     }
 
     private List<Community> getUserCommunityPreferences(User user) {
-        Set<Community> communities = communityRepository.findSubscribedCommunitiesByUser(user.id());
+        Set<Community> communities = communityRepository.findSubscribedCommunitiesByUser(user.getId());
         return communities != null ? communities.stream().toList() : List.of();
     }
 
@@ -289,10 +289,10 @@ public class RecommendationService {
 
     private List<Community> combineCommunityRecommendations(List<Community> userCommunities, List<Community> similar, List<Community> trending, RecommendationRequest request) {
         // Exclude user's current subscriptions
-        List<UUID> excludeIds = userCommunities.stream().map(Community::id).toList();
+        List<UUID> excludeIds = userCommunities.stream().map(Community::getId).toList();
         
         return java.util.stream.Stream.concat(similar.stream(), trending.stream())
-            .filter(sub -> !excludeIds.contains(sub.id()))
+            .filter(sub -> !excludeIds.contains(sub.getId()))
             .distinct()
             .limit(request.limit())
             .toList();
@@ -310,7 +310,7 @@ public class RecommendationService {
         return String.format("Based on your activity in %d communities and %d interactions, " +
             "we've selected %d %s that match your interests and engagement patterns.",
             getUserCommunityPreferences(user).size(),
-            getUserInteractionHistory(user.id()).size(),
+            getUserInteractionHistory(user.getId()).size(),
             count,
             type
         );
@@ -329,7 +329,7 @@ public class RecommendationService {
         return userHistory.stream()
             .limit(10)
             .map(post -> String.format("Post in %s: %s (score: %d)", 
-                post.community().name(), post.title(), post.score()))
+                post.getCommunity().getName(), post.getTitle(), post.getScore()))
             .collect(java.util.stream.Collectors.joining("\n"));
     }
 

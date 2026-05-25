@@ -11,7 +11,7 @@ Create a post.
 **Request body**
 
 ```json
-{"title":"My first post","content":"Post body","url":null,"postType":"TEXT","flairText":null,"flairCssClass":null,"isSpoiler":false,"isOver18":false,"communityId":1}
+{"title":"My first post","content":"Post body","url":null,"postType":"TEXT","flairText":null,"flairCssClass":null,"isSpoiler":false,"isOver18":false,"communityId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"}
 ```
 
 **cURL**
@@ -36,7 +36,7 @@ curl -X POST 'http://localhost:9500/api/posts' \
 **Response**
 
 ```json
-{"id":1,"title":"My first post","content":"Post body","url":null,"postType":"TEXT","thumbnailUrl":null,"flairText":null,"flairCssClass":null,"isSpoiler":false,"isStickied":false,"isLocked":false,"isArchived":false,"isOver18":false,"score":1,"likeCount":1,"dislikeCount":0,"commentCount":0,"viewCount":0,"awardCount":0,"author":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"community":{"id":1,"name":"programming","title":"Programming","description":"Software","sidebarText":null,"headerImageUrl":null,"iconImageUrl":null,"isPublic":true,"isRestricted":false,"isOver18":false,"memberCount":1,"subscriberCount":1,"activeUserCount":0,"createdBy":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","isUserSubscribed":false,"isUserModerator":false},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","archivedAt":null,"userVote":null}
+{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","title":"My first post","content":"Post body","url":null,"postType":"TEXT","thumbnailUrl":null,"flairText":null,"flairCssClass":null,"isSpoiler":false,"isStickied":false,"isLocked":false,"isArchived":false,"isOver18":false,"score":1,"likeCount":1,"dislikeCount":0,"commentCount":0,"viewCount":0,"awardCount":0,"author":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"community":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","name":"programming","title":"Programming","description":"Software","sidebarText":null,"headerImageUrl":null,"iconImageUrl":null,"isPublic":true,"isRestricted":false,"isOver18":false,"memberCount":1,"subscriberCount":1,"activeUserCount":0,"createdBy":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"categories":[],"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","isUserSubscribed":false,"isUserModerator":false},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","archivedAt":null,"userVote":null}
 ```
 ### GET `/api/posts/{postId}`
 
@@ -47,14 +47,14 @@ Get one post.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/posts/1' \
+curl -X GET 'http://localhost:9500/api/posts/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>'
 ```
 
 **Response**
 
 ```json
-{"id":1,"title":"My first post","content":"Post body","url":null,"postType":"TEXT","thumbnailUrl":null,"flairText":null,"flairCssClass":null,"isSpoiler":false,"isStickied":false,"isLocked":false,"isArchived":false,"isOver18":false,"score":1,"likeCount":1,"dislikeCount":0,"commentCount":0,"viewCount":0,"awardCount":0,"author":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"community":{"id":1,"name":"programming","title":"Programming","description":"Software","sidebarText":null,"headerImageUrl":null,"iconImageUrl":null,"isPublic":true,"isRestricted":false,"isOver18":false,"memberCount":1,"subscriberCount":1,"activeUserCount":0,"createdBy":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","isUserSubscribed":false,"isUserModerator":false},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","archivedAt":null,"userVote":null}
+{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","title":"My first post","content":"Post body","url":null,"postType":"TEXT","thumbnailUrl":null,"flairText":null,"flairCssClass":null,"isSpoiler":false,"isStickied":false,"isLocked":false,"isArchived":false,"isOver18":false,"score":1,"likeCount":1,"dislikeCount":0,"commentCount":0,"viewCount":0,"awardCount":0,"author":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"community":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","name":"programming","title":"Programming","description":"Software","sidebarText":null,"headerImageUrl":null,"iconImageUrl":null,"isPublic":true,"isRestricted":false,"isOver18":false,"memberCount":1,"subscriberCount":1,"activeUserCount":0,"createdBy":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"categories":[],"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","isUserSubscribed":false,"isUserModerator":false},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","archivedAt":null,"userVote":null}
 ```
 ### GET `/api/posts/hot`
 
@@ -79,7 +79,7 @@ curl -X GET 'http://localhost:9500/api/posts/hot?page=0&size=20' \
 **Response**
 
 ```json
-{"content":[{"id":1,"title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
+{"content":[{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
 ```
 ### GET `/api/posts/new`
 
@@ -104,7 +104,7 @@ curl -X GET 'http://localhost:9500/api/posts/new?page=0&size=20' \
 **Response**
 
 ```json
-{"content":[{"id":1,"title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
+{"content":[{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
 ```
 ### GET `/api/posts/top`
 
@@ -129,7 +129,7 @@ curl -X GET 'http://localhost:9500/api/posts/top?page=0&size=20' \
 **Response**
 
 ```json
-{"content":[{"id":1,"title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
+{"content":[{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
 ```
 ### GET `/api/posts/community/{communityId}`
 
@@ -147,14 +147,14 @@ Get posts in a community.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/posts/community/1?page=0&size=20' \
+curl -X GET 'http://localhost:9500/api/posts/community/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11?page=0&size=20' \
   -H 'Authorization: Bearer <token>'
 ```
 
 **Response**
 
 ```json
-{"content":[{"id":1,"title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
+{"content":[{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
 ```
 ### GET `/api/posts/user/{userId}`
 
@@ -172,14 +172,14 @@ Get posts by user.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/posts/user/1?page=0&size=20' \
+curl -X GET 'http://localhost:9500/api/posts/user/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11?page=0&size=20' \
   -H 'Authorization: Bearer <token>'
 ```
 
 **Response**
 
 ```json
-{"content":[{"id":1,"title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
+{"content":[{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
 ```
 ### GET `/api/posts/search`
 
@@ -205,7 +205,7 @@ curl -X GET 'http://localhost:9500/api/posts/search?query=spring&page=0&size=20'
 **Response**
 
 ```json
-{"content":[{"id":1,"title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
+{"content":[{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","title":"My first post"}],"totalElements":1,"totalPages":1,"size":20,"number":0,"first":true,"last":true,"numberOfElements":1,"empty":false}
 ```
 ### PUT `/api/posts/{postId}`
 
@@ -216,13 +216,13 @@ Update a post.
 **Request body**
 
 ```json
-{"title":"Updated title","content":"Updated body","url":null,"postType":"TEXT","communityId":1}
+{"title":"Updated title","content":"Updated body","url":null,"postType":"TEXT","communityId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"}
 ```
 
 **cURL**
 
 ```bash
-curl -X PUT 'http://localhost:9500/api/posts/1' \
+curl -X PUT 'http://localhost:9500/api/posts/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -237,7 +237,7 @@ curl -X PUT 'http://localhost:9500/api/posts/1' \
 **Response**
 
 ```json
-{"id":1,"title":"My first post","content":"Post body","url":null,"postType":"TEXT","thumbnailUrl":null,"flairText":null,"flairCssClass":null,"isSpoiler":false,"isStickied":false,"isLocked":false,"isArchived":false,"isOver18":false,"score":1,"likeCount":1,"dislikeCount":0,"commentCount":0,"viewCount":0,"awardCount":0,"author":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"community":{"id":1,"name":"programming","title":"Programming","description":"Software","sidebarText":null,"headerImageUrl":null,"iconImageUrl":null,"isPublic":true,"isRestricted":false,"isOver18":false,"memberCount":1,"subscriberCount":1,"activeUserCount":0,"createdBy":{"id":1,"username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","isUserSubscribed":false,"isUserModerator":false},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","archivedAt":null,"userVote":null}
+{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","title":"My first post","content":"Post body","url":null,"postType":"TEXT","thumbnailUrl":null,"flairText":null,"flairCssClass":null,"isSpoiler":false,"isStickied":false,"isLocked":false,"isArchived":false,"isOver18":false,"score":1,"likeCount":1,"dislikeCount":0,"commentCount":0,"viewCount":0,"awardCount":0,"author":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"community":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","name":"programming","title":"Programming","description":"Software","sidebarText":null,"headerImageUrl":null,"iconImageUrl":null,"isPublic":true,"isRestricted":false,"isOver18":false,"memberCount":1,"subscriberCount":1,"activeUserCount":0,"createdBy":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"categories":[],"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","isUserSubscribed":false,"isUserModerator":false},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","archivedAt":null,"userVote":null}
 ```
 ### DELETE `/api/posts/{postId}`
 
@@ -248,7 +248,7 @@ Delete a post.
 **cURL**
 
 ```bash
-curl -X DELETE 'http://localhost:9500/api/posts/1' \
+curl -X DELETE 'http://localhost:9500/api/posts/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>'
 ```
 
@@ -265,12 +265,12 @@ List stickied posts.
 
 | Name | Type | Required | Default | Description |
 | --- | --- | --- | --- | --- |
-| `communityId` | long | no | - | Filter by community. |
+| `communityId` | UUID | no | - | Filter by community. |
 
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/posts/stickied?communityId=1' \
+curl -X GET 'http://localhost:9500/api/posts/stickied?communityId=b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>'
 ```
 

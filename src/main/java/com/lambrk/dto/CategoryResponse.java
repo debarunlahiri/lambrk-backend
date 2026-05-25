@@ -32,17 +32,17 @@ public record CategoryResponse(
 
     public static CategoryResponse from(Category category) {
         return new CategoryResponse(
-            category.id(),
-            category.name(),
-            category.description(),
-            category.iconUrl(),
-            category.imageUrl(),
-            category.color(),
-            category.slug(),
-            category.sortOrder(),
-            category.communities() != null ? category.communities().size() : 0,
-            category.createdAt(),
-            category.updatedAt()
+            category.getId(),
+            category.getName(),
+            category.getDescription(),
+            category.getIconUrl(),
+            category.getImageUrl(),
+            category.getColor(),
+            category.getSlug(),
+            category.getSortOrder(),
+            category.getCommunities() != null ? category.getCommunities().size() : 0,
+            category.getCreatedAt(),
+            category.getUpdatedAt()
         );
     }
 }

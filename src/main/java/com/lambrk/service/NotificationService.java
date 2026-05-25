@@ -22,6 +22,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.lambrk.util.UuidV7Generator;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -60,7 +61,7 @@ public class NotificationService {
             .orElseThrow(() -> new RuntimeException("User not found: " + request.recipientId()));
 
         Notification notification = new Notification(
-            null,
+            UuidV7Generator.generate(),
             Notification.NotificationType.valueOf(request.type().name()),
             recipient,
             request.title(),
@@ -104,23 +105,23 @@ public class NotificationService {
         Notification notification = notificationRepository.findById(notificationId)
             .orElseThrow(() -> new RuntimeException("Notification not found: " + notificationId));
         
-        if (!notification.recipient().id().equals(userId)) {
+        if (!notification.getRecipient().getId().equals(userId)) {
             throw new RuntimeException("Notification does not belong to user: " + userId);
         }
         
         Notification updated = new Notification(
-            notification.id(),
-            notification.type(),
-            notification.recipient(),
-            notification.title(),
-            notification.message(),
-            notification.relatedPostId(),
-            notification.relatedCommentId(),
-            notification.relatedUserId(),
-            notification.actionUrl(),
-            notification.actionText(),
+            notification.getId(),
+            notification.getType(),
+            notification.getRecipient(),
+            notification.getTitle(),
+            notification.getMessage(),
+            notification.getRelatedPostId(),
+            notification.getRelatedCommentId(),
+            notification.getRelatedUserId(),
+            notification.getActionUrl(),
+            notification.getActionText(),
             true,
-            notification.createdAt(),
+            notification.getCreatedAt(),
             Instant.now(),
             Instant.now()
         );
@@ -134,18 +135,18 @@ public class NotificationService {
         
         for (Notification notification : unreadNotifications) {
             Notification updated = new Notification(
-                notification.id(),
-                notification.type(),
-                notification.recipient(),
-                notification.title(),
-                notification.message(),
-                notification.relatedPostId(),
-                notification.relatedCommentId(),
-                notification.relatedUserId(),
-                notification.actionUrl(),
-                notification.actionText(),
+                notification.getId(),
+                notification.getType(),
+                notification.getRecipient(),
+                notification.getTitle(),
+                notification.getMessage(),
+                notification.getRelatedPostId(),
+                notification.getRelatedCommentId(),
+                notification.getRelatedUserId(),
+                notification.getActionUrl(),
+                notification.getActionText(),
                 true,
-                notification.createdAt(),
+                notification.getCreatedAt(),
                 Instant.now(),
                 Instant.now()
             );
@@ -158,7 +159,7 @@ public class NotificationService {
         Notification notification = notificationRepository.findById(notificationId)
             .orElseThrow(() -> new RuntimeException("Notification not found: " + notificationId));
         
-        if (!notification.recipient().id().equals(userId)) {
+        if (!notification.getRecipient().getId().equals(userId)) {
             throw new RuntimeException("Notification does not belong to user: " + userId);
         }
         
@@ -181,18 +182,18 @@ public class NotificationService {
                 .orElseThrow(() -> new RuntimeException("Author not found: " + authorId));
             
             // Don't notify if user is replying to their own comment
-            if (comment.parent() != null && comment.parent().author().id().equals(authorId)) {
+            if (comment.getParent() != null && comment.getParent().getAuthor().getId().equals(authorId)) {
                 return;
             }
             
-            UUID recipientId = comment.parent() != null ? comment.parent().author().id() : post.author().id();
+            UUID recipientId = comment.getParent() != null ? comment.getParent().getAuthor().getId() : post.getAuthor().getId();
             
             NotificationRequest notification = new NotificationRequest(
                 NotificationRequest.NotificationType.COMMENT_REPLY,
                 recipientId,
                 "New reply to your comment",
-                String.format("%s replied: \"%s\"", author.username(), 
-                    comment.content().length() > 100 ? comment.content().substring(0, 100) + "..." : comment.content()),
+                String.format("%s replied: \"%s\"", author.getUsername(), 
+                    comment.getContent().length() > 100 ? comment.getContent().substring(0, 100) + "..." : comment.getContent()),
                 postId,
                 commentId,
                 authorId,
@@ -224,7 +225,8 @@ public class NotificationService {
                 NotificationRequest.NotificationType.POST_LIKE,
                 authorId,
                 "Your post received a like",
-                String.format("%s liked your post \"%s\"", voter.username(), post.title()),
+                String.format("%s liked your post \"%s\"", voter.getUsername(),
+                    post.getTitle() != null ? post.getTitle() : "Untitled"),
                 postId,
                 null,
                 voterId,
@@ -253,7 +255,7 @@ public class NotificationService {
                 NotificationRequest.NotificationType.POST_MENTION,
                 mentionedUserId,
                 "You were mentioned in a post",
-                String.format("%s mentioned you in \"%s\"", author.username(), 
+                String.format("%s mentioned you in \"%s\"", author.getUsername(), 
                     content.length() > 100 ? content.substring(0, 100) + "..." : content),
                 postId,
                 commentId,
@@ -276,7 +278,7 @@ public class NotificationService {
             kafkaTemplate.send("notifications", notification);
             
             // Could also send to specific user topic
-            kafkaTemplate.send("user-" + notification.recipient().id() + "-notifications", notification);
+            kafkaTemplate.send("user-" + notification.getRecipient().getId() + "-notifications", notification);
             
         } catch (Exception e) {
             System.err.println("Failed to send real-time notification: " + e.getMessage());
@@ -285,40 +287,40 @@ public class NotificationService {
 
     private NotificationResponse convertToResponse(Notification notification) {
         return new NotificationResponse(
-            notification.id(),
-            notification.type(),
-            notification.recipient().id(),
-            notification.title(),
-            notification.message(),
-            notification.relatedPostId(),
-            getPostTitle(notification.relatedPostId()),
-            notification.relatedCommentId(),
-            getCommentPreview(notification.relatedCommentId()),
-            notification.relatedUserId(),
-            getUsername(notification.relatedUserId()),
-            notification.actionUrl(),
-            notification.actionText(),
+            notification.getId(),
+            notification.getType(),
+            notification.getRecipient().getId(),
+            notification.getTitle(),
+            notification.getMessage(),
+            notification.getRelatedPostId(),
+            getPostTitle(notification.getRelatedPostId()),
+            notification.getRelatedCommentId(),
+            getCommentPreview(notification.getRelatedCommentId()),
+            notification.getRelatedUserId(),
+            getUsername(notification.getRelatedUserId()),
+            notification.getActionUrl(),
+            notification.getActionText(),
             notification.isRead(),
-            notification.createdAt(),
-            notification.readAt()
+            notification.getCreatedAt(),
+            notification.getReadAt()
         );
     }
 
     private String getPostTitle(UUID postId) {
         return postRepository.findById(postId)
-            .map(Post::title)
+            .map(Post::getTitle)
             .orElse(null);
     }
 
     private String getCommentPreview(UUID commentId) {
         return commentRepository.findById(commentId)
-            .map(c -> c.content().length() > 100 ? c.content().substring(0, 100) + "..." : c.content())
+            .map(c -> c.getContent().length() > 100 ? c.getContent().substring(0, 100) + "..." : c.getContent())
             .orElse(null);
     }
 
     private String getUsername(UUID userId) {
         return userRepository.findById(userId)
-            .map(User::username)
+            .map(User::getUsername)
             .orElse(null);
     }
 }

@@ -15,8 +15,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import com.lambrk.config.UserPrincipal;
 import java.util.UUID;
 
 @RestController
@@ -33,11 +34,8 @@ public class FeedController {
         this.feedService = feedService;
     }
 
-    private UUID getUserIdFromUserDetails(UserDetails userDetails) {
-        if (userDetails == null) {
-            return null;
-        }
-        return java.util.UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"); // Placeholder - should extract from JWT
+    private UUID getUserIdFromUserDetails(UserPrincipal userPrincipal) {
+        return userPrincipal != null ? userPrincipal.getUserId() : null;
     }
 
     @GetMapping
@@ -52,7 +50,7 @@ public class FeedController {
         @ApiResponse(responseCode = "429", description = "Rate limit exceeded")
     })
     public ResponseEntity<FeedResponse> getFeed(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal UserPrincipal userDetails,
             @Parameter(description = "Number of posts to return (1-100, default 20)")
             @RequestParam(defaultValue = "20") Integer limit,
             @Parameter(description = "Sort method: algorithm, hot, new, top (default: algorithm)")
@@ -94,7 +92,7 @@ public class FeedController {
         @ApiResponse(responseCode = "429", description = "Rate limit exceeded")
     })
     public ResponseEntity<FeedResponse> getFeedWithFilters(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal UserPrincipal userDetails,
             @Valid @RequestBody FeedRequest request
     ) {
         UUID userId = getUserIdFromUserDetails(userDetails);
@@ -122,7 +120,7 @@ public class FeedController {
         description = "Returns trending posts based on popularity and recent activity."
     )
     public ResponseEntity<FeedResponse> getHotFeed(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal UserPrincipal userDetails,
             @RequestParam(defaultValue = "20") Integer limit
     ) {
         UUID userId = getUserIdFromUserDetails(userDetails);
@@ -149,7 +147,7 @@ public class FeedController {
         description = "Returns the most recent posts with minimal algorithmic ranking."
     )
     public ResponseEntity<FeedResponse> getNewFeed(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal UserPrincipal userDetails,
             @RequestParam(defaultValue = "20") Integer limit
     ) {
         UUID userId = getUserIdFromUserDetails(userDetails);
@@ -176,7 +174,7 @@ public class FeedController {
         description = "Returns highest scoring posts of all time or specified time period."
     )
     public ResponseEntity<FeedResponse> getTopFeed(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal UserPrincipal userDetails,
             @RequestParam(defaultValue = "20") Integer limit,
             @RequestParam(defaultValue = "all") String timePeriod
     ) {
@@ -205,7 +203,7 @@ public class FeedController {
         description = "Returns posts from communities the user doesn't follow to discover new content."
     )
     public ResponseEntity<FeedResponse> getDiscoverFeed(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal UserPrincipal userDetails,
             @RequestParam(defaultValue = "20") Integer limit
     ) {
         UUID userId = getUserIdFromUserDetails(userDetails);

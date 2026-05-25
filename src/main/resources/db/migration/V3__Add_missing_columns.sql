@@ -121,9 +121,9 @@ INSERT INTO votes (id, vote_type, user_id, post_id) VALUES
 UPDATE posts SET score = (
     SELECT COALESCE(SUM(CASE WHEN vote_type = 'UPVOTE' THEN 1 ELSE -1 END), 0)
     FROM votes WHERE post_id = posts.id
-), upvote_count = (
+), like_count = (
     SELECT COUNT(*) FROM votes WHERE post_id = posts.id AND vote_type = 'UPVOTE'
-), downvote_count = (
+), dislike_count = (
     SELECT COUNT(*) FROM votes WHERE post_id = posts.id AND vote_type = 'DOWNVOTE'
 );
 

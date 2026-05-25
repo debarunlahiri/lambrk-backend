@@ -11,7 +11,7 @@ Get recommendations.
 **Request body**
 
 ```json
-{"userId":1,"type":"POSTS","limit":20,"excludeCommunities":[],"excludeUsers":[],"includeNSFW":false,"includeOver18":false,"contextCommunityId":null,"contextPostId":null}
+{"userId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","type":"POSTS","limit":20,"excludeCommunities":[],"excludeUsers":[],"includeNSFW":false,"includeOver18":false,"contextCommunityId":null,"contextPostId":null}
 ```
 
 **cURL**
@@ -21,7 +21,7 @@ curl -X POST 'http://localhost:9500/api/recommendations' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "userId": 1,
+  "userId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   "type": "POSTS",
   "limit": 20,
   "excludeCommunities": [],
@@ -51,7 +51,7 @@ Optional `limit` plus endpoint-specific exclude/context flags.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/recommendations/posts/1?limit=20' \
+curl -X GET 'http://localhost:9500/api/recommendations/posts/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11?limit=20' \
   -H 'Authorization: Bearer <token>'
 ```
 
@@ -73,7 +73,7 @@ Optional `limit` plus endpoint-specific exclude/context flags.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/recommendations/communities/1?limit=20' \
+curl -X GET 'http://localhost:9500/api/recommendations/communities/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11?limit=20' \
   -H 'Authorization: Bearer <token>'
 ```
 
@@ -95,7 +95,7 @@ Optional `limit` plus endpoint-specific exclude/context flags.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/recommendations/users/1?limit=20' \
+curl -X GET 'http://localhost:9500/api/recommendations/users/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11?limit=20' \
   -H 'Authorization: Bearer <token>'
 ```
 
@@ -117,7 +117,7 @@ Optional `limit` plus endpoint-specific exclude/context flags.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/recommendations/comments/1?limit=20' \
+curl -X GET 'http://localhost:9500/api/recommendations/comments/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11?limit=20' \
   -H 'Authorization: Bearer <token>'
 ```
 
@@ -139,7 +139,7 @@ Optional `contextCommunityId`, `contextPostId`, `type`, `limit`.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/recommendations/context/1?type=posts&limit=20&contextPostId=10' \
+curl -X GET 'http://localhost:9500/api/recommendations/context/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11?type=posts&limit=20&contextPostId=10' \
   -H 'Authorization: Bearer <token>'
 ```
 

@@ -15,8 +15,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import com.lambrk.config.UserPrincipal;
 
 import java.util.Set;
 import java.util.UUID;
@@ -37,7 +38,7 @@ public class CommunityController {
     @Timed(value = "communities.create.duration")
     public ResponseEntity<CommunityResponse> createCommunity(
             @Valid @RequestBody CommunityCreateRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         return ResponseEntity.ok(communityService.createCommunity(request, getUserId(userDetails)));
     }
 
@@ -46,7 +47,7 @@ public class CommunityController {
     @Timed(value = "communities.get.duration")
     public ResponseEntity<CommunityResponse> getCommunity(
             @PathVariable @SpanTag UUID communityId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         return ResponseEntity.ok(communityService.getCommunity(communityId, getUserId(userDetails)));
     }
 
@@ -55,7 +56,7 @@ public class CommunityController {
     @Timed(value = "communities.getByName.duration")
     public ResponseEntity<CommunityResponse> getCommunityByName(
             @PathVariable @SpanTag String name,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         return ResponseEntity.ok(communityService.getCommunityByName(name, getUserId(userDetails)));
     }
 
@@ -97,7 +98,7 @@ public class CommunityController {
     public ResponseEntity<CommunityResponse> updateCommunity(
             @PathVariable @SpanTag UUID communityId,
             @Valid @RequestBody CommunityCreateRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         return ResponseEntity.ok(communityService.updateCommunity(communityId, request, getUserId(userDetails)));
     }
 
@@ -106,7 +107,7 @@ public class CommunityController {
     @Timed(value = "communities.subscribe.duration")
     public ResponseEntity<Void> subscribe(
             @PathVariable @SpanTag UUID communityId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         communityService.subscribe(communityId, getUserId(userDetails));
         return ResponseEntity.ok().build();
     }
@@ -116,7 +117,7 @@ public class CommunityController {
     @Timed(value = "communities.unsubscribe.duration")
     public ResponseEntity<Void> unsubscribe(
             @PathVariable @SpanTag UUID communityId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         communityService.unsubscribe(communityId, getUserId(userDetails));
         return ResponseEntity.ok().build();
     }
@@ -125,11 +126,11 @@ public class CommunityController {
     @NewSpan("get-user-subscriptions")
     @Timed(value = "communities.subscriptions.duration")
     public ResponseEntity<Set<CommunityResponse>> getUserSubscriptions(
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         return ResponseEntity.ok(communityService.getUserSubscriptions(getUserId(userDetails)));
     }
 
-    private UUID getUserId(UserDetails userDetails) {
-        return userDetails != null ? java.util.UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11") : null;
+    private UUID getUserId(UserPrincipal userPrincipal) {
+        return userPrincipal != null ? userPrincipal.getUserId() : null;
     }
 }

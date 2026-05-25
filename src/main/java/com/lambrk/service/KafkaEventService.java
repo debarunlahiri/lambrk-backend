@@ -21,53 +21,65 @@ public class KafkaEventService {
     }
 
     public void sendPostCreatedEvent(Post post) {
-        PostEvent event = new PostEvent(
-            post.id(),
-            post.title(),
-            post.author().id(),
-            post.community().id(),
-            post.createdAt(),
-            "POST_CREATED"
-        );
-        streamBridge.send("postCreated-out-0", event);
+        try {
+            PostEvent event = new PostEvent(
+                post.getId(),
+                post.getTitle(),
+                post.getAuthor().getId(),
+                post.getCommunity() != null ? post.getCommunity().getId() : null,
+                post.getCreatedAt(),
+                "POST_CREATED"
+            );
+            streamBridge.send("postCreated-out-0", event);
+        } catch (Exception ignored) {
+        }
     }
 
     public void sendPostUpdatedEvent(Post post) {
-        PostEvent event = new PostEvent(
-            post.id(),
-            post.title(),
-            post.author().id(),
-            post.community().id(),
-            post.updatedAt(),
-            "POST_UPDATED"
-        );
-        streamBridge.send("postUpdated-out-0", event);
+        try {
+            PostEvent event = new PostEvent(
+                post.getId(),
+                post.getTitle(),
+                post.getAuthor().getId(),
+                post.getCommunity() != null ? post.getCommunity().getId() : null,
+                post.getUpdatedAt(),
+                "POST_UPDATED"
+            );
+            streamBridge.send("postUpdated-out-0", event);
+        } catch (Exception ignored) {
+        }
     }
 
     public void sendCommentCreatedEvent(Comment comment) {
-        CommentEvent event = new CommentEvent(
-            comment.id(),
-            comment.content(),
-            comment.author().id(),
-            comment.post().id(),
-            comment.parent() != null ? comment.parent().id() : null,
-            comment.createdAt(),
-            "COMMENT_CREATED"
-        );
-        streamBridge.send("commentCreated-out-0", event);
+        try {
+            CommentEvent event = new CommentEvent(
+                comment.getId(),
+                comment.getContent(),
+                comment.getAuthor().getId(),
+                comment.getPost().getId(),
+                comment.getParent() != null ? comment.getParent().getId() : null,
+                comment.getCreatedAt(),
+                "COMMENT_CREATED"
+            );
+            streamBridge.send("commentCreated-out-0", event);
+        } catch (Exception ignored) {
+        }
     }
 
     public void sendVoteCastEvent(Vote vote) {
-        VoteEvent event = new VoteEvent(
-            vote.id(),
-            vote.voteType().name(),
-            vote.user().id(),
-            vote.post() != null ? vote.post().id() : null,
-            vote.comment() != null ? vote.comment().id() : null,
-            vote.createdAt(),
-            "VOTE_CAST"
-        );
-        streamBridge.send("voteCast-out-0", event);
+        try {
+            VoteEvent event = new VoteEvent(
+                vote.getId(),
+                vote.getVoteType().name(),
+                vote.getUser().getId(),
+                vote.getPost() != null ? vote.getPost().getId() : null,
+                vote.getComment() != null ? vote.getComment().getId() : null,
+                vote.getCreatedAt(),
+                "VOTE_CAST"
+            );
+            streamBridge.send("voteCast-out-0", event);
+        } catch (Exception ignored) {
+        }
     }
 
     public record PostEvent(

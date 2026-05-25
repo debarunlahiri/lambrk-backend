@@ -17,7 +17,7 @@ spring:
     virtual:
       enabled: true
   profiles:
-    active: dev
+    active: prod
   datasource:
     url: jdbc:postgresql://localhost:5432/lambrk
     username: debarunlahiri
@@ -29,9 +29,10 @@ spring:
       idle-timeout: 300000
       max-lifetime: 900000
       leak-detection-threshold: 30000
+      auto-commit: false
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: false
     open-in-view: false
     properties:
@@ -43,8 +44,6 @@ spring:
           batch_size: 25
           order_inserts: true
           order_updates: true
-        connection:
-          provider_disables_autocommit: true
         query:
           plan_cache_max_size: 512
           in_clause_parameter_padding: true
@@ -76,17 +75,11 @@ spring:
   # CORS Configuration
   cors:
     allowed-origins: "http://localhost:3000,http://localhost:4200,https://reddit-frontend.example.com"
-    allowed-methods: "GET,POST,PUT,DELETE,OPTIONS,PATCH"
-    allowed-headers: "*"
+    allowed-methods: "GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD"
+    allowed-headers: "Authorization,Content-Type,X-Requested-With,Accept,Origin,X-Correlation-Id,X-Total-Count,Cache-Control,Pragma"
     allow-credentials: true
     max-age: 3600
   
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: https://auth.example.com
-          jwk-set-uri: https://auth.example.com/.well-known/jwks.json
   
   cloud:
     stream:
@@ -196,6 +189,13 @@ management:
   tracing:
     sampling:
       probability: 0.05
+    enabled: false
+  otlp:
+    tracing:
+      enabled: false
+    metrics:
+      export:
+        enabled: false
   info:
     env:
       enabled: false
@@ -294,7 +294,7 @@ spring:
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
       - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    url: jdbc:h2:file:./data/lambrk-dev;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password: ""
@@ -304,7 +304,7 @@ spring:
       path: /h2-console
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: false
   flyway:
     enabled: false
@@ -340,7 +340,7 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://postgres:5432/lambrk}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/lambrk}
     username: ${DATABASE_USERNAME:debarunlahiri}
     password: ${DATABASE_PASSWORD:8ivhaah8}
     hikari:
@@ -348,7 +348,7 @@ spring:
       minimum-idle: 10
   data:
     redis:
-      host: ${REDIS_HOST:redis}
+      host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
   cloud:

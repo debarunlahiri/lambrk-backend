@@ -29,7 +29,7 @@ Get logs by user.
 **cURL**
 
 ```bash
-curl -X GET 'http://localhost:9500/api/logs/user/1?page=0&size=50' \
+curl -X GET 'http://localhost:9500/api/logs/user/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11?page=0&size=50' \
   -H 'Authorization: Bearer <token>'
 ```
 

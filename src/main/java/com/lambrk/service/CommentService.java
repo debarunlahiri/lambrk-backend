@@ -73,13 +73,13 @@ public class CommentService {
         Comment comment = new Comment(request.content(), author, post, parent);
         Comment saved = commentRepository.save(comment);
 
-        postRepository.updatePostCommentCount(post.id(), 1);
+        postRepository.updatePostCommentCount(post.getId(), 1);
         if (parent != null) {
-            commentRepository.updateCommentReplyCount(parent.id(), 1);
+            commentRepository.updateCommentReplyCount(parent.getId(), 1);
         }
         userRepository.updateUserKarma(authorId, 1);
 
-        customMetrics.recordCommentCreated(post.community().name());
+        customMetrics.recordCommentCreated(post.getCommunity().getName());
         kafkaEventService.sendCommentCreatedEvent(saved);
 
         return CommentResponse.from(saved);
@@ -125,17 +125,17 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
 
-        if (!comment.author().id().equals(currentUserId)) {
+        if (!comment.getAuthor().getId().equals(currentUserId)) {
             throw new UnauthorizedActionException("You can only edit your own comments");
         }
 
         Comment updated = new Comment(
-            comment.id(), newContent, comment.flairText(), true, comment.isDeleted(),
+            comment.getId(), newContent, comment.getFlairText(), true, comment.isDeleted(),
             comment.isRemoved(), comment.isCollapsed(), comment.isStickied(), comment.isOver18(),
-            comment.score(), comment.likeCount(), comment.dislikeCount(), comment.replyCount(),
-            comment.awardCount(), comment.depthLevel(), comment.author(), comment.post(), comment.parent(),
-            comment.replies(), comment.votes(), comment.createdAt(), Instant.now(), Instant.now(),
-            comment.deletedAt(), comment.removedAt()
+            comment.getScore(), comment.getLikeCount(), comment.getDislikeCount(), comment.getReplyCount(),
+            comment.getAwardCount(), comment.getDepthLevel(), comment.getAuthor(), comment.getPost(), comment.getParent(),
+            comment.getReplies(), comment.getVotes(), comment.getCreatedAt(), Instant.now(), Instant.now(),
+            comment.getDeletedAt(), comment.getRemovedAt()
         );
         Comment saved = commentRepository.save(updated);
         return CommentResponse.from(saved);
@@ -146,12 +146,12 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
 
-        if (!comment.author().id().equals(currentUserId)) {
+        if (!comment.getAuthor().getId().equals(currentUserId)) {
             throw new UnauthorizedActionException("You can only delete your own comments");
         }
 
         commentRepository.softDeleteComment(commentId, Instant.now());
-        postRepository.updatePostCommentCount(comment.post().id(), -1);
+        postRepository.updatePostCommentCount(comment.getPost().getId(), -1);
     }
 
     @Transactional(readOnly = true)
@@ -165,7 +165,7 @@ public class CommentService {
         User user = userRepository.findById(currentUserId).orElse(null);
         if (user == null) return null;
         return voteRepository.findByUserAndComment(user, comment)
-            .map(v -> v.voteType().name())
+            .map(v -> v.getVoteType().name())
             .orElse(null);
     }
 }

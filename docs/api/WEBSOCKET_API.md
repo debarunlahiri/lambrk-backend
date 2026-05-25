@@ -82,7 +82,7 @@ Subscribe to updates for one post.
 **STOMP send**
 
 ```javascript
-client.publish({ destination: '/app/subscribe/posts/1', body: '1' });
+client.publish({ destination: '/app/subscribe/posts/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', body: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' });
 ```
 
 **Response**
@@ -104,7 +104,7 @@ Subscribe to updates for one community.
 **STOMP send**
 
 ```javascript
-client.publish({ destination: '/app/subscribe/community/1', body: '1' });
+client.publish({ destination: '/app/subscribe/community/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', body: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' });
 ```
 
 **Response**

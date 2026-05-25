@@ -14,8 +14,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import com.lambrk.config.UserPrincipal;
 import java.util.UUID;
 
 @RestController
@@ -35,7 +36,7 @@ public class AdminController {
     @Timed(value = "admin.actions.duration")
     public ResponseEntity<AdminActionResponse> performAdminAction(
             @Valid @RequestBody AdminActionRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID adminId = getUserId(userDetails);
         AdminActionResponse response = adminService.performAdminAction(request, adminId);
@@ -49,7 +50,7 @@ public class AdminController {
     public ResponseEntity<Page<AdminActionResponse>> getAdminActions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         Pageable pageable = PageRequest.of(page, size);
         Page<AdminActionResponse> actions = adminService.getAdminActions(pageable);
@@ -64,7 +65,7 @@ public class AdminController {
             @PathVariable @SpanTag UUID userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         Pageable pageable = PageRequest.of(page, size);
         Page<AdminActionResponse> actions = adminService.getAdminActionsByUser(userId, pageable);
@@ -78,7 +79,7 @@ public class AdminController {
     public ResponseEntity<Page<AdminActionResponse>> getActiveActions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         Pageable pageable = PageRequest.of(page, size);
         Page<AdminActionResponse> actions = adminService.getActiveActions(pageable);
@@ -95,7 +96,7 @@ public class AdminController {
             @RequestParam(required = false) Long durationDays,
             @RequestParam(defaultValue = "false") boolean permanent,
             @RequestParam(defaultValue = "true") boolean notifyUser,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         AdminActionRequest request = new AdminActionRequest(
             AdminActionRequest.AdminActionType.BAN_USER,
@@ -121,7 +122,7 @@ public class AdminController {
             @RequestParam String reason,
             @RequestParam Long durationDays,
             @RequestParam(defaultValue = "true") boolean notifyUser,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         AdminActionRequest request = new AdminActionRequest(
             AdminActionRequest.AdminActionType.SUSPEND_USER,
@@ -146,7 +147,7 @@ public class AdminController {
             @PathVariable @SpanTag UUID postId,
             @RequestParam String reason,
             @RequestParam(defaultValue = "true") boolean notifyUser,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         AdminActionRequest request = new AdminActionRequest(
             AdminActionRequest.AdminActionType.DELETE_POST,
@@ -171,7 +172,7 @@ public class AdminController {
             @PathVariable @SpanTag UUID commentId,
             @RequestParam String reason,
             @RequestParam(defaultValue = "true") boolean notifyUser,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         AdminActionRequest request = new AdminActionRequest(
             AdminActionRequest.AdminActionType.DELETE_COMMENT,
@@ -198,7 +199,7 @@ public class AdminController {
             @RequestParam(required = false) Long durationDays,
             @RequestParam(defaultValue = "false") boolean permanent,
             @RequestParam(defaultValue = "true") boolean notifyUser,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         AdminActionRequest request = new AdminActionRequest(
             AdminActionRequest.AdminActionType.LOCK_POST,
@@ -223,7 +224,7 @@ public class AdminController {
             @PathVariable @SpanTag UUID postId,
             @RequestParam String reason,
             @RequestParam(defaultValue = "true") boolean notifyUser,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         AdminActionRequest request = new AdminActionRequest(
             AdminActionRequest.AdminActionType.QUARANTINE_POST,
@@ -248,7 +249,7 @@ public class AdminController {
             @PathVariable @SpanTag UUID userId,
             @RequestParam String reason,
             @RequestParam(defaultValue = "true") boolean notifyUser,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserPrincipal userDetails) {
         
         AdminActionRequest request = new AdminActionRequest(
             AdminActionRequest.AdminActionType.REMOVE_MODERATOR,
@@ -265,8 +266,7 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
-    private UUID getUserId(UserDetails userDetails) {
-        // In a real implementation, extract user ID from UserDetails
-        return java.util.UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"); // Placeholder for admin user
+    private UUID getUserId(UserPrincipal userPrincipal) {
+        return userPrincipal != null ? userPrincipal.getUserId() : null;
     }
 }
