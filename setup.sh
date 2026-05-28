@@ -33,6 +33,10 @@ DB_USER="debarunlahiri"
 DB_PASS="8ivhaah8"
 DB_HOST="localhost"
 
+# Docker command (may be overridden to use sudo)
+DOCKER_CMD="docker"
+COMPOSE_CMD=""  # set later after compose detection
+
 # Expected tables
 EXPECTED_TABLES=(
     "users"
@@ -183,16 +187,34 @@ check_and_kill_ports() {
 # ============================================================
 # 3. Check Docker Status
 # ============================================================
+DOCKER_CMD="docker"
+
 check_docker() {
     header "3. Checking Docker Status"
 
-    if ! docker info &> /dev/null; then
-        fail "Docker daemon is not running. Please start Docker Desktop."
-        ERRORS=$((ERRORS + 1))
-        return 1
+    if docker info &> /dev/null; then
+        success "Docker daemon is running"
+        return 0
     fi
-    success "Docker daemon is running"
-    return 0
+
+    warn "Cannot access Docker daemon (permission denied). Trying with sudo..."
+    if sudo docker info &> /dev/null; then
+        DOCKER_CMD="sudo docker"
+        if sudo docker compose version &> /dev/null; then
+            COMPOSE_CMD="sudo docker compose"
+        elif command -v docker-compose &> /dev/null; then
+            COMPOSE_CMD="sudo docker-compose"
+        else
+            COMPOSE_CMD="sudo docker compose"
+        fi
+        success "Docker daemon is running (using sudo)"
+        return 0
+    fi
+
+    fail "Docker daemon is not running or not accessible."
+    fail "Try: sudo usermod -aG docker \$USER && newgrp docker"
+    ERRORS=$((ERRORS + 1))
+    return 1
 }
 
 # ============================================================
@@ -204,10 +226,12 @@ start_services() {
     cd "$PROJECT_DIR"
 
     log "Starting Docker Compose services..."
-    if command -v docker compose &> /dev/null; then
-        docker compose up -d 2>&1 | tail -5
+    if [ -n "$COMPOSE_CMD" ]; then
+        $COMPOSE_CMD up -d 2>&1 | tail -5
+    elif command -v docker compose &> /dev/null; then
+        $DOCKER_CMD compose up -d 2>&1 | tail -5
     else
-        docker-compose up -d 2>&1 | tail -5
+        $DOCKER_CMD-compose up -d 2>&1 | tail -5
     fi
 
     log "Waiting for services to be healthy..."
@@ -215,7 +239,7 @@ start_services() {
     # Wait for PostgreSQL
     echo -n "  Waiting for PostgreSQL"
     for i in $(seq 1 30); do
-        if docker exec lambrk-postgres pg_isready -U $DB_USER -d $DB_NAME &> /dev/null; then
+        if $DOCKER_CMD exec lambrk-postgres pg_isready -U $DB_USER -d $DB_NAME &> /dev/null; then
             echo ""
             success "PostgreSQL is ready"
             break
@@ -232,7 +256,7 @@ start_services() {
     # Wait for Redis
     echo -n "  Waiting for Redis"
     for i in $(seq 1 15); do
-        if docker exec lambrk-redis redis-cli ping &> /dev/null; then
+        if $DOCKER_CMD exec lambrk-redis redis-cli ping &> /dev/null; then
             echo ""
             success "Redis is ready"
             break
@@ -249,7 +273,7 @@ start_services() {
     # Wait for Kafka
     echo -n "  Waiting for Kafka"
     for i in $(seq 1 30); do
-        if docker exec lambrk-kafka kafka-topics --bootstrap-server localhost:9092 --list &> /dev/null; then
+        if $DOCKER_CMD exec lambrk-kafka kafka-topics --bootstrap-server localhost:9092 --list &> /dev/null; then
             echo ""
             success "Kafka is ready"
             break
@@ -264,7 +288,7 @@ start_services() {
 
     # Check other services
     for container in lambrk-prometheus lambrk-grafana lambrk-zipkin; do
-        if docker ps --format '{{.Names}}' | grep -q "$container"; then
+        if $DOCKER_CMD ps --format '{{.Names}}' | grep -q "$container"; then
             success "$container is running"
         else
             warn "$container is not running"
@@ -279,7 +303,7 @@ check_database_tables() {
     header "5. Checking Database Tables"
 
     # Check if we can connect
-    if ! docker exec lambrk-postgres psql -U $DB_USER -d $DB_NAME -c "SELECT 1" &> /dev/null; then
+    if ! $DOCKER_CMD exec lambrk-postgres psql -U $DB_USER -d $DB_NAME -c "SELECT 1" &> /dev/null; then
         fail "Cannot connect to database"
         ERRORS=$((ERRORS + 1))
         return
@@ -287,7 +311,7 @@ check_database_tables() {
     success "Database connection OK"
 
     # Get existing tables
-    EXISTING_TABLES=$(docker exec lambrk-postgres psql -U $DB_USER -d $DB_NAME -t -c \
+    EXISTING_TABLES=$($DOCKER_CMD exec lambrk-postgres psql -U $DB_USER -d $DB_NAME -t -c \
         "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;" 2>/dev/null | tr -d ' ')
 
     # Check for stale old table names (pre-rename)
@@ -315,8 +339,8 @@ check_database_tables() {
     # Reset database if needed
     if [ "$NEEDS_RESET" = true ]; then
         log "Dropping and recreating database '$DB_NAME'..."
-        if docker exec lambrk-postgres psql -U $DB_USER -d postgres -c "DROP DATABASE IF EXISTS $DB_NAME;" &> /dev/null && \
-           docker exec lambrk-postgres psql -U $DB_USER -d postgres -c "CREATE DATABASE $DB_NAME;" &> /dev/null; then
+        if $DOCKER_CMD exec lambrk-postgres psql -U $DB_USER -d postgres -c "DROP DATABASE IF EXISTS $DB_NAME;" &> /dev/null && \
+           $DOCKER_CMD exec lambrk-postgres psql -U $DB_USER -d postgres -c "CREATE DATABASE $DB_NAME;" &> /dev/null; then
             success "Database recreated"
             EXISTING_TABLES=""
         else
@@ -329,7 +353,7 @@ check_database_tables() {
     MISSING_TABLES=()
     for table in "${EXPECTED_TABLES[@]}"; do
         if echo "$EXISTING_TABLES" | grep -q "^${table}$"; then
-            TABLE_COUNT=$(docker exec lambrk-postgres psql -U $DB_USER -d $DB_NAME -t -c \
+            TABLE_COUNT=$($DOCKER_CMD exec lambrk-postgres psql -U $DB_USER -d $DB_NAME -t -c \
                 "SELECT COUNT(*) FROM $table;" 2>/dev/null | tr -d ' ')
             success "Table '$table' exists ($TABLE_COUNT rows)"
         else
@@ -354,7 +378,7 @@ check_database_tables() {
 
             # Re-check tables
             for table in "${MISSING_TABLES[@]}"; do
-                if docker exec lambrk-postgres psql -U $DB_USER -d $DB_NAME -t -c \
+                if $DOCKER_CMD exec lambrk-postgres psql -U $DB_USER -d $DB_NAME -t -c \
                     "SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = '$table');" 2>/dev/null | grep -q "t"; then
                     success "Table '$table' created"
                 fi

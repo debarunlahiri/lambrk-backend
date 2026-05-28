@@ -22,6 +22,9 @@ APP_PORT=9500
 POSTGRES_PORT=5432
 REDIS_PORT=6379
 
+# Docker command (may be overridden to use sudo)
+DOCKER_CMD="docker"
+
 # Expected database tables
 EXPECTED_TABLES=(
     "users"
@@ -88,18 +91,23 @@ kill_previous_instance() {
 ensure_services() {
     log "Checking infrastructure services..."
 
-    if ! docker info &> /dev/null; then
-        fail "Docker is not running. Start Docker Desktop first."
+    if docker info &> /dev/null; then
+        DOCKER_CMD="docker"
+    elif sudo docker info &> /dev/null; then
+        DOCKER_CMD="sudo docker"
+        warn "Using sudo for Docker (add user to docker group: sudo usermod -aG docker \$USER)"
+    else
+        fail "Docker is not running or not accessible."
         exit 1
     fi
 
     cd "$PROJECT_DIR"
 
     # Check if containers are running
-    RUNNING=$(docker compose ps --format '{{.Name}}' 2>/dev/null | wc -l | tr -d ' ')
+    RUNNING=$($DOCKER_CMD compose ps --format '{{.Name}}' 2>/dev/null | wc -l | tr -d ' ')
     if [ "$RUNNING" -lt 3 ]; then
         log "Starting Docker Compose services..."
-        docker compose up -d 2>&1 | tail -3
+        $DOCKER_CMD compose up -d 2>&1 | tail -3
     else
         success "Docker services already running ($RUNNING containers)"
     fi
@@ -107,7 +115,7 @@ ensure_services() {
     # Wait for PostgreSQL
     echo -n "  Checking PostgreSQL"
     for i in $(seq 1 20); do
-        if docker exec lambrk-postgres pg_isready -U debarunlahiri -d lambrk &> /dev/null; then
+        if $DOCKER_CMD exec lambrk-postgres pg_isready -U debarunlahiri -d lambrk &> /dev/null; then
             echo ""
             success "PostgreSQL ready"
             break
@@ -124,7 +132,7 @@ ensure_services() {
     # Wait for Redis
     echo -n "  Checking Redis"
     for i in $(seq 1 10); do
-        if docker exec lambrk-redis redis-cli ping &> /dev/null; then
+        if $DOCKER_CMD exec lambrk-redis redis-cli ping &> /dev/null; then
             echo ""
             success "Redis ready"
             break
@@ -145,7 +153,7 @@ verify_tables() {
     log "Verifying database tables..."
 
     # Get existing tables
-    EXISTING_TABLES=$(docker exec lambrk-postgres psql -U debarunlahiri -d lambrk -t -c \
+    EXISTING_TABLES=$($DOCKER_CMD exec lambrk-postgres psql -U debarunlahiri -d lambrk -t -c \
         "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;" 2>/dev/null | tr -d ' ')
 
     # Check for stale old table names (pre-rename)
@@ -173,8 +181,8 @@ verify_tables() {
     # Reset database if needed
     if [ "$NEEDS_RESET" = true ]; then
         log "Dropping and recreating database 'lambrk'..."
-        if docker exec lambrk-postgres psql -U debarunlahiri -d postgres -c "DROP DATABASE IF EXISTS lambrk;" &> /dev/null && \
-           docker exec lambrk-postgres psql -U debarunlahiri -d postgres -c "CREATE DATABASE lambrk;" &> /dev/null; then
+        if $DOCKER_CMD exec lambrk-postgres psql -U debarunlahiri -d postgres -c "DROP DATABASE IF EXISTS lambrk;" &> /dev/null && \
+           $DOCKER_CMD exec lambrk-postgres psql -U debarunlahiri -d postgres -c "CREATE DATABASE lambrk;" &> /dev/null; then
             success "Database recreated"
             EXISTING_TABLES=""
         else
@@ -208,7 +216,7 @@ verify_tables() {
 
             # Re-verify tables
             for table in "${MISSING_TABLES[@]}"; do
-                EXISTS=$(docker exec lambrk-postgres psql -U debarunlahiri -d lambrk -t -c \
+                EXISTS=$($DOCKER_CMD exec lambrk-postgres psql -U debarunlahiri -d lambrk -t -c \
                     "SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = '$table');" 2>/dev/null | tr -d ' ')
                 if [ "$EXISTS" = "t" ]; then
                     success "Table '$table' created"
