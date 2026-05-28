@@ -236,6 +236,15 @@ start_services() {
 
     log "Waiting for services to be healthy..."
 
+    # Verify containers are running first
+    for container in lambrk-postgres lambrk-redis lambrk-kafka; do
+        if ! $DOCKER_CMD ps --format '{{.Names}}' 2>/dev/null | grep -q "^${container}$"; then
+            fail "Container '$container' is not running. Check: $DOCKER_CMD compose ps"
+            ERRORS=$((ERRORS + 1))
+            return
+        fi
+    done
+
     # Wait for PostgreSQL
     echo -n "  Waiting for PostgreSQL"
     for i in $(seq 1 30); do
@@ -301,6 +310,13 @@ start_services() {
 # ============================================================
 check_database_tables() {
     header "5. Checking Database Tables"
+
+    # Verify container is running
+    if ! $DOCKER_CMD ps --format '{{.Names}}' 2>/dev/null | grep -q "^lambrk-postgres$"; then
+        fail "PostgreSQL container not running"
+        ERRORS=$((ERRORS + 1))
+        return
+    fi
 
     # Check if we can connect
     if ! $DOCKER_CMD exec lambrk-postgres psql -U $DB_USER -d $DB_NAME -c "SELECT 1" &> /dev/null; then

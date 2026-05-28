@@ -112,6 +112,14 @@ ensure_services() {
         success "Docker services already running ($RUNNING containers)"
     fi
 
+    # Verify critical containers are running
+    for container in lambrk-postgres lambrk-redis; do
+        if ! $DOCKER_CMD ps --format '{{.Names}}' 2>/dev/null | grep -q "^${container}$"; then
+            fail "Container '$container' is not running. Check: $DOCKER_CMD compose ps"
+            exit 1
+        fi
+    done
+
     # Wait for PostgreSQL
     echo -n "  Checking PostgreSQL"
     for i in $(seq 1 20); do
