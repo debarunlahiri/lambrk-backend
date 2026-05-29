@@ -9,6 +9,11 @@ server:
     accept-count: 50
 
 spring:
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
   main:
     lazy-initialization: true
   application:

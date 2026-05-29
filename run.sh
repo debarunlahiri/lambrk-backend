@@ -260,7 +260,7 @@ run_app() {
 
     if [ "$MODE" = "background" ] || [ "$MODE" = "bg" ] || [ "$MODE" = "-d" ]; then
         log "Running in background mode. Logs: $LOG_FILE"
-        nohup $MVN_CMD spring-boot:run -DskipTests > "$LOG_FILE" 2>&1 &
+        nohup $MVN_CMD spring-boot:run -DskipTests -Dspring-boot.run.arguments="--spring.devtools.restart.enabled=false,--spring.devtools.livereload.enabled=false" > "$LOG_FILE" 2>&1 &
         APP_PID=$!
         echo $APP_PID > "$PID_FILE"
         success "App started with PID: $APP_PID"
@@ -292,7 +292,7 @@ run_app() {
         echo -e "  ${BOLD}Running in foreground. Press Ctrl+C to stop.${NC}"
         echo -e "  ${BOLD}Swagger:${NC} http://localhost:$APP_PORT/swagger-ui.html"
         echo ""
-        $MVN_CMD spring-boot:run -DskipTests
+        $MVN_CMD spring-boot:run -DskipTests -Dspring-boot.run.arguments="--spring.devtools.restart.enabled=false,--spring.devtools.livereload.enabled=false"
     fi
 }
 
