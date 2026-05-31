@@ -1,4 +1,4 @@
-# Multi-stage build for Reddit Backend
+# Multi-stage build for Lambrk Backend
 # Stage 1: Build the application
 FROM eclipse-temurin:25-jdk-alpine AS builder
 
@@ -57,4 +57,4 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport \
                -Djava.security.egd=file:/dev/./urandom"
 
 # Run the application
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -cp '/app:/app/lib/*' com.example.lambrk.RedditBackendApplication"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -cp '/app:/app/lib/*' com.example.lambrk.LambrkBackendApplication"]

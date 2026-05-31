@@ -31,7 +31,7 @@ public record CommentResponse(
     String userVote
 ) {
 
-    public static CommentResponse from(Comment comment, String userVote) {
+    public static CommentResponse from(Comment comment, String userVote, List<CommentResponse> replies) {
         return new CommentResponse(
             comment.getId(),
             comment.isDeleted() ? "[deleted]" : comment.getContent(),
@@ -50,7 +50,7 @@ public record CommentResponse(
             UserResponse.from(comment.getAuthor()),
             comment.getPost().getId(),
             comment.getParent() != null ? comment.getParent().getId() : null,
-            List.of(),
+            replies != null ? replies : List.of(),
             comment.getCreatedAt(),
             comment.getUpdatedAt(),
             comment.getEditedAt(),
@@ -58,7 +58,11 @@ public record CommentResponse(
         );
     }
 
+    public static CommentResponse from(Comment comment, String userVote) {
+        return from(comment, userVote, List.of());
+    }
+
     public static CommentResponse from(Comment comment) {
-        return from(comment, null);
+        return from(comment, null, List.of());
     }
 }

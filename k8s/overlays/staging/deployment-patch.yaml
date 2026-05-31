@@ -18,5 +18,5 @@ spec:
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "staging"
-        - name: LOGGING_LEVEL_COM_EXAMPLE_REDDIT
+        - name: LOGGING_LEVEL_COM_EXAMPLE_LAMBRK
           value: "DEBUG"

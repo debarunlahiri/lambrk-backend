@@ -16,6 +16,9 @@ PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PID_FILE="$PROJECT_DIR/.lambrk.pid"
 APP_PORT=9500
 
+# Docker command (may be overridden to use sudo)
+DOCKER_CMD="docker"
+
 log() { echo -e "${BLUE}[$(date '+%H:%M:%S')]${NC} $1"; }
 success() { echo -e "${GREEN}  ✓${NC} $1"; }
 warn() { echo -e "${YELLOW}  ⚠${NC} $1"; }
@@ -26,6 +29,19 @@ echo "  ╔═══════════════════════
 echo "  ║       Lambrk Backend - Stop              ║"
 echo "  ╚══════════════════════════════════════════╝"
 echo -e "${NC}"
+
+# ============================================================
+# Detect Docker command (with sudo fallback)
+# ============================================================
+detect_docker() {
+    if docker info &> /dev/null; then
+        DOCKER_CMD="docker"
+    elif sudo docker info &> /dev/null; then
+        DOCKER_CMD="sudo docker"
+    else
+        DOCKER_CMD=""
+    fi
+}
 
 # ============================================================
 # 1. Stop the Spring Boot app
@@ -86,14 +102,21 @@ stop_app() {
 # 2. Optionally stop Docker services
 # ============================================================
 stop_services() {
+    detect_docker
+
+    if [ -z "$DOCKER_CMD" ]; then
+        warn "Docker daemon is not running. Skipping Docker service stop."
+        return
+    fi
+
     if [ "$1" = "--all" ] || [ "$1" = "-a" ]; then
         log "Stopping Docker Compose services..."
         cd "$PROJECT_DIR"
 
         if command -v docker compose &> /dev/null; then
-            docker compose down 2>&1 | tail -5
+            $DOCKER_CMD compose down 2>&1 | tail -5
         else
-            docker-compose down 2>&1 | tail -5
+            $DOCKER_CMD-compose down 2>&1 | tail -5
         fi
         success "All Docker services stopped"
 
@@ -102,9 +125,9 @@ stop_services() {
         cd "$PROJECT_DIR"
 
         if command -v docker compose &> /dev/null; then
-            docker compose down -v 2>&1 | tail -5
+            $DOCKER_CMD compose down -v 2>&1 | tail -5
         else
-            docker-compose down -v 2>&1 | tail -5
+            $DOCKER_CMD-compose down -v 2>&1 | tail -5
         fi
         success "All Docker services stopped and volumes removed"
 

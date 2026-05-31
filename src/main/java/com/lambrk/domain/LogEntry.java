@@ -205,7 +205,7 @@ public class LogEntry {
         private String exceptionMessage;
         private String exceptionStackTrace;
         private String source = "API";
-        private String serviceName = "reddit-backend";
+        private String serviceName = "lambrk-backend";
         private Instant createdAt = Instant.now();
 
         public LogEntryBuilder id(UUID id) {

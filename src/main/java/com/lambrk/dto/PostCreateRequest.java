@@ -3,6 +3,7 @@ package com.lambrk.dto;
 import com.lambrk.domain.Post;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 import java.util.UUID;
 
 public record PostCreateRequest(
@@ -24,18 +25,21 @@ public record PostCreateRequest(
     
     boolean isOver18,
     
-    UUID communityId
+    UUID communityId,
+
+    List<UUID> mediaIds
 ) {
-    
+
     public PostCreateRequest {
         if (postType == null) {
             postType = Post.PostType.TEXT;
         }
         isSpoiler = false;
         isOver18 = false;
+        mediaIds = mediaIds != null ? mediaIds : List.of();
     }
-    
+
     public PostCreateRequest(String title, String content, String url, Post.PostType postType, UUID communityId) {
-        this(title, content, url, postType, null, null, false, false, communityId);
+        this(title, content, url, postType, null, null, false, false, communityId, List.of());
     }
 }

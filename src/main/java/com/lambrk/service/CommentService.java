@@ -5,6 +5,7 @@ import com.lambrk.domain.Post;
 import com.lambrk.domain.User;
 import com.lambrk.dto.CommentCreateRequest;
 import com.lambrk.dto.CommentResponse;
+import com.lambrk.dto.NotificationRequest;
 import com.lambrk.exception.ResourceNotFoundException;
 import com.lambrk.exception.UnauthorizedActionException;
 import com.lambrk.repository.CommentRepository;
@@ -35,16 +36,19 @@ public class CommentService {
     private final UserRepository userRepository;
     private final VoteRepository voteRepository;
     private final KafkaEventService kafkaEventService;
+    private final NotificationService notificationService;
     private final CustomMetrics customMetrics;
 
     public CommentService(CommentRepository commentRepository, PostRepository postRepository,
                          UserRepository userRepository, VoteRepository voteRepository,
-                         KafkaEventService kafkaEventService, CustomMetrics customMetrics) {
+                         KafkaEventService kafkaEventService, NotificationService notificationService,
+                         CustomMetrics customMetrics) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.voteRepository = voteRepository;
         this.kafkaEventService = kafkaEventService;
+        this.notificationService = notificationService;
         this.customMetrics = customMetrics;
     }
 
@@ -79,8 +83,52 @@ public class CommentService {
         }
         userRepository.updateUserKarma(authorId, 1);
 
-        customMetrics.recordCommentCreated(post.getCommunity().getName());
+        String communityName = post.getCommunity() != null ? post.getCommunity().getName() : "direct";
+        customMetrics.recordCommentCreated(communityName);
         kafkaEventService.sendCommentCreatedEvent(saved);
+
+        // Send reply notification if this is a reply to another comment
+        if (parent != null) {
+            notificationService.createCommentReplyNotification(saved.getId(), post.getId(), authorId);
+        }
+
+        // Process @mentions
+        processMentions(saved, author);
+
+        return CommentResponse.from(saved);
+    }
+
+    @RateLimiter(name = "commentCreation")
+    @CircuitBreaker(name = "commentService")
+    @Retry(name = "commentService")
+    @CacheEvict(value = {"comments", "commentTrees"}, allEntries = true)
+    @ModerateContent(contentType = "comment")
+    public CommentResponse createReply(UUID parentCommentId, String content, UUID authorId) {
+        User author = userRepository.findById(authorId)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", authorId));
+
+        Comment parent = commentRepository.findById(parentCommentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", parentCommentId));
+
+        Post post = parent.getPost();
+        if (post.isLocked()) {
+            throw new UnauthorizedActionException("Cannot reply on a locked post");
+        }
+
+        Comment comment = new Comment(content, author, post, parent);
+        Comment saved = commentRepository.save(comment);
+
+        postRepository.updatePostCommentCount(post.getId(), 1);
+        commentRepository.updateCommentReplyCount(parent.getId(), 1);
+        userRepository.updateUserKarma(authorId, 1);
+
+        String communityName = post.getCommunity() != null ? post.getCommunity().getName() : "direct";
+        customMetrics.recordCommentCreated(communityName);
+        kafkaEventService.sendCommentCreatedEvent(saved);
+        notificationService.createCommentReplyNotification(saved.getId(), post.getId(), authorId);
+
+        // Process @mentions
+        processMentions(saved, author);
 
         return CommentResponse.from(saved);
     }
@@ -100,7 +148,19 @@ public class CommentService {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new ResourceNotFoundException("Post", "id", postId));
         return commentRepository.findByPostAndParentIsNull(post, pageable)
-            .map(c -> CommentResponse.from(c, getUserVote(c, currentUserId)));
+            .map(c -> toCommentResponseWithReplies(c, currentUserId, 3));
+    }
+
+    private CommentResponse toCommentResponseWithReplies(Comment comment, UUID currentUserId, int maxReplies) {
+        String userVote = getUserVote(comment, currentUserId);
+        List<CommentResponse> replyPreview = List.of();
+        if (comment.getReplyCount() > 0 && maxReplies > 0) {
+            replyPreview = commentRepository.findByParent(comment).stream()
+                .limit(maxReplies)
+                .map(c -> CommentResponse.from(c, getUserVote(c, currentUserId)))
+                .toList();
+        }
+        return CommentResponse.from(comment, userVote, replyPreview);
     }
 
     @Transactional(readOnly = true)
@@ -158,6 +218,41 @@ public class CommentService {
     public Page<CommentResponse> searchComments(String query, Pageable pageable, UUID currentUserId) {
         return commentRepository.searchComments(query, pageable)
             .map(c -> CommentResponse.from(c, getUserVote(c, currentUserId)));
+    }
+
+    private void processMentions(Comment comment, User author) {
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(?<!\\w)@([a-zA-Z0-9_]+)(?!\\w)");
+        java.util.regex.Matcher matcher = pattern.matcher(comment.getContent());
+        java.util.Set<String> usernames = new java.util.HashSet<>();
+        while (matcher.find()) {
+            usernames.add(matcher.group(1).toLowerCase());
+        }
+        for (String username : usernames) {
+            userRepository.findByUsername(username).ifPresent(mentionedUser -> {
+                if (!mentionedUser.getId().equals(author.getId())) {
+                    String preview = comment.getContent().length() > 100
+                        ? comment.getContent().substring(0, 100) + "..."
+                        : comment.getContent();
+                    NotificationRequest notification = new NotificationRequest(
+                        NotificationRequest.NotificationType.COMMENT_MENTION,
+                        mentionedUser.getId(),
+                        "You were mentioned in a comment",
+                        String.format("%s mentioned you: \"%s\"", author.getUsername(), preview),
+                        comment.getPost().getId(),
+                        comment.getId(),
+                        author.getId(),
+                        "/posts/" + comment.getPost().getId() + "#comment-" + comment.getId(),
+                        "View mention",
+                        false
+                    );
+                    try {
+                        notificationService.createNotification(notification);
+                    } catch (Exception e) {
+                        // Silently ignore notification failures
+                    }
+                }
+            });
+        }
     }
 
     private String getUserVote(Comment comment, UUID currentUserId) {

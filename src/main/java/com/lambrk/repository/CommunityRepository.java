@@ -65,10 +65,10 @@ public interface CommunityRepository extends JpaRepository<Community, UUID>, Jpa
     @Query("SELECT s FROM Community s WHERE s.activeUserCount >= :minActiveUsers AND s.isPublic = true ORDER BY s.activeUserCount DESC")
     Page<Community> findCommunitiesByMinActiveUsers(@Param("minActiveUsers") int minActiveUsers, Pageable pageable);
 
-    @Query("SELECT s FROM Community s JOIN s.members m WHERE m.id = :userId")
+    @Query("SELECT s FROM Community s JOIN s.memberships m WHERE m.user.id = :userId AND m.status = 'ACTIVE'")
     Set<Community> findSubscribedCommunitiesByUser(@Param("userId") UUID userId);
 
-    @Query("SELECT s FROM Community s JOIN s.moderators m WHERE m.id = :userId")
+    @Query("SELECT s FROM Community s JOIN s.moderators m WHERE m.user.id = :userId AND m.isActive = true")
     Set<Community> findModeratedCommunitiesByUser(@Param("userId") UUID userId);
 
     @Query("SELECT s FROM Community s WHERE s.createdBy.id = :userId")

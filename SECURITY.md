@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-We actively support the following versions of the Reddit Backend:
+We actively support the following versions of the Lambrk Backend:
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -16,7 +16,7 @@ We take security seriously. If you discover a security vulnerability, please rep
 ### Reporting Process
 
 1. **DO NOT** open a public GitHub issue for security vulnerabilities
-2. Email us at **security@reddit.com** with:
+2. Email us at **security@lambrk.com** with:
    - Description of the vulnerability
    - Steps to reproduce (if applicable)
    - Potential impact assessment
@@ -133,9 +133,9 @@ We conduct regular security assessments:
 
 ## Security Contacts
 
-- **Security Team**: security@reddit.com
-- **GPG Key**: [Download](https://reddit.com/security.gpg)
-- **Bug Bounty**: [HackerOne](https://hackerone.com/reddit)
+- **Security Team**: security@lambrk.com
+- **GPG Key**: [Download](https://lambrk.com/security.gpg)
+- **Bug Bounty**: [HackerOne](https://hackerone.com/lambrk)
 
 ## Acknowledgments
 

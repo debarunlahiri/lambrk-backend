@@ -45,7 +45,7 @@ client.publish({ destination: '/app/connect' });
 **Responses**
 
 ```text
-/user/queue/connected -> "Connected to Reddit WebSocket"
+/user/queue/connected -> "Connected to Lambrk WebSocket"
 /user/queue/notifications/unread-count -> 0
 ```
 
@@ -76,19 +76,19 @@ Subscribe to updates for one post.
 **Request payload**
 
 ```json
-1
+"019e5a43-e0c2-7baa-9f6d-b9b9b82afb16"
 ```
 
 **STOMP send**
 
 ```javascript
-client.publish({ destination: '/app/subscribe/posts/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', body: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' });
+client.publish({ destination: '/app/subscribe/posts/019e5a43-e0c2-7baa-9f6d-b9b9b82afb16', body: '019e5a43-e0c2-7baa-9f6d-b9b9b82afb16' });
 ```
 
 **Response**
 
 ```text
-/user/queue/post/1/subscribed -> "Subscribed to post updates: 1"
+/user/queue/post/019e5a43-e0c2-7baa-9f6d-b9b9b82afb16/subscribed -> "Subscribed to post updates: 019e5a43-e0c2-7baa-9f6d-b9b9b82afb16"
 ```
 
 ### SEND `/app/subscribe/community/{communityId}`
@@ -98,19 +98,19 @@ Subscribe to updates for one community.
 **Request payload**
 
 ```json
-1
+"019e5a43-e0c2-7baa-9f6d-b9b9b82afb15"
 ```
 
 **STOMP send**
 
 ```javascript
-client.publish({ destination: '/app/subscribe/community/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', body: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' });
+client.publish({ destination: '/app/subscribe/community/019e5a43-e0c2-7baa-9f6d-b9b9b82afb15', body: '019e5a43-e0c2-7baa-9f6d-b9b9b82afb15' });
 ```
 
 **Response**
 
 ```text
-/user/queue/community/1/subscribed -> "Subscribed to community updates: 1"
+/user/queue/community/019e5a43-e0c2-7baa-9f6d-b9b9b82afb15/subscribed -> "Subscribed to community updates: 019e5a43-e0c2-7baa-9f6d-b9b9b82afb15"
 ```
 
 ## Server Push Destinations

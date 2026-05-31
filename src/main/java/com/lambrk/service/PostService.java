@@ -9,6 +9,7 @@ import com.lambrk.repository.PostRepository;
 import com.lambrk.repository.CommunityRepository;
 import com.lambrk.repository.UserRepository;
 import com.lambrk.repository.VoteRepository;
+import com.lambrk.repository.FileUploadRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -34,15 +35,18 @@ public class PostService {
     private final UserRepository userRepository;
     private final CommunityRepository communityRepository;
     private final VoteRepository voteRepository;
+    private final FileUploadRepository fileUploadRepository;
     private final KafkaEventService kafkaEventService;
 
     public PostService(PostRepository postRepository, UserRepository userRepository,
                       CommunityRepository communityRepository, VoteRepository voteRepository,
+                      FileUploadRepository fileUploadRepository,
                       KafkaEventService kafkaEventService) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.communityRepository = communityRepository;
         this.voteRepository = voteRepository;
+        this.fileUploadRepository = fileUploadRepository;
         this.kafkaEventService = kafkaEventService;
     }
 
@@ -100,7 +104,12 @@ public class PostService {
             );
 
             Post savedPost = postRepository.save(post);
-            
+
+            // Link uploaded media to post
+            if (request.mediaIds() != null && !request.mediaIds().isEmpty()) {
+                fileUploadRepository.findAllById(request.mediaIds()).forEach(f -> f.setPost(savedPost));
+            }
+
             // Update user karma
             userRepository.updateUserKarma(authorId, 1);
             
@@ -114,7 +123,7 @@ public class PostService {
     }
 
     @Cacheable(value = "posts", key = "#postId")
-    @Transactional(readOnly = true)
+    @Transactional
     public PostResponse getPost(UUID postId, UUID currentUserId) {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("Post not found"));

@@ -15,9 +15,10 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
+import com.lambrk.util.UuidV7Generator;
+
 import java.io.IOException;
 import java.time.Duration;
-import java.util.UUID;
 
 @Service
 @Profile("!test")
@@ -65,7 +66,7 @@ public class S3StorageService {
 
         String originalFilename = file.getOriginalFilename();
         String extension = getFileExtension(originalFilename);
-        String uniqueFilename = directory + "/" + UUID.randomUUID() + extension;
+        String uniqueFilename = directory + "/" + UuidV7Generator.generate() + extension;
 
         try {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -73,6 +74,7 @@ public class S3StorageService {
                 .key(uniqueFilename)
                 .contentType(file.getContentType())
                 .contentLength(file.getSize())
+                .acl(ObjectCannedACL.PUBLIC_READ)
                 .build();
 
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
@@ -193,8 +195,29 @@ public class S3StorageService {
             return "";
         }
         int lastDotIndex = filename.lastIndexOf('.');
-        return (lastDotIndex == -1 || lastDotIndex == filename.length() - 1) 
-            ? "" 
+        return (lastDotIndex == -1 || lastDotIndex == filename.length() - 1)
+            ? ""
             : filename.substring(lastDotIndex);
+    }
+
+    public void uploadBytes(byte[] data, String key, String contentType) {
+        ensureS3Enabled();
+
+        try {
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .contentType(contentType)
+                .contentLength((long) data.length)
+                .acl(ObjectCannedACL.PUBLIC_READ)
+                .build();
+
+            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(data));
+            logger.info(LOG_FILE_UPLOADED, bucketName, key);
+
+        } catch (S3Exception e) {
+            logger.error("{}: {}", ERROR_UPLOAD_FAILED, e.getMessage());
+            throw new RuntimeException(ERROR_UPLOAD_FAILED, e);
+        }
     }
 }

@@ -52,6 +52,8 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/info").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                // WebSocket endpoints
+                .requestMatchers("/ws/**").permitAll()
                 // Admin endpoints
                 .requestMatchers("/api/admin/**").hasRole(ROLE_ADMIN)
                 .requestMatchers("/api/logs/**").hasRole(ROLE_ADMIN)

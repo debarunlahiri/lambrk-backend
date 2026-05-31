@@ -5,6 +5,7 @@ import com.lambrk.domain.User;
 import com.lambrk.domain.Community;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public record PostResponse(
@@ -56,11 +57,17 @@ public record PostResponse(
     Instant updatedAt,
     
     Instant archivedAt,
-    
-    String userVote // LIKE, DISLIKE, or null
+
+    String userVote, // LIKE, DISLIKE, or null
+
+    List<MediaResponse> media
 ) {
-    
+
     public static PostResponse from(Post post, String userVote) {
+        List<MediaResponse> mediaList = post.getMedia() != null
+            ? post.getMedia().stream().map(MediaResponse::from).toList()
+            : List.of();
+
         return new PostResponse(
             post.getId(),
             post.getTitle(),
@@ -86,7 +93,8 @@ public record PostResponse(
             post.getCreatedAt(),
             post.getUpdatedAt(),
             post.getArchivedAt(),
-            userVote
+            userVote,
+            mediaList
         );
     }
     

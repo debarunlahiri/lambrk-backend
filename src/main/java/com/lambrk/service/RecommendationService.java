@@ -51,7 +51,7 @@ public class RecommendationService {
         this.customMetrics = customMetrics;
         this.chatClient = ChatClient.builder(chatModel)
             .defaultSystem("""
-                You are a recommendation engine for a Reddit-like platform. 
+                You are a recommendation engine for a Lambrk-like platform. 
                 Analyze user behavior and suggest relevant content.
                 Consider user's interaction history, community preferences, and content similarity.
                 Provide personalized recommendations with explanations.

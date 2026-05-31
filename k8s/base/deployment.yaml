@@ -186,10 +186,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - api.reddit.com
+    - api.lambrk.com
     secretName: lambrk-tls
   rules:
-  - host: api.reddit.com
+  - host: api.lambrk.com
     http:
       paths:
       - path: /

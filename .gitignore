@@ -149,3 +149,4 @@ Icon?
 setup.log
 app.log
 .lambrk.pid
+/.aws/

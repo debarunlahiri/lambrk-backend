@@ -11,7 +11,16 @@ Create a community.
 **Request body**
 
 ```json
-{"name":"programming","title":"Programming","description":"Software development","sidebarText":"Rules","isPublic":true,"isRestricted":false,"isOver18":false,"categoryIds":["f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"]}
+{
+  "name": "programming",
+  "title": "Programming",
+  "description": "Software development",
+  "sidebarText": "Rules",
+  "isPublic": true,
+  "isRestricted": false,
+  "isOver18": false,
+  "categoryIds": ["019e5a43-e0c2-7baa-9f6d-b9b9b82afb18"]
+}
 ```
 
 **cURL**
@@ -28,14 +37,59 @@ curl -X POST 'http://localhost:9500/api/communities' \
   "isPublic": true,
   "isRestricted": false,
   "isOver18": false,
-  "categoryIds": ["f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"]
+  "categoryIds": ["019e5a43-e0c2-7baa-9f6d-b9b9b82afb18"]
 }'
 ```
 
 **Response**
 
 ```json
-{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","name":"programming","title":"Programming","description":"Software development","sidebarText":"Rules","headerImageUrl":null,"iconImageUrl":null,"isPublic":true,"isRestricted":false,"isOver18":false,"memberCount":1,"subscriberCount":1,"activeUserCount":0,"createdBy":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","isUserSubscribed":false,"isUserModerator":false,"categories":[{"id":"f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","name":"Technology","description":"All things tech, software, and hardware","iconUrl":null,"imageUrl":null,"color":"#2563EB","slug":"technology","sortOrder":1,"communityCount":0,"createdAt":"2026-05-23T10:00:00Z","updatedAt":"2026-05-23T10:00:00Z"}]}
+{
+  "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb15",
+  "name": "programming",
+  "title": "Programming",
+  "description": "Software development",
+  "sidebarText": "Rules",
+  "headerImageUrl": null,
+  "iconImageUrl": null,
+  "isPublic": true,
+  "isRestricted": false,
+  "isOver18": false,
+  "memberCount": 1,
+  "subscriberCount": 1,
+  "activeUserCount": 0,
+  "createdBy": {
+    "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+    "username": "johndoe",
+    "displayName": "John Doe",
+    "bio": null,
+    "avatarUrl": null,
+    "isActive": true,
+    "isVerified": false,
+    "karma": 0,
+    "createdAt": "2026-05-02T10:00:00Z",
+    "updatedAt": "2026-05-02T10:00:00Z"
+  },
+  "createdAt": "2026-05-02T10:00:00Z",
+  "updatedAt": "2026-05-02T10:00:00Z",
+  "isUserSubscribed": false,
+  "isUserModerator": false,
+  "categories": [
+    {
+      "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb18",
+      "name": "Technology",
+      "description": "All things tech, software, and hardware",
+      "iconUrl": null,
+      "imageUrl": null,
+      "color": "#2563EB",
+      "slug": "technology",
+      "sortOrder": 1,
+      "communityCount": 0,
+      "createdAt": "2026-05-23T10:00:00Z",
+      "updatedAt": "2026-05-23T10:00:00Z"
+    }
+  ]
+}
 ```
 ### GET `/api/communities`
 
@@ -60,7 +114,17 @@ curl -X GET 'http://localhost:9500/api/communities?page=0&size=20' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### GET `/api/communities/{communityId}`
 
@@ -78,7 +142,52 @@ curl -X GET 'http://localhost:9500/api/communities/b0eebc99-9c0b-4ef8-bb6d-6bb9b
 **Response**
 
 ```json
-{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","name":"programming","title":"Programming","description":"Software development","sidebarText":"Rules","headerImageUrl":null,"iconImageUrl":null,"isPublic":true,"isRestricted":false,"isOver18":false,"memberCount":1,"subscriberCount":1,"activeUserCount":0,"createdBy":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","isUserSubscribed":false,"isUserModerator":false,"categories":[{"id":"f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","name":"Technology","description":"All things tech, software, and hardware","iconUrl":null,"imageUrl":null,"color":"#2563EB","slug":"technology","sortOrder":1,"communityCount":0,"createdAt":"2026-05-23T10:00:00Z","updatedAt":"2026-05-23T10:00:00Z"}]}
+{
+  "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb15",
+  "name": "programming",
+  "title": "Programming",
+  "description": "Software development",
+  "sidebarText": "Rules",
+  "headerImageUrl": null,
+  "iconImageUrl": null,
+  "isPublic": true,
+  "isRestricted": false,
+  "isOver18": false,
+  "memberCount": 1,
+  "subscriberCount": 1,
+  "activeUserCount": 0,
+  "createdBy": {
+    "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+    "username": "johndoe",
+    "displayName": "John Doe",
+    "bio": null,
+    "avatarUrl": null,
+    "isActive": true,
+    "isVerified": false,
+    "karma": 0,
+    "createdAt": "2026-05-02T10:00:00Z",
+    "updatedAt": "2026-05-02T10:00:00Z"
+  },
+  "createdAt": "2026-05-02T10:00:00Z",
+  "updatedAt": "2026-05-02T10:00:00Z",
+  "isUserSubscribed": false,
+  "isUserModerator": false,
+  "categories": [
+    {
+      "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb18",
+      "name": "Technology",
+      "description": "All things tech, software, and hardware",
+      "iconUrl": null,
+      "imageUrl": null,
+      "color": "#2563EB",
+      "slug": "technology",
+      "sortOrder": 1,
+      "communityCount": 0,
+      "createdAt": "2026-05-23T10:00:00Z",
+      "updatedAt": "2026-05-23T10:00:00Z"
+    }
+  ]
+}
 ```
 ### GET `/api/communities/r/{name}`
 
@@ -96,7 +205,52 @@ curl -X GET 'http://localhost:9500/api/communities/r/programming' \
 **Response**
 
 ```json
-{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","name":"programming","title":"Programming","description":"Software development","sidebarText":"Rules","headerImageUrl":null,"iconImageUrl":null,"isPublic":true,"isRestricted":false,"isOver18":false,"memberCount":1,"subscriberCount":1,"activeUserCount":0,"createdBy":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","isUserSubscribed":false,"isUserModerator":false,"categories":[{"id":"f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","name":"Technology","description":"All things tech, software, and hardware","iconUrl":null,"imageUrl":null,"color":"#2563EB","slug":"technology","sortOrder":1,"communityCount":0,"createdAt":"2026-05-23T10:00:00Z","updatedAt":"2026-05-23T10:00:00Z"}]}
+{
+  "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb15",
+  "name": "programming",
+  "title": "Programming",
+  "description": "Software development",
+  "sidebarText": "Rules",
+  "headerImageUrl": null,
+  "iconImageUrl": null,
+  "isPublic": true,
+  "isRestricted": false,
+  "isOver18": false,
+  "memberCount": 1,
+  "subscriberCount": 1,
+  "activeUserCount": 0,
+  "createdBy": {
+    "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+    "username": "johndoe",
+    "displayName": "John Doe",
+    "bio": null,
+    "avatarUrl": null,
+    "isActive": true,
+    "isVerified": false,
+    "karma": 0,
+    "createdAt": "2026-05-02T10:00:00Z",
+    "updatedAt": "2026-05-02T10:00:00Z"
+  },
+  "createdAt": "2026-05-02T10:00:00Z",
+  "updatedAt": "2026-05-02T10:00:00Z",
+  "isUserSubscribed": false,
+  "isUserModerator": false,
+  "categories": [
+    {
+      "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb18",
+      "name": "Technology",
+      "description": "All things tech, software, and hardware",
+      "iconUrl": null,
+      "imageUrl": null,
+      "color": "#2563EB",
+      "slug": "technology",
+      "sortOrder": 1,
+      "communityCount": 0,
+      "createdAt": "2026-05-23T10:00:00Z",
+      "updatedAt": "2026-05-23T10:00:00Z"
+    }
+  ]
+}
 ```
 ### GET `/api/communities/trending`
 
@@ -121,7 +275,17 @@ curl -X GET 'http://localhost:9500/api/communities/trending?page=0&size=20' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### GET `/api/communities/search`
 
@@ -147,7 +311,17 @@ curl -X GET 'http://localhost:9500/api/communities/search?query=prog&page=0&size
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### PUT `/api/communities/{communityId}`
 
@@ -158,7 +332,15 @@ Update community.
 **Request body**
 
 ```json
-{"name":"programming","title":"Programming","description":"Updated","sidebarText":"Rules","isPublic":true,"isRestricted":false,"isOver18":false}
+{
+  "name": "programming",
+  "title": "Programming",
+  "description": "Updated",
+  "sidebarText": "Rules",
+  "isPublic": true,
+  "isRestricted": false,
+  "isOver18": false
+}
 ```
 
 **cURL**
@@ -175,47 +357,158 @@ curl -X PUT 'http://localhost:9500/api/communities/b0eebc99-9c0b-4ef8-bb6d-6bb9b
   "isPublic": true,
   "isRestricted": false,
   "isOver18": false,
-  "categoryIds": ["f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"]
+  "categoryIds": ["019e5a43-e0c2-7baa-9f6d-b9b9b82afb18"]
 }'
 ```
 
 **Response**
 
 ```json
-{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","name":"programming","title":"Programming","description":"Software development","sidebarText":"Rules","headerImageUrl":null,"iconImageUrl":null,"isPublic":true,"isRestricted":false,"isOver18":false,"memberCount":1,"subscriberCount":1,"activeUserCount":0,"createdBy":{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","username":"johndoe","displayName":"John Doe","bio":null,"avatarUrl":null,"isActive":true,"isVerified":false,"karma":1,"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z"},"createdAt":"2026-05-02T10:00:00Z","updatedAt":"2026-05-02T10:00:00Z","isUserSubscribed":false,"isUserModerator":false,"categories":[{"id":"f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","name":"Technology","description":"All things tech, software, and hardware","iconUrl":null,"imageUrl":null,"color":"#2563EB","slug":"technology","sortOrder":1,"communityCount":0,"createdAt":"2026-05-23T10:00:00Z","updatedAt":"2026-05-23T10:00:00Z"}]}
+{
+  "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb15",
+  "name": "programming",
+  "title": "Programming",
+  "description": "Software development",
+  "sidebarText": "Rules",
+  "headerImageUrl": null,
+  "iconImageUrl": null,
+  "isPublic": true,
+  "isRestricted": false,
+  "isOver18": false,
+  "memberCount": 1,
+  "subscriberCount": 1,
+  "activeUserCount": 0,
+  "createdBy": {
+    "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+    "username": "johndoe",
+    "displayName": "John Doe",
+    "bio": null,
+    "avatarUrl": null,
+    "isActive": true,
+    "isVerified": false,
+    "karma": 0,
+    "createdAt": "2026-05-02T10:00:00Z",
+    "updatedAt": "2026-05-02T10:00:00Z"
+  },
+  "createdAt": "2026-05-02T10:00:00Z",
+  "updatedAt": "2026-05-02T10:00:00Z",
+  "isUserSubscribed": false,
+  "isUserModerator": false,
+  "categories": [
+    {
+      "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb18",
+      "name": "Technology",
+      "description": "All things tech, software, and hardware",
+      "iconUrl": null,
+      "imageUrl": null,
+      "color": "#2563EB",
+      "slug": "technology",
+      "sortOrder": 1,
+      "communityCount": 0,
+      "createdAt": "2026-05-23T10:00:00Z",
+      "updatedAt": "2026-05-23T10:00:00Z"
+    }
+  ]
+}
 ```
 ### POST `/api/communities/{communityId}/subscribe`
 
-Subscribe current user.
+Subscribe current user. Returns the updated community with `isUserSubscribed: true`.
 
 **Auth:** User
 
 **cURL**
 
 ```bash
-curl -X POST 'http://localhost:9500/api/communities/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11/subscribe' \
+curl -X POST 'http://localhost:9500/api/communities/019e5a43-e0c2-7baa-9f6d-b9b9b82afb15/subscribe' \
   -H 'Authorization: Bearer <token>'
 ```
 
 **Response**
 
-`200 OK` with an empty body
+```json
+{
+  "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb15",
+  "name": "programming",
+  "title": "Programming",
+  "description": "Software development",
+  "sidebarText": "Rules",
+  "headerImageUrl": null,
+  "iconImageUrl": null,
+  "isPublic": true,
+  "isRestricted": false,
+  "isOver18": false,
+  "memberCount": 2,
+  "subscriberCount": 2,
+  "activeUserCount": 0,
+  "createdBy": {
+    "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+    "username": "johndoe",
+    "displayName": "John Doe",
+    "bio": null,
+    "avatarUrl": null,
+    "isActive": true,
+    "isVerified": false,
+    "karma": 0,
+    "createdAt": "2026-05-02T10:00:00Z",
+    "updatedAt": "2026-05-02T10:00:00Z"
+  },
+  "createdAt": "2026-05-02T10:00:00Z",
+  "updatedAt": "2026-05-02T10:00:00Z",
+  "isUserSubscribed": true,
+  "isUserModerator": false,
+  "categories": []
+}
+```
 ### POST `/api/communities/{communityId}/unsubscribe`
 
-Unsubscribe current user.
+Unsubscribe current user. Returns the updated community with `isUserSubscribed: false`.
 
 **Auth:** User
 
 **cURL**
 
 ```bash
-curl -X POST 'http://localhost:9500/api/communities/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11/unsubscribe' \
+curl -X POST 'http://localhost:9500/api/communities/019e5a43-e0c2-7baa-9f6d-b9b9b82afb15/unsubscribe' \
   -H 'Authorization: Bearer <token>'
 ```
 
 **Response**
 
-`200 OK` with an empty body
+```json
+{
+  "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb15",
+  "name": "programming",
+  "title": "Programming",
+  "description": "Software development",
+  "sidebarText": "Rules",
+  "headerImageUrl": null,
+  "iconImageUrl": null,
+  "isPublic": true,
+  "isRestricted": false,
+  "isOver18": false,
+  "memberCount": 1,
+  "subscriberCount": 1,
+  "activeUserCount": 0,
+  "createdBy": {
+    "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+    "username": "johndoe",
+    "displayName": "John Doe",
+    "bio": null,
+    "avatarUrl": null,
+    "isActive": true,
+    "isVerified": false,
+    "karma": 0,
+    "createdAt": "2026-05-02T10:00:00Z",
+    "updatedAt": "2026-05-02T10:00:00Z"
+  },
+  "createdAt": "2026-05-02T10:00:00Z",
+  "updatedAt": "2026-05-02T10:00:00Z",
+  "isUserSubscribed": false,
+  "isUserModerator": false,
+  "categories": []
+}
+```
 ### GET `/api/communities/user/subscriptions`
 
 Get current user subscriptions.

@@ -92,7 +92,7 @@ check_dependencies() {
 
     # Java
     if command -v java &> /dev/null; then
-        JAVA_VER=$(java -version 2>&1 | head -1 | awk -F '"' '{print $2}')
+        JAVA_VER=$(java -version 2>&1 | sed 1q | awk -F '"' '{print $2}')
         success "Java: $JAVA_VER"
     else
         fail "Java not found. Install JDK 21+ from https://adoptium.net/"
@@ -101,7 +101,7 @@ check_dependencies() {
 
     # Maven
     if command -v mvn &> /dev/null; then
-        MVN_VER=$(mvn -version 2>&1 | head -1 | awk '{print $3}')
+        MVN_VER=$(mvn -version 2>&1 | sed 1q | awk '{print $3}')
         success "Maven: $MVN_VER"
     elif [ -f "$PROJECT_DIR/mvnw" ]; then
         success "Maven Wrapper found (./mvnw)"
@@ -189,6 +189,40 @@ check_and_kill_ports() {
 # ============================================================
 DOCKER_CMD="docker"
 
+start_docker_daemon() {
+    local os_type
+    os_type=$(uname -s)
+
+    if [ "$os_type" = "Darwin" ]; then
+        log "Attempting to start Docker Desktop (macOS)..."
+        open --background -a Docker 2>/dev/null || true
+        log "Waiting for Docker daemon to start..."
+        for i in $(seq 1 30); do
+            if docker info &> /dev/null 2>&1; then
+                return 0
+            fi
+            sleep 2
+        done
+        return 1
+    elif [ "$os_type" = "Linux" ]; then
+        log "Attempting to start Docker service (Linux)..."
+        if systemctl is-active docker &> /dev/null; then
+            return 0
+        fi
+        sudo systemctl start docker 2>/dev/null || sudo service docker start 2>/dev/null || true
+        log "Waiting for Docker daemon to start..."
+        for i in $(seq 1 15); do
+            if sudo docker info &> /dev/null 2>&1; then
+                DOCKER_CMD="sudo docker"
+                return 0
+            fi
+            sleep 2
+        done
+        return 1
+    fi
+    return 1
+}
+
 check_docker() {
     header "3. Checking Docker Status"
 
@@ -211,8 +245,24 @@ check_docker() {
         return 0
     fi
 
-    fail "Docker daemon is not running or not accessible."
-    fail "Try: sudo usermod -aG docker \$USER && newgrp docker"
+    warn "Docker daemon is not running. Attempting auto-start..."
+    if start_docker_daemon; then
+        if [ "$DOCKER_CMD" = "sudo docker" ]; then
+            if sudo docker compose version &> /dev/null; then
+                COMPOSE_CMD="sudo docker compose"
+            elif command -v docker-compose &> /dev/null; then
+                COMPOSE_CMD="sudo docker-compose"
+            else
+                COMPOSE_CMD="sudo docker compose"
+            fi
+        fi
+        success "Docker daemon started"
+        return 0
+    fi
+
+    fail "Failed to start Docker daemon."
+    fail "On macOS: open Docker Desktop manually"
+    fail "On Linux: sudo systemctl start docker"
     ERRORS=$((ERRORS + 1))
     return 1
 }
@@ -226,24 +276,50 @@ start_services() {
     cd "$PROJECT_DIR"
 
     log "Starting Docker Compose services..."
-    if [ -n "$COMPOSE_CMD" ]; then
-        $COMPOSE_CMD up -d 2>&1 | tail -5
-    elif command -v docker compose &> /dev/null; then
-        $DOCKER_CMD compose up -d 2>&1 | tail -5
-    else
-        $DOCKER_CMD-compose up -d 2>&1 | tail -5
-    fi
 
-    log "Waiting for services to be healthy..."
+    # Attempt to start all services; retry if Docker wasn't fully ready
+    for attempt in 1 2 3; do
+        if [ -n "$COMPOSE_CMD" ]; then
+            $COMPOSE_CMD up -d 2>&1 | tail -5
+        elif command -v docker compose &> /dev/null; then
+            $DOCKER_CMD compose up -d 2>&1 | tail -5
+        else
+            $DOCKER_CMD-compose up -d 2>&1 | tail -5
+        fi
 
-    # Verify containers are running first
+        sleep 3
+
+        # Verify critical containers are running; restart individually if missing
+        ALL_RUNNING=true
+        for container in lambrk-postgres lambrk-redis lambrk-kafka; do
+        if ! $DOCKER_CMD ps --format '{{.Names}}' 2>/dev/null | grep -q "^${container}$"; then
+            ALL_RUNNING=false
+            warn "Container '$container' is not running. Attempting to start it..."
+            $DOCKER_CMD start "$container" 2>&1 | tail -3
+            sleep 3
+        fi
+        done
+
+        if [ "$ALL_RUNNING" = true ]; then
+            break
+        fi
+
+        if [ $attempt -lt 3 ]; then
+            warn "Retrying service startup (attempt $attempt/3)..."
+            sleep 3
+        fi
+    done
+
+    # Final verification
     for container in lambrk-postgres lambrk-redis lambrk-kafka; do
         if ! $DOCKER_CMD ps --format '{{.Names}}' 2>/dev/null | grep -q "^${container}$"; then
-            fail "Container '$container' is not running. Check: $DOCKER_CMD compose ps"
+            fail "Container '$container' failed to start. Check: $DOCKER_CMD compose logs $container"
             ERRORS=$((ERRORS + 1))
             return
         fi
     done
+
+    log "Waiting for services to be healthy..."
 
     # Wait for PostgreSQL
     echo -n "  Waiting for PostgreSQL"
@@ -466,6 +542,15 @@ print_summary() {
 # ============================================================
 main() {
     echo "" > "$LOG_FILE"
+
+    # Load .env file if present
+    if [ -f "$PROJECT_DIR/.env" ]; then
+        log "Loading .env file..."
+        set -a
+        source "$PROJECT_DIR/.env"
+        set +a
+    fi
+
     echo -e "${BOLD}"
     echo "  ╔══════════════════════════════════════════╗"
     echo "  ║       Lambrk Backend - Setup             ║"

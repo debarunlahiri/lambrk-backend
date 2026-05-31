@@ -18,10 +18,10 @@ import java.net.URI;
 @Configuration
 public class S3Config {
 
-    @Value("${aws.s3.region:us-east-1}")
+    @Value("${aws.s3.region:ap-south-1}")
     private String region;
 
-    @Value("${aws.s3.bucket:reddit-files}")
+    @Value("${aws.s3.bucket:lm-sm-001}")
     private String bucketName;
 
     @Value("${aws.s3.endpoint:}")
@@ -68,11 +68,20 @@ public class S3Config {
     }
 
     private AwsCredentialsProvider credentialsProvider() {
-        if (!accessKey.isEmpty() && !secretKey.isEmpty()) {
+        if (!accessKey.isBlank() && !secretKey.isBlank()) {
             return StaticCredentialsProvider.create(
                 AwsBasicCredentials.create(accessKey, secretKey)
             );
         }
+
+        String sysKey = System.getProperty("aws.accessKeyId");
+        String sysSecret = System.getProperty("aws.secretAccessKey");
+        if (sysKey != null && !sysKey.isBlank() && sysSecret != null && !sysSecret.isBlank()) {
+            return StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(sysKey, sysSecret)
+            );
+        }
+
         return DefaultCredentialsProvider.create();
     }
 }

@@ -1,12 +1,15 @@
 package com.lambrk.controller;
 
 import com.lambrk.dto.UserResponse;
+import com.lambrk.dto.UserUpdateRequest;
 import com.lambrk.domain.User;
 import com.lambrk.exception.ResourceNotFoundException;
+import com.lambrk.exception.UnauthorizedActionException;
 import com.lambrk.repository.UserRepository;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.tracing.annotation.NewSpan;
 import io.micrometer.tracing.annotation.SpanTag;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +20,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.lambrk.config.UserPrincipal;
+import java.time.Instant;
 import java.util.UUID;
 
 @RestController
@@ -54,6 +58,27 @@ public class UserController {
         User user = userRepository.findByUsername(userPrincipal.getUsername())
             .orElseThrow(() -> new ResourceNotFoundException("User", "username", userPrincipal.getUsername()));
         return ResponseEntity.ok(UserResponse.from(user));
+    }
+
+    @PutMapping("/me")
+    @NewSpan("update-current-user")
+    @Timed(value = "users.me.update.duration")
+    public ResponseEntity<UserResponse> updateCurrentUser(
+            @Valid @RequestBody UserUpdateRequest request,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        User user = userRepository.findByUsername(userPrincipal.getUsername())
+            .orElseThrow(() -> new ResourceNotFoundException("User", "username", userPrincipal.getUsername()));
+
+        if (request.displayName() != null) user.setDisplayName(request.displayName());
+        if (request.bio() != null) user.setBio(request.bio());
+        if (request.location() != null) user.setLocation(request.location());
+        if (request.website() != null) user.setWebsite(request.website());
+        if (request.avatarUrl() != null) user.setAvatarUrl(request.avatarUrl());
+        if (request.headerImageUrl() != null) user.setHeaderImageUrl(request.headerImageUrl());
+        user.setUpdatedAt(Instant.now());
+
+        User saved = userRepository.save(user);
+        return ResponseEntity.ok(UserResponse.from(saved));
     }
 
     @GetMapping("/top")

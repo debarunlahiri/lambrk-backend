@@ -107,7 +107,7 @@ public class LoggingService {
                 .exceptionMessage(context.exceptionMessage())
                 .exceptionStackTrace(context.exceptionStackTrace())
                 .source("API")
-                .serviceName("reddit-backend")
+                .serviceName("lambrk-backend")
                 .build();
 
             // Save to database asynchronously

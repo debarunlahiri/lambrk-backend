@@ -23,7 +23,7 @@ public class CacheConfig {
             "communities", "trendingCommunities",
             "comments", "commentTrees",
             "searchResults", "feed",
-            "categories"
+            "categories", "fileUploads"
         );
         cacheManager.setCaffeine(Caffeine.newBuilder()
             .maximumSize(5000)

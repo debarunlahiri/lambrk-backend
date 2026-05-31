@@ -13,6 +13,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.net.URI;
 import java.time.Instant;
@@ -33,7 +34,7 @@ public class GlobalExceptionHandler {
         meterRegistry.counter("errors", "type", "not_found").increment();
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setTitle("Resource Not Found");
-        problem.setType(URI.create("https://api.reddit-backend.com/errors/not-found"));
+        problem.setType(URI.create("https://api.lambrk-backend.com/errors/not-found"));
         problem.setProperty("timestamp", Instant.now());
         return problem;
     }
@@ -43,7 +44,7 @@ public class GlobalExceptionHandler {
         meterRegistry.counter("errors", "type", "duplicate").increment();
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Duplicate Resource");
-        problem.setType(URI.create("https://api.reddit-backend.com/errors/duplicate"));
+        problem.setType(URI.create("https://api.lambrk-backend.com/errors/duplicate"));
         problem.setProperty("timestamp", Instant.now());
         return problem;
     }
@@ -53,7 +54,7 @@ public class GlobalExceptionHandler {
         meterRegistry.counter("errors", "type", "unauthorized_action").increment();
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
         problem.setTitle("Unauthorized Action");
-        problem.setType(URI.create("https://api.reddit-backend.com/errors/unauthorized-action"));
+        problem.setType(URI.create("https://api.lambrk-backend.com/errors/unauthorized-action"));
         problem.setProperty("timestamp", Instant.now());
         return problem;
     }
@@ -67,7 +68,7 @@ public class GlobalExceptionHandler {
         }
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
         problem.setTitle("Validation Error");
-        problem.setType(URI.create("https://api.reddit-backend.com/errors/validation"));
+        problem.setType(URI.create("https://api.lambrk-backend.com/errors/validation"));
         problem.setProperty("timestamp", Instant.now());
         problem.setProperty("fieldErrors", fieldErrors);
         return problem;
@@ -78,7 +79,7 @@ public class GlobalExceptionHandler {
         meterRegistry.counter("errors", "type", "content_moderation").increment();
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
         problem.setTitle("Content Moderation Violation");
-        problem.setType(URI.create("https://api.reddit-backend.com/errors/content-moderation"));
+        problem.setType(URI.create("https://api.lambrk-backend.com/errors/content-moderation"));
         problem.setProperty("timestamp", Instant.now());
         problem.setProperty("violationCategories", ex.getViolationCategories());
         return problem;
@@ -90,7 +91,7 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,
             "Service temporarily unavailable. Please try again later.");
         problem.setTitle("Service Unavailable");
-        problem.setType(URI.create("https://api.reddit-backend.com/errors/circuit-breaker"));
+        problem.setType(URI.create("https://api.lambrk-backend.com/errors/circuit-breaker"));
         problem.setProperty("timestamp", Instant.now());
         return problem;
     }
@@ -101,7 +102,7 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS,
             "Rate limit exceeded. Please slow down.");
         problem.setTitle("Rate Limit Exceeded");
-        problem.setType(URI.create("https://api.reddit-backend.com/errors/rate-limit"));
+        problem.setType(URI.create("https://api.lambrk-backend.com/errors/rate-limit"));
         problem.setProperty("timestamp", Instant.now());
         return problem;
     }
@@ -112,7 +113,7 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS,
             "Too many concurrent requests. Please try again.");
         problem.setTitle("Bulkhead Full");
-        problem.setType(URI.create("https://api.reddit-backend.com/errors/bulkhead"));
+        problem.setType(URI.create("https://api.lambrk-backend.com/errors/bulkhead"));
         problem.setProperty("timestamp", Instant.now());
         return problem;
     }
@@ -122,7 +123,7 @@ public class GlobalExceptionHandler {
         meterRegistry.counter("errors", "type", "access_denied").increment();
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access denied");
         problem.setTitle("Access Denied");
-        problem.setType(URI.create("https://api.reddit-backend.com/errors/access-denied"));
+        problem.setType(URI.create("https://api.lambrk-backend.com/errors/access-denied"));
         problem.setProperty("timestamp", Instant.now());
         return problem;
     }
@@ -132,8 +133,32 @@ public class GlobalExceptionHandler {
         meterRegistry.counter("errors", "type", "bad_credentials").increment();
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         problem.setTitle("Authentication Failed");
-        problem.setType(URI.create("https://api.reddit-backend.com/errors/bad-credentials"));
+        problem.setType(URI.create("https://api.lambrk-backend.com/errors/bad-credentials"));
         problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ProblemDetail handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+        meterRegistry.counter("errors", "type", "file_too_large").increment();
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.PAYLOAD_TOO_LARGE,
+            "File size exceeds the 5MB limit");
+        problem.setTitle("File Too Large");
+        problem.setType(URI.create("https://api.lambrk.com/errors/file-too-large"));
+        problem.setProperty("timestamp", Instant.now());
+        problem.setProperty("maxSize", "5MB");
+        return problem;
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.support.MissingServletRequestPartException.class)
+    public ProblemDetail handleMissingRequestPart(org.springframework.web.multipart.support.MissingServletRequestPartException ex) {
+        meterRegistry.counter("errors", "type", "missing_part").increment();
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
+            "Required request part '" + ex.getRequestPartName() + "' is not present");
+        problem.setTitle("Bad Request");
+        problem.setType(URI.create("https://api.lambrk.com/errors/missing-request-part"));
+        problem.setProperty("timestamp", Instant.now());
+        problem.setProperty("missingPart", ex.getRequestPartName());
         return problem;
     }
 
@@ -143,7 +168,7 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR,
             "An unexpected error occurred");
         problem.setTitle("Internal Server Error");
-        problem.setType(URI.create("https://api.reddit-backend.com/errors/internal"));
+        problem.setType(URI.create("https://api.lambrk-backend.com/errors/internal"));
         problem.setProperty("timestamp", Instant.now());
         return problem;
     }

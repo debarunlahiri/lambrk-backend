@@ -11,7 +11,7 @@ data:
         active: prod
       
       datasource:
-        url: jdbc:postgresql://postgres:5432/reddit_db
+        url: jdbc:postgresql://postgres:5432/lambrk_db
         username: ${DB_USERNAME}
         password: ${DB_PASSWORD}
         hikari:
@@ -107,7 +107,7 @@ data:
     
     logging:
       level:
-        com.example.reddit: INFO
+        com.example.lambrk: INFO
         org.springframework.security: WARN
         org.hibernate.SQL: DEBUG
       pattern:

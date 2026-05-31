@@ -8,8 +8,12 @@ import com.lambrk.dto.CommunityResponse;
 import com.lambrk.exception.DuplicateResourceException;
 import com.lambrk.exception.ResourceNotFoundException;
 import com.lambrk.exception.UnauthorizedActionException;
+import com.lambrk.domain.UserCommunityMembership;
+import com.lambrk.domain.UserCommunityModerator;
 import com.lambrk.repository.CategoryRepository;
 import com.lambrk.repository.CommunityRepository;
+import com.lambrk.repository.UserCommunityMembershipRepository;
+import com.lambrk.repository.UserCommunityModeratorRepository;
 import com.lambrk.repository.UserRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -34,15 +38,21 @@ public class CommunityService {
     private final CommunityRepository communityRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final UserCommunityMembershipRepository membershipRepository;
+    private final UserCommunityModeratorRepository moderatorRepository;
     private final CustomMetrics customMetrics;
 
     public CommunityService(CommunityRepository communityRepository,
                            UserRepository userRepository,
                            CategoryRepository categoryRepository,
+                           UserCommunityMembershipRepository membershipRepository,
+                           UserCommunityModeratorRepository moderatorRepository,
                            CustomMetrics customMetrics) {
         this.communityRepository = communityRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
+        this.membershipRepository = membershipRepository;
+        this.moderatorRepository = moderatorRepository;
         this.customMetrics = customMetrics;
     }
 
@@ -67,11 +77,22 @@ public class CommunityService {
         Community community = new Community(
             UuidV7Generator.generate(), request.name(), request.title(), request.description(), request.sidebarText(),
             null, null, request.isPublic(), request.isRestricted(), request.isOver18(),
-            1, 1, 0, new HashSet<>(), Set.of(creator), Set.of(creator), categorySet, creator,
+            1, 1, 0, new HashSet<>(), new HashSet<>(), new HashSet<>(), categorySet, creator,
             Instant.now(), Instant.now()
         );
 
         Community saved = communityRepository.save(community);
+
+        // Create membership and moderator records for the creator
+        UserCommunityMembership membership = new UserCommunityMembership(creator, saved);
+        membership.setRole(UserCommunityMembership.MembershipRole.CONTRIBUTOR);
+        membershipRepository.save(membership);
+
+        UserCommunityModerator moderator = new UserCommunityModerator(creator, saved);
+        moderator.setRole(UserCommunityModerator.ModeratorRole.OWNER);
+        moderator.setAssignedBy(creator.getId());
+        moderatorRepository.save(moderator);
+
         customMetrics.recordCommunityCreated();
         return CommunityResponse.from(saved, true, true);
     }
@@ -141,7 +162,7 @@ public class CommunityService {
             sub.getId(), sub.getName(), request.title(), request.description(), request.sidebarText(),
             sub.getHeaderImageUrl(), sub.getIconImageUrl(), request.isPublic(), request.isRestricted(),
             request.isOver18(), sub.getMemberCount(), sub.getSubscriberCount(), sub.getActiveUserCount(),
-            sub.getPosts(), sub.getMembers(), sub.getModerators(), categorySet, sub.getCreatedBy(),
+            sub.getPosts(), sub.getMemberships(), sub.getModerators(), categorySet, sub.getCreatedBy(),
             sub.getCreatedAt(), Instant.now()
         );
         Community saved = communityRepository.save(updated);
@@ -149,17 +170,54 @@ public class CommunityService {
     }
 
     @CacheEvict(value = {"communities"}, allEntries = true)
-    public void subscribe(UUID communityId, UUID userId) {
-        communityRepository.updateSubscriberCount(communityId, 1);
-        communityRepository.updateMemberCount(communityId, 1);
+    public CommunityResponse subscribe(UUID communityId, UUID userId) {
+        Community community = communityRepository.findById(communityId)
+            .orElseThrow(() -> new ResourceNotFoundException("Community", "id", communityId));
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        var existingOpt = membershipRepository.findByUserIdAndCommunityId(userId, communityId);
+        if (existingOpt.isPresent()) {
+            UserCommunityMembership existing = existingOpt.get();
+            if (existing.getStatus() != UserCommunityMembership.MembershipStatus.ACTIVE) {
+                existing.setStatus(UserCommunityMembership.MembershipStatus.ACTIVE);
+                existing.setLeftAt(null);
+                existing.setUpdatedAt(Instant.now());
+                membershipRepository.save(existing);
+                communityRepository.updateSubscriberCount(communityId, 1);
+                communityRepository.updateMemberCount(communityId, 1);
+            }
+        } else {
+            UserCommunityMembership membership = new UserCommunityMembership(user, community);
+            membershipRepository.save(membership);
+            communityRepository.updateSubscriberCount(communityId, 1);
+            communityRepository.updateMemberCount(communityId, 1);
+        }
         customMetrics.recordCommunitySubscription(true);
+        return CommunityResponse.from(community, true, false);
     }
 
     @CacheEvict(value = {"communities"}, allEntries = true)
-    public void unsubscribe(UUID communityId, UUID userId) {
-        communityRepository.updateSubscriberCount(communityId, -1);
-        communityRepository.updateMemberCount(communityId, -1);
+    public CommunityResponse unsubscribe(UUID communityId, UUID userId) {
+        Community community = communityRepository.findById(communityId)
+            .orElseThrow(() -> new ResourceNotFoundException("Community", "id", communityId));
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        var existingOpt = membershipRepository.findByUserIdAndCommunityId(userId, communityId);
+        if (existingOpt.isPresent()) {
+            UserCommunityMembership existing = existingOpt.get();
+            if (existing.getStatus() == UserCommunityMembership.MembershipStatus.ACTIVE) {
+                existing.setStatus(UserCommunityMembership.MembershipStatus.LEFT);
+                existing.setLeftAt(Instant.now());
+                existing.setUpdatedAt(Instant.now());
+                membershipRepository.save(existing);
+                communityRepository.updateSubscriberCount(communityId, -1);
+                communityRepository.updateMemberCount(communityId, -1);
+            }
+        }
         customMetrics.recordCommunitySubscription(false);
+        return CommunityResponse.from(community, false, false);
     }
 
     @Transactional(readOnly = true)

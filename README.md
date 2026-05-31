@@ -32,7 +32,7 @@ mvn spring-boot:run
 
 # 3. Or build a native image
 mvn clean package -Pnative -DskipTests
-./target/reddit-backend
+./target/lambrk-backend
 ```
 
 The app starts on **http://localhost:9500**.
@@ -87,7 +87,7 @@ Additional architecture docs:
 ## Project Structure
 
 ```
-src/main/java/com/example/reddit/
+src/main/java/com/example/lambrk/
 ├── config/          SecurityConfig, JwtTokenProvider, JpaConfig, VirtualThreadConfig,
 │                    CacheConfig, ObservabilityConfig, ResilienceConfig, NativeImageConfig
 ├── controller/      AuthController, PostController, CommentController, CommunityController,
@@ -209,7 +209,7 @@ infra/
 
 | Topic | Where in code |
 |-------|---------------|
-| **Advanced Search** | `SearchService` — Full-text search across posts, comments, users, communitys |
+| **Advanced Search** | `SearchService` — Full-text search across posts, comments, users, communities |
 | **Structured Concurrency** | `search()` — Parallel multi-type search with `StructuredTaskScope` |
 | **Filtering** | Time-based, community, flair, score, comment count filters |
 | **Sorting** | Relevance, new, hot, top, controversial |
@@ -250,7 +250,7 @@ infra/
 |-------|---------------|
 | **Recommendation Engine** | `RecommendationService` — ML-based suggestions |
 | **Spring AI Integration** | ChatClient for personalized explanations |
-| **Multi-type Recommendations** | Posts, communitys, users, comments |
+| **Multi-type Recommendations** | Posts, communities, users, comments |
 | **Confidence Scoring** | 0-1 confidence with factor explanations |
 | **Context-aware** | Community/post context for relevant suggestions |
 

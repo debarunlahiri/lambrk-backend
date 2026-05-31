@@ -11,7 +11,15 @@ Perform generic admin action.
 **Request body**
 
 ```json
-{"action":"BAN_USER","targetId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","reason":"Spam","notes":"Repeated reports","durationDays":7,"permanent":false,"notifyUser":true}
+{
+  "action": "BAN_USER",
+  "targetId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "reason": "Spam",
+  "notes": "Repeated reports",
+  "durationDays": 7,
+  "permanent": false,
+  "notifyUser": true
+}
 ```
 
 **cURL**
@@ -22,7 +30,7 @@ curl -X POST 'http://localhost:9500/api/admin/actions' \
   -H 'Content-Type: application/json' \
   -d '{
   "action": "BAN_USER",
-  "targetId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "targetId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
   "reason": "Spam",
   "notes": "Repeated reports",
   "durationDays": 7,
@@ -34,7 +42,19 @@ curl -X POST 'http://localhost:9500/api/admin/actions' \
 **Response**
 
 ```json
-{"actionId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","action":"BAN_USER","targetId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","targetType":"USER","reason":"Spam","notes":null,"performedBy":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+{
+  "actionId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb1d",
+  "action": "BAN_USER",
+  "targetId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "targetType": "USER",
+  "reason": "Spam",
+  "notes": null,
+  "performedBy": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "performedAt": "2026-05-02T10:00:00Z",
+  "expiresAt": null,
+  "isActive": true,
+  "result": "Action completed"
+}
 ```
 ### GET `/api/admin/actions`
 
@@ -59,7 +79,17 @@ curl -X GET 'http://localhost:9500/api/admin/actions?page=0&size=20' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### GET `/api/admin/actions/user/{userId}`
 
@@ -84,7 +114,17 @@ curl -X GET 'http://localhost:9500/api/admin/actions/user/b0eebc99-9c0b-4ef8-bb6
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### GET `/api/admin/actions/active`
 
@@ -109,7 +149,17 @@ curl -X GET 'http://localhost:9500/api/admin/actions/active?page=0&size=20' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### POST `/api/admin/ban-user/{userId}`
 
@@ -131,7 +181,19 @@ curl -X POST 'http://localhost:9500/api/admin/ban-user/b0eebc99-9c0b-4ef8-bb6d-6
 **Response**
 
 ```json
-{"actionId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","action":"BAN_USER","targetId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","targetType":"USER","reason":"Spam","notes":null,"performedBy":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+{
+  "actionId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb1d",
+  "action": "BAN_USER",
+  "targetId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "targetType": "USER",
+  "reason": "Spam",
+  "notes": null,
+  "performedBy": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "performedAt": "2026-05-02T10:00:00Z",
+  "expiresAt": null,
+  "isActive": true,
+  "result": "Action completed"
+}
 ```
 ### POST `/api/admin/suspend-user/{userId}`
 
@@ -153,7 +215,19 @@ curl -X POST 'http://localhost:9500/api/admin/suspend-user/b0eebc99-9c0b-4ef8-bb
 **Response**
 
 ```json
-{"actionId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","action":"BAN_USER","targetId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","targetType":"USER","reason":"Spam","notes":null,"performedBy":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+{
+  "actionId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb1d",
+  "action": "BAN_USER",
+  "targetId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "targetType": "USER",
+  "reason": "Spam",
+  "notes": null,
+  "performedBy": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "performedAt": "2026-05-02T10:00:00Z",
+  "expiresAt": null,
+  "isActive": true,
+  "result": "Action completed"
+}
 ```
 ### POST `/api/admin/delete-post/{postId}`
 
@@ -175,7 +249,19 @@ curl -X POST 'http://localhost:9500/api/admin/delete-post/b0eebc99-9c0b-4ef8-bb6
 **Response**
 
 ```json
-{"actionId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","action":"BAN_USER","targetId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","targetType":"USER","reason":"Spam","notes":null,"performedBy":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+{
+  "actionId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb1d",
+  "action": "BAN_USER",
+  "targetId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "targetType": "USER",
+  "reason": "Spam",
+  "notes": null,
+  "performedBy": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "performedAt": "2026-05-02T10:00:00Z",
+  "expiresAt": null,
+  "isActive": true,
+  "result": "Action completed"
+}
 ```
 ### POST `/api/admin/delete-comment/{commentId}`
 
@@ -197,7 +283,19 @@ curl -X POST 'http://localhost:9500/api/admin/delete-comment/b0eebc99-9c0b-4ef8-
 **Response**
 
 ```json
-{"actionId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","action":"BAN_USER","targetId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","targetType":"USER","reason":"Spam","notes":null,"performedBy":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+{
+  "actionId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb1d",
+  "action": "BAN_USER",
+  "targetId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "targetType": "USER",
+  "reason": "Spam",
+  "notes": null,
+  "performedBy": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "performedAt": "2026-05-02T10:00:00Z",
+  "expiresAt": null,
+  "isActive": true,
+  "result": "Action completed"
+}
 ```
 ### POST `/api/admin/lock-post/{postId}`
 
@@ -219,7 +317,19 @@ curl -X POST 'http://localhost:9500/api/admin/lock-post/b0eebc99-9c0b-4ef8-bb6d-
 **Response**
 
 ```json
-{"actionId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","action":"BAN_USER","targetId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","targetType":"USER","reason":"Spam","notes":null,"performedBy":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+{
+  "actionId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb1d",
+  "action": "BAN_USER",
+  "targetId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "targetType": "USER",
+  "reason": "Spam",
+  "notes": null,
+  "performedBy": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "performedAt": "2026-05-02T10:00:00Z",
+  "expiresAt": null,
+  "isActive": true,
+  "result": "Action completed"
+}
 ```
 ### POST `/api/admin/quarantine-post/{postId}`
 
@@ -241,7 +351,19 @@ curl -X POST 'http://localhost:9500/api/admin/quarantine-post/b0eebc99-9c0b-4ef8
 **Response**
 
 ```json
-{"actionId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","action":"BAN_USER","targetId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","targetType":"USER","reason":"Spam","notes":null,"performedBy":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+{
+  "actionId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb1d",
+  "action": "BAN_USER",
+  "targetId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "targetType": "USER",
+  "reason": "Spam",
+  "notes": null,
+  "performedBy": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "performedAt": "2026-05-02T10:00:00Z",
+  "expiresAt": null,
+  "isActive": true,
+  "result": "Action completed"
+}
 ```
 ### POST `/api/admin/remove-moderator/{userId}`
 
@@ -263,5 +385,17 @@ curl -X POST 'http://localhost:9500/api/admin/remove-moderator/b0eebc99-9c0b-4ef
 **Response**
 
 ```json
-{"actionId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","action":"BAN_USER","targetId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","targetType":"USER","reason":"Spam","notes":null,"performedBy":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","performedAt":"2026-05-02T10:00:00Z","expiresAt":null,"isActive":true,"result":"Action completed"}
+{
+  "actionId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb1d",
+  "action": "BAN_USER",
+  "targetId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "targetType": "USER",
+  "reason": "Spam",
+  "notes": null,
+  "performedBy": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "performedAt": "2026-05-02T10:00:00Z",
+  "expiresAt": null,
+  "isActive": true,
+  "result": "Action completed"
+}
 ```

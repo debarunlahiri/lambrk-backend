@@ -49,6 +49,15 @@ public class User {
     @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
 
+    @Column(name = "header_image_url", length = 500)
+    private String headerImageUrl;
+
+    @Column(name = "location", length = 100)
+    private String location;
+
+    @Column(name = "website", length = 200)
+    private String website;
+
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
@@ -67,21 +76,11 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Vote> votes = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "user_community_memberships",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "community_id")
-    )
-    private Set<Community> subscribedCommunities = new HashSet<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<UserCommunityMembership> memberships = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "user_community_moderators",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "community_id")
-    )
-    private Set<Community> moderatedCommunities = new HashSet<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<UserCommunityModerator> moderatorRoles = new HashSet<>();
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -94,9 +93,9 @@ public class User {
     protected User() {}
 
     public User(UUID id, String username, String email, String password, String displayName, String bio,
-                String avatarUrl, boolean isActive, boolean isVerified, int karma, Set<Post> posts,
-                Set<Comment> comments, Set<Vote> votes, Set<Community> subscribedCommunities,
-                Set<Community> moderatedCommunities, Instant createdAt, Instant updatedAt) {
+                String avatarUrl, String headerImageUrl, String location, String website,
+                boolean isActive, boolean isVerified, int karma, Set<Post> posts,
+                Set<Comment> comments, Set<Vote> votes, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -104,22 +103,24 @@ public class User {
         this.displayName = displayName;
         this.bio = bio;
         this.avatarUrl = avatarUrl;
+        this.headerImageUrl = headerImageUrl;
+        this.location = location;
+        this.website = website;
         this.isActive = isActive;
         this.isVerified = isVerified;
         this.karma = karma;
         this.posts = posts != null ? posts : new HashSet<>();
         this.comments = comments != null ? comments : new HashSet<>();
         this.votes = votes != null ? votes : new HashSet<>();
-        this.subscribedCommunities = subscribedCommunities != null ? subscribedCommunities : new HashSet<>();
-        this.moderatedCommunities = moderatedCommunities != null ? moderatedCommunities : new HashSet<>();
+        this.memberships = new HashSet<>();
+        this.moderatorRoles = new HashSet<>();
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
     public User(String username, String email, String password) {
-        this(com.lambrk.util.UuidV7Generator.generate(), username, email, password, null, null, null, true, false, 0,
-             new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(),
-             Instant.now(), Instant.now());
+        this(com.lambrk.util.UuidV7Generator.generate(), username, email, password, null, null, null, null, null, null, true, false, 0,
+             new HashSet<>(), new HashSet<>(), new HashSet<>(), Instant.now(), Instant.now());
     }
 
     public UUID getId() { return id; }
@@ -136,6 +137,12 @@ public class User {
     public void setBio(String bio) { this.bio = bio; }
     public String getAvatarUrl() { return avatarUrl; }
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+    public String getHeaderImageUrl() { return headerImageUrl; }
+    public void setHeaderImageUrl(String headerImageUrl) { this.headerImageUrl = headerImageUrl; }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+    public String getWebsite() { return website; }
+    public void setWebsite(String website) { this.website = website; }
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { this.isActive = active; }
     public boolean isVerified() { return isVerified; }
@@ -148,10 +155,25 @@ public class User {
     public void setComments(Set<Comment> comments) { this.comments = comments; }
     public Set<Vote> getVotes() { return votes; }
     public void setVotes(Set<Vote> votes) { this.votes = votes; }
-    public Set<Community> getSubscribedCommunities() { return subscribedCommunities; }
-    public void setSubscribedCommunities(Set<Community> subscribedCommunities) { this.subscribedCommunities = subscribedCommunities; }
-    public Set<Community> getModeratedCommunities() { return moderatedCommunities; }
-    public void setModeratedCommunities(Set<Community> moderatedCommunities) { this.moderatedCommunities = moderatedCommunities; }
+    public Set<UserCommunityMembership> getMemberships() { return memberships; }
+    public void setMemberships(Set<UserCommunityMembership> memberships) { this.memberships = memberships; }
+    public Set<UserCommunityModerator> getModeratorRoles() { return moderatorRoles; }
+    public void setModeratorRoles(Set<UserCommunityModerator> moderatorRoles) { this.moderatorRoles = moderatorRoles; }
+
+    // Convenience methods for active relationships
+    public Set<Community> getActiveSubscribedCommunities() {
+        return memberships.stream()
+            .filter(m -> m.getStatus() == UserCommunityMembership.MembershipStatus.ACTIVE)
+            .map(UserCommunityMembership::getCommunity)
+            .collect(java.util.stream.Collectors.toSet());
+    }
+
+    public Set<Community> getActiveModeratedCommunities() {
+        return moderatorRoles.stream()
+            .filter(UserCommunityModerator::isActive)
+            .map(UserCommunityModerator::getCommunity)
+            .collect(java.util.stream.Collectors.toSet());
+    }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

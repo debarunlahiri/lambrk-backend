@@ -68,10 +68,10 @@ public class Post {
     private boolean isOver18 = false;
 
     @Column(name = "score", nullable = false)
-    private int score = 1;
+    private int score = 0;
 
     @Column(name = "like_count", nullable = false)
-    private int likeCount = 1;
+    private int likeCount = 0;
 
     @Column(name = "dislike_count", nullable = false)
     private int dislikeCount = 0;
@@ -98,6 +98,9 @@ public class Post {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Vote> votes = new HashSet<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<FileUpload> media = new HashSet<>();
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -148,7 +151,7 @@ public class Post {
 
     public Post(String title, String content, String url, PostType postType, User author, Community community) {
         this(com.lambrk.util.UuidV7Generator.generate(), title, content, url, postType, null, null, null, false, false, false, false, false,
-             false, 1, 1, 0, 0, 0, 0, author, community, new HashSet<>(), new HashSet<>(),
+             false, 0, 0, 0, 0, 0, 0, author, community, new HashSet<>(), new HashSet<>(),
              Instant.now(), Instant.now(), null);
     }
 
@@ -204,6 +207,8 @@ public class Post {
     public void setComments(Set<Comment> comments) { this.comments = comments; }
     public Set<Vote> getVotes() { return votes; }
     public void setVotes(Set<Vote> votes) { this.votes = votes; }
+    public Set<FileUpload> getMedia() { return media; }
+    public void setMedia(Set<FileUpload> media) { this.media = media; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

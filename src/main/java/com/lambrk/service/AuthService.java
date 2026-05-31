@@ -58,9 +58,9 @@ public class AuthService {
         User user = new User(
             UuidV7Generator.generate(), request.username(), request.email(),
             passwordEncoder.encode(request.password()),
-            request.displayName(), null, null, true, false, 0,
+            request.displayName(), null, null, null, null, null, true, false, 0,
             new HashSet<>(), new HashSet<>(), new HashSet<>(),
-            new HashSet<>(), new HashSet<>(), Instant.now(), Instant.now()
+            Instant.now(), Instant.now()
         );
 
         User saved = userRepository.save(user);

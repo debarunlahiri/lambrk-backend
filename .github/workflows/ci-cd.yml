@@ -19,7 +19,7 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: reddit_test
+          POSTGRES_DB: lambrk_test
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
         ports:
@@ -76,7 +76,7 @@ jobs:
       run: mvn test --batch-mode
       env:
         SPRING_PROFILES_ACTIVE: test
-        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/reddit_test
+        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/lambrk_test
         SPRING_DATASOURCE_USERNAME: test
         SPRING_DATASOURCE_PASSWORD: test
         SPRING_DATA_REDIS_HOST: localhost
@@ -87,7 +87,7 @@ jobs:
       run: mvn verify -Pintegration-test --batch-mode
       env:
         SPRING_PROFILES_ACTIVE: test
-        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/reddit_test
+        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/lambrk_test
         SPRING_DATASOURCE_USERNAME: test
         SPRING_DATASOURCE_PASSWORD: test
         SPRING_DATA_REDIS_HOST: localhost
@@ -117,7 +117,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: reddit-backend-jar
+        name: lambrk-backend-jar
         path: target/*.jar
 
   security-scan:
@@ -169,8 +169,8 @@ jobs:
     - name: Upload native image
       uses: actions/upload-artifact@v4
       with:
-        name: reddit-backend-native
-        path: target/reddit-backend
+        name: lambrk-backend-native
+        path: target/lambrk-backend
 
   docker-build:
     runs-on: ubuntu-latest
@@ -202,7 +202,7 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: |
-          ${{ secrets.DOCKER_USERNAME }}/reddit-backend
+          ${{ secrets.DOCKER_USERNAME }}/lambrk-backend
           ghcr.io/${{ github.repository }}
         tags: |
           type=ref,event=branch
@@ -260,19 +260,19 @@ jobs:
         aws-region: us-east-1
 
     - name: Update kubeconfig
-      run: aws eks update-kubeconfig --name reddit-staging
+      run: aws eks update-kubeconfig --name lambrk-staging
 
     - name: Deploy to staging
       run: |
         cd k8s/overlays/staging
-        kustomize edit set image reddit-backend=${{ secrets.DOCKER_USERNAME }}/reddit-backend:sha-${{ github.sha }}
+        kustomize edit set image lambrk-backend=${{ secrets.DOCKER_USERNAME }}/lambrk-backend:sha-${{ github.sha }}
         kustomize build . | kubectl apply -f -
-        kubectl rollout status deployment/reddit-backend -n staging
+        kubectl rollout status deployment/lambrk-backend -n staging
 
     - name: Run smoke tests
       run: |
         kubectl run smoke-test --image=curlimages/curl:latest --rm -i --restart=Never -- \
-          curl -f http://reddit-backend.staging.svc.cluster.local/actuator/health
+          curl -f http://lambrk-backend.staging.svc.cluster.local/actuator/health
 
   deploy-production:
     runs-on: ubuntu-latest
@@ -302,16 +302,16 @@ jobs:
         aws-region: us-east-1
 
     - name: Update kubeconfig
-      run: aws eks update-kubeconfig --name reddit-production
+      run: aws eks update-kubeconfig --name lambrk-production
 
     - name: Deploy to production (canary)
       run: |
         cd k8s/overlays/production
-        kustomize edit set image reddit-backend=${{ secrets.DOCKER_USERNAME }}/reddit-backend:sha-${{ github.sha }}
+        kustomize edit set image lambrk-backend=${{ secrets.DOCKER_USERNAME }}/lambrk-backend:sha-${{ github.sha }}
         kustomize build . | kubectl apply -f -
         
         # Wait for canary deployment
-        kubectl rollout status deployment/reddit-backend-canary -n production
+        kubectl rollout status deployment/lambrk-backend-canary -n production
         
         # Run canary analysis
         sleep 60
@@ -323,12 +323,12 @@ jobs:
         
         if (( $(echo "$ERROR_RATE > 0.01" | bc -l) )); then
           echo "Error rate too high, rolling back"
-          kubectl rollout undo deployment/reddit-backend-canary -n production
+          kubectl rollout undo deployment/lambrk-backend-canary -n production
           exit 1
         fi
         
         # Promote to full deployment
-        kubectl rollout status deployment/reddit-backend -n production
+        kubectl rollout status deployment/lambrk-backend -n production
 
     - name: Verify deployment
       run: |
@@ -382,7 +382,7 @@ jobs:
         filename: performance/load-test.js
         flags: --out influxdb=http://influxdb:8086/k6
       env:
-        API_BASE_URL: https://staging.reddit.com/api
+        API_BASE_URL: https://staging.lambrk.com/api
 
     - name: Upload performance results
       uses: actions/upload-artifact@v4

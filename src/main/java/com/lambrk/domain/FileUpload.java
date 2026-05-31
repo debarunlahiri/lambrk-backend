@@ -16,7 +16,8 @@ import java.util.UUID;
     @Index(name = "idx_file_upload_uploaded_by", columnList = "uploaded_by"),
     @Index(name = "idx_file_upload_uploaded_at", columnList = "uploaded_at"),
     @Index(name = "idx_file_upload_is_public", columnList = "is_public"),
-    @Index(name = "idx_file_upload_is_nsfw", columnList = "is_nsfw")
+    @Index(name = "idx_file_upload_is_nsfw", columnList = "is_nsfw"),
+    @Index(name = "idx_file_upload_post", columnList = "post_id")
 })
 @EntityListeners(AuditingEntityListener.class)
 public class FileUpload {
@@ -70,6 +71,10 @@ public class FileUpload {
     @JoinColumn(name = "uploaded_by", nullable = false)
     private User uploadedBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post;
+
     @CreatedDate
     @Column(name = "uploaded_at", nullable = false, updatable = false)
     private Instant uploadedAt;
@@ -116,7 +121,8 @@ public class FileUpload {
     }
 
     public enum FileUploadType {
-        AVATAR, POST_IMAGE, POST_VIDEO, COMMUNITY_ICON, COMMUNITY_HEADER, BANNER
+        AVATAR, POST_IMAGE, POST_VIDEO, COMMUNITY_ICON, COMMUNITY_HEADER, BANNER,
+        PROFILE_IMAGE, COVER_IMAGE
     }
 
     public UUID getId() { return id; }
@@ -145,6 +151,8 @@ public class FileUpload {
     public void setAltText(String altText) { this.altText = altText; }
     public User getUploadedBy() { return uploadedBy; }
     public void setUploadedBy(User uploadedBy) { this.uploadedBy = uploadedBy; }
+    public Post getPost() { return post; }
+    public void setPost(Post post) { this.post = post; }
     public Instant getUploadedAt() { return uploadedAt; }
     public void setUploadedAt(Instant uploadedAt) { this.uploadedAt = uploadedAt; }
     public Instant getUpdatedAt() { return updatedAt; }

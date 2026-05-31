@@ -11,7 +11,17 @@ Get recommendations.
 **Request body**
 
 ```json
-{"userId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","type":"POSTS","limit":20,"excludeCommunities":[],"excludeUsers":[],"includeNSFW":false,"includeOver18":false,"contextCommunityId":null,"contextPostId":null}
+{
+  "userId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "type": "POSTS",
+  "limit": 20,
+  "excludeCommunities": [],
+  "excludeUsers": [],
+  "includeNSFW": false,
+  "includeOver18": false,
+  "contextCommunityId": null,
+  "contextPostId": null
+}
 ```
 
 **cURL**
@@ -21,7 +31,7 @@ curl -X POST 'http://localhost:9500/api/recommendations' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "userId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "userId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
   "type": "POSTS",
   "limit": 20,
   "excludeCommunities": [],
@@ -36,7 +46,19 @@ curl -X POST 'http://localhost:9500/api/recommendations' \
 **Response**
 
 ```json
-{"type":"POSTS","posts":[],"communities":[],"users":[],"comments":[],"explanation":"Recommended for you","confidence":0.85,"factors":["activity","subscriptions"]}
+{
+  "type": "POSTS",
+  "posts": [],
+  "communities": [],
+  "users": [],
+  "comments": [],
+  "explanation": "Recommended for you",
+  "confidence": 0.85,
+  "factors": [
+    "activity",
+    "subscriptions"
+  ]
+}
 ```
 ### GET `/api/recommendations/posts/{userId}`
 
@@ -58,7 +80,19 @@ curl -X GET 'http://localhost:9500/api/recommendations/posts/b0eebc99-9c0b-4ef8-
 **Response**
 
 ```json
-{"type":"POSTS","posts":[],"communities":[],"users":[],"comments":[],"explanation":"Recommended for you","confidence":0.85,"factors":["activity","subscriptions"]}
+{
+  "type": "POSTS",
+  "posts": [],
+  "communities": [],
+  "users": [],
+  "comments": [],
+  "explanation": "Recommended for you",
+  "confidence": 0.85,
+  "factors": [
+    "activity",
+    "subscriptions"
+  ]
+}
 ```
 ### GET `/api/recommendations/communities/{userId}`
 
@@ -80,7 +114,19 @@ curl -X GET 'http://localhost:9500/api/recommendations/communities/b0eebc99-9c0b
 **Response**
 
 ```json
-{"type":"POSTS","posts":[],"communities":[],"users":[],"comments":[],"explanation":"Recommended for you","confidence":0.85,"factors":["activity","subscriptions"]}
+{
+  "type": "POSTS",
+  "posts": [],
+  "communities": [],
+  "users": [],
+  "comments": [],
+  "explanation": "Recommended for you",
+  "confidence": 0.85,
+  "factors": [
+    "activity",
+    "subscriptions"
+  ]
+}
 ```
 ### GET `/api/recommendations/users/{userId}`
 
@@ -102,7 +148,19 @@ curl -X GET 'http://localhost:9500/api/recommendations/users/b0eebc99-9c0b-4ef8-
 **Response**
 
 ```json
-{"type":"POSTS","posts":[],"communities":[],"users":[],"comments":[],"explanation":"Recommended for you","confidence":0.85,"factors":["activity","subscriptions"]}
+{
+  "type": "POSTS",
+  "posts": [],
+  "communities": [],
+  "users": [],
+  "comments": [],
+  "explanation": "Recommended for you",
+  "confidence": 0.85,
+  "factors": [
+    "activity",
+    "subscriptions"
+  ]
+}
 ```
 ### GET `/api/recommendations/comments/{userId}`
 
@@ -124,7 +182,19 @@ curl -X GET 'http://localhost:9500/api/recommendations/comments/b0eebc99-9c0b-4e
 **Response**
 
 ```json
-{"type":"POSTS","posts":[],"communities":[],"users":[],"comments":[],"explanation":"Recommended for you","confidence":0.85,"factors":["activity","subscriptions"]}
+{
+  "type": "POSTS",
+  "posts": [],
+  "communities": [],
+  "users": [],
+  "comments": [],
+  "explanation": "Recommended for you",
+  "confidence": 0.85,
+  "factors": [
+    "activity",
+    "subscriptions"
+  ]
+}
 ```
 ### GET `/api/recommendations/context/{userId}`
 
@@ -146,7 +216,19 @@ curl -X GET 'http://localhost:9500/api/recommendations/context/b0eebc99-9c0b-4ef
 **Response**
 
 ```json
-{"type":"POSTS","posts":[],"communities":[],"users":[],"comments":[],"explanation":"Recommended for you","confidence":0.85,"factors":["activity","subscriptions"]}
+{
+  "type": "POSTS",
+  "posts": [],
+  "communities": [],
+  "users": [],
+  "comments": [],
+  "explanation": "Recommended for you",
+  "confidence": 0.85,
+  "factors": [
+    "activity",
+    "subscriptions"
+  ]
+}
 ```
 ### GET `/api/recommendations/trending`
 
@@ -168,5 +250,17 @@ curl -X GET 'http://localhost:9500/api/recommendations/trending?type=posts&limit
 **Response**
 
 ```json
-{"type":"POSTS","posts":[],"communities":[],"users":[],"comments":[],"explanation":"Recommended for you","confidence":0.85,"factors":["activity","subscriptions"]}
+{
+  "type": "POSTS",
+  "posts": [],
+  "communities": [],
+  "users": [],
+  "comments": [],
+  "explanation": "Recommended for you",
+  "confidence": 0.85,
+  "factors": [
+    "activity",
+    "subscriptions"
+  ]
+}
 ```

@@ -42,6 +42,18 @@ public class CommentController {
         return ResponseEntity.ok(commentService.createComment(request, authorId));
     }
 
+    @PostMapping("/{commentId}/reply")
+    @NewSpan("create-reply")
+    @Counted(value = "comments.replies.created")
+    @Timed(value = "comments.reply.duration")
+    public ResponseEntity<CommentResponse> createReply(
+            @PathVariable @SpanTag UUID commentId,
+            @RequestBody String content,
+            @AuthenticationPrincipal UserPrincipal userDetails) {
+        UUID authorId = getUserId(userDetails);
+        return ResponseEntity.ok(commentService.createReply(commentId, content, authorId));
+    }
+
     @GetMapping("/{commentId}")
     @NewSpan("get-comment")
     @Timed(value = "comments.get.duration")

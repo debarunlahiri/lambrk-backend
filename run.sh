@@ -88,6 +88,38 @@ kill_previous_instance() {
 # ============================================================
 # Ensure Docker services are running
 # ============================================================
+
+start_docker_daemon() {
+    local os_type
+    os_type=$(uname -s)
+
+    if [ "$os_type" = "Darwin" ]; then
+        log "Starting Docker Desktop (macOS)..."
+        open --background -a Docker 2>/dev/null || true
+        log "Waiting for Docker daemon..."
+        for i in $(seq 1 30); do
+            if docker info &> /dev/null 2>&1; then
+                return 0
+            fi
+            sleep 2
+        done
+        return 1
+    elif [ "$os_type" = "Linux" ]; then
+        log "Starting Docker service (Linux)..."
+        sudo systemctl start docker 2>/dev/null || sudo service docker start 2>/dev/null || true
+        log "Waiting for Docker daemon..."
+        for i in $(seq 1 15); do
+            if sudo docker info &> /dev/null 2>&1; then
+                DOCKER_CMD="sudo docker"
+                return 0
+            fi
+            sleep 2
+        done
+        return 1
+    fi
+    return 1
+}
+
 ensure_services() {
     log "Checking infrastructure services..."
 
@@ -97,26 +129,39 @@ ensure_services() {
         DOCKER_CMD="sudo docker"
         warn "Using sudo for Docker (add user to docker group: sudo usermod -aG docker \$USER)"
     else
-        fail "Docker is not running or not accessible."
-        exit 1
+        warn "Docker not running. Attempting auto-start..."
+        if start_docker_daemon; then
+            log "Docker started successfully"
+        else
+            fail "Docker could not be started. Start manually:"
+            fail "  macOS: open -a Docker"
+            fail "  Linux: sudo systemctl start docker"
+            exit 1
+        fi
     fi
 
     cd "$PROJECT_DIR"
 
-    # Check if containers are running
+    # Check if containers are running; start/restart any that are down
     RUNNING=$($DOCKER_CMD compose ps --format '{{.Name}}' 2>/dev/null | wc -l | tr -d ' ')
     if [ "$RUNNING" -lt 3 ]; then
         log "Starting Docker Compose services..."
         $DOCKER_CMD compose up -d 2>&1 | tail -3
+        sleep 3
     else
         success "Docker services already running ($RUNNING containers)"
     fi
 
-    # Verify critical containers are running
+    # Verify critical containers are running; attempt restart if missing
     for container in lambrk-postgres lambrk-redis; do
         if ! $DOCKER_CMD ps --format '{{.Names}}' 2>/dev/null | grep -q "^${container}$"; then
-            fail "Container '$container' is not running. Check: $DOCKER_CMD compose ps"
-            exit 1
+            warn "Container '$container' is not running. Attempting to start it..."
+            $DOCKER_CMD start "$container" 2>&1 | tail -3
+            sleep 3
+            if ! $DOCKER_CMD ps --format '{{.Names}}' 2>/dev/null | grep -q "^${container}$"; then
+                fail "Container '$container' failed to start. Check: $DOCKER_CMD compose logs $container"
+                exit 1
+            fi
         fi
     done
 
@@ -209,14 +254,14 @@ verify_tables() {
         fi
     done
 
+    MVN_CMD="mvn"
+    if [ -f "$PROJECT_DIR/mvnw" ]; then
+        MVN_CMD="./mvnw"
+        chmod +x "$PROJECT_DIR/mvnw"
+    fi
+
     if [ ${#MISSING_TABLES[@]} -gt 0 ]; then
         warn "Missing ${#MISSING_TABLES[@]} table(s). Running Flyway migrations..."
-
-        MVN_CMD="mvn"
-        if [ -f "$PROJECT_DIR/mvnw" ]; then
-            MVN_CMD="./mvnw"
-            chmod +x "$PROJECT_DIR/mvnw"
-        fi
 
         cd "$PROJECT_DIR"
         if $MVN_CMD flyway:migrate -q 2>&1 | tail -10; then
@@ -240,6 +285,15 @@ verify_tables() {
     else
         success "All expected tables exist"
     fi
+
+    # Always run Flyway migrate to ensure latest SQL scripts (e.g. V15) are applied
+    log "Ensuring Flyway migrations are up to date..."
+    cd "$PROJECT_DIR"
+    if $MVN_CMD flyway:migrate -q 2>&1 | tail -10; then
+        success "Flyway migrations up to date"
+    else
+        warn "Flyway migrate returned non-zero (schema may already be current or credentials issue)"
+    fi
 }
 
 # ============================================================
@@ -249,6 +303,26 @@ run_app() {
     log "Starting Lambrk Backend..."
 
     cd "$PROJECT_DIR"
+
+    # Load .env file if present
+    if [ -f "$PROJECT_DIR/.env" ]; then
+        log "Loading .env file..."
+        set -a
+        source "$PROJECT_DIR/.env"
+        set +a
+    fi
+
+    # Check AWS credentials
+    if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+        warn "AWS credentials not set. S3 file uploads will fail."
+        warn "Copy .env.example to .env and fill in your values."
+    fi
+
+    # Build AWS system property args for the JVM
+    AWS_ARGS=""
+    if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+        AWS_ARGS="-Daws.accessKeyId=$AWS_ACCESS_KEY_ID -Daws.secretAccessKey=$AWS_SECRET_ACCESS_KEY"
+    fi
 
     MVN_CMD="mvn"
     if [ -f "$PROJECT_DIR/mvnw" ]; then
@@ -260,7 +334,7 @@ run_app() {
 
     if [ "$MODE" = "background" ] || [ "$MODE" = "bg" ] || [ "$MODE" = "-d" ]; then
         log "Running in background mode. Logs: $LOG_FILE"
-        nohup $MVN_CMD spring-boot:run -DskipTests -Dspring-boot.run.arguments="--spring.devtools.restart.enabled=false,--spring.devtools.livereload.enabled=false" > "$LOG_FILE" 2>&1 &
+        nohup $MVN_CMD spring-boot:run -DskipTests $AWS_ARGS -Dspring-boot.run.arguments="--spring.devtools.restart.enabled=false,--spring.devtools.livereload.enabled=false" > "$LOG_FILE" 2>&1 &
         APP_PID=$!
         echo $APP_PID > "$PID_FILE"
         success "App started with PID: $APP_PID"
@@ -292,7 +366,7 @@ run_app() {
         echo -e "  ${BOLD}Running in foreground. Press Ctrl+C to stop.${NC}"
         echo -e "  ${BOLD}Swagger:${NC} http://localhost:$APP_PORT/swagger-ui.html"
         echo ""
-        $MVN_CMD spring-boot:run -DskipTests -Dspring-boot.run.arguments="--spring.devtools.restart.enabled=false,--spring.devtools.livereload.enabled=false"
+        $MVN_CMD spring-boot:run -DskipTests $AWS_ARGS -Dspring-boot.run.arguments="--spring.devtools.restart.enabled=false,--spring.devtools.livereload.enabled=false"
     fi
 }
 

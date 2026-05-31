@@ -53,10 +53,10 @@ public class Comment {
     private boolean isOver18 = false;
 
     @Column(name = "score", nullable = false)
-    private int score = 1;
+    private int score = 0;
 
     @Column(name = "like_count", nullable = false)
-    private int likeCount = 1;
+    private int likeCount = 0;
 
     @Column(name = "dislike_count", nullable = false)
     private int dislikeCount = 0;
@@ -140,7 +140,7 @@ public class Comment {
     }
 
     public Comment(String content, User author, Post post, Comment parent) {
-        this(com.lambrk.util.UuidV7Generator.generate(), content, null, false, false, false, false, false, false, 1, 1, 0, 0, 0,
+        this(com.lambrk.util.UuidV7Generator.generate(), content, null, false, false, false, false, false, false, 0, 0, 0, 0, 0,
              parent != null ? parent.getDepthLevel() + 1 : 0, author, post, parent, new HashSet<>(),
              new HashSet<>(), Instant.now(), Instant.now(), null, null, null);
     }

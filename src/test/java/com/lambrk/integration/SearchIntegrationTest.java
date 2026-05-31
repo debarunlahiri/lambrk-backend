@@ -30,7 +30,7 @@ class SearchIntegrationTest {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
-        .withDatabaseName("reddit_test")
+        .withDatabaseName("lambrk_test")
         .withUsername("test")
         .withPassword("test");
 

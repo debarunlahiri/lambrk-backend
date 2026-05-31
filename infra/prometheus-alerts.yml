@@ -1,4 +1,4 @@
-# Prometheus Alerting Rules for Reddit Backend
+# Prometheus Alerting Rules for Lambrk Backend
 # Place in /etc/prometheus/rules/ or include in prometheus.yml
 
 groups:

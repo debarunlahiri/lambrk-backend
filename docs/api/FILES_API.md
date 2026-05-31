@@ -4,31 +4,85 @@ Base path: `/api/files`. JWT required.
 
 ### POST `/api/files/upload`
 
-Upload a file with metadata.
+Upload files with metadata. Supports bulk upload (up to 20 files, 5MB each).
 
 **Auth:** User
 
 **Request body**
 
-`multipart/form-data` fields: `file`, `type`, `fileName`, `description`, `isPublic`, `isNSFW`, `altText`.
+`multipart/form-data` fields:
+- `files` (required, up to 20 files)
+- `type` (required: `POST_IMAGE`, `POST_VIDEO`, `AVATAR`, `COMMUNITY_BANNER`, `COMMUNITY_ICON`, `PROFILE_IMAGE`, `COVER_IMAGE`)
+- `fileName` (optional)
+- `description` (optional)
+- `isPublic` (optional, default `true`)
+- `isNSFW` (optional, default `false`)
+- `altText` (optional)
 
-**cURL**
+**S3 folder structure**
+
+| Type | Main path | Thumbnail path |
+| --- | --- | --- |
+| `POST_IMAGE` | `lambrk/posts/media/image/main/{photo_id}.ext` | `lambrk/posts/media/image/thumb/{photo_id}.jpg` |
+| `PROFILE_IMAGE` | `lambrk/profile/profile_img/{user_id}/{photo_id}/main/{photo_id}.ext` | `lambrk/profile/profile_img/{user_id}/{photo_id}/thumb/{photo_id}.jpg` |
+| `COVER_IMAGE` | `lambrk/profile/cover_img/{user_id}/{photo_id}/main/{photo_id}.ext` | `lambrk/profile/cover_img/{user_id}/{photo_id}/thumb/{photo_id}.jpg` |
+
+**cURL — Post images**
 
 ```bash
 curl -X POST 'http://localhost:9500/api/files/upload' \
   -H 'Authorization: Bearer <token>' \
-  -F 'file=@/path/to/file.png' \
+  -F 'files=@/path/to/image1.png' \
+  -F 'files=@/path/to/image2.jpg' \
   -F 'type=POST_IMAGE' \
-  -F 'description=Post image' \
+  -F 'description=Post images' \
   -F 'isPublic=true' \
   -F 'isNSFW=false' \
-  -F 'altText=Screenshot'
+  -F 'altText=Screenshots'
+```
+
+**cURL — Profile photo**
+
+```bash
+curl -X POST 'http://localhost:9500/api/files/upload' \
+  -H 'Authorization: Bearer <token>' \
+  -F 'files=@/path/to/avatar.png' \
+  -F 'type=PROFILE_IMAGE'
+```
+
+**cURL — Cover photo**
+
+```bash
+curl -X POST 'http://localhost:9500/api/files/upload' \
+  -H 'Authorization: Bearer <token>' \
+  -F 'files=@/path/to/banner.jpg' \
+  -F 'type=COVER_IMAGE'
 ```
 
 **Response**
 
+Returns a list of uploaded file metadata.
+
 ```json
-{"fileId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","fileName":"stored-file.png","originalFileName":"file.png","fileUrl":"https://example.com/files/stored-file.png","thumbnailUrl":null,"type":"POST_IMAGE","fileSize":1024,"mimeType":"image/png","description":"Post image","isPublic":true,"isNSFW":false,"altText":"Screenshot","uploadedBy":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","uploadedAt":"2026-05-02T10:00:00Z","checksum":"abc123"}
+[
+  {
+    "fileId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb19",
+    "fileName": "stored-file-1.png",
+    "originalFileName": "image1.png",
+    "fileUrl": "https://s3.ap-south-1.amazonaws.com/lm-sm-001/lambrk/posts/media/image/main/019e5a43-e0c2-7baa-9f6d-b9b9b82afb19.png",
+    "thumbnailUrl": "https://s3.ap-south-1.amazonaws.com/lm-sm-001/lambrk/posts/media/image/thumb/019e5a43-e0c2-7baa-9f6d-b9b9b82afb19.jpg",
+    "type": "POST_IMAGE",
+    "fileSize": 1024,
+    "mimeType": "image/png",
+    "description": "Post images",
+    "isPublic": true,
+    "isNSFW": false,
+    "altText": "Screenshots",
+    "uploadedBy": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+    "uploadedAt": "2026-05-02T10:00:00Z",
+    "checksum": "abc123"
+  }
+]
 ```
 ### GET `/api/files/{fileId}`
 
@@ -46,7 +100,23 @@ curl -X GET 'http://localhost:9500/api/files/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a1
 **Response**
 
 ```json
-{"fileId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","fileName":"stored-file.png","originalFileName":"file.png","fileUrl":"https://example.com/files/stored-file.png","thumbnailUrl":null,"type":"POST_IMAGE","fileSize":1024,"mimeType":"image/png","description":"Post image","isPublic":true,"isNSFW":false,"altText":"Screenshot","uploadedBy":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","uploadedAt":"2026-05-02T10:00:00Z","checksum":"abc123"}
+{
+  "fileId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb19",
+  "fileName": "stored-file.png",
+  "originalFileName": "file.png",
+  "fileUrl": "https://s3.ap-south-1.amazonaws.com/lm-sm-001/lambrk/posts/media/image/main/019e5a43-e0c2-7baa-9f6d-b9b9b82afb19.png",
+  "thumbnailUrl": "https://s3.ap-south-1.amazonaws.com/lm-sm-001/lambrk/posts/media/image/thumb/019e5a43-e0c2-7baa-9f6d-b9b9b82afb19.jpg",
+  "type": "POST_IMAGE",
+  "fileSize": 1024,
+  "mimeType": "image/png",
+  "description": "Post image",
+  "isPublic": true,
+  "isNSFW": false,
+  "altText": "Screenshot",
+  "uploadedBy": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "uploadedAt": "2026-05-02T10:00:00Z",
+  "checksum": "abc123"
+}
 ```
 ### GET `/api/files/{fileId}/content`
 
@@ -87,7 +157,17 @@ curl -X GET 'http://localhost:9500/api/files?page=0&size=20' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### GET `/api/files/type/{type}`
 
@@ -112,7 +192,17 @@ curl -X GET 'http://localhost:9500/api/files/type/POST_IMAGE?page=0&size=20' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### GET `/api/files/public`
 
@@ -137,7 +227,17 @@ curl -X GET 'http://localhost:9500/api/files/public?page=0&size=20' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### PUT `/api/files/{fileId}`
 
@@ -170,7 +270,23 @@ curl -X PUT 'http://localhost:9500/api/files/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a1
 **Response**
 
 ```json
-{"fileId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","fileName":"stored-file.png","originalFileName":"file.png","fileUrl":"https://example.com/files/stored-file.png","thumbnailUrl":null,"type":"POST_IMAGE","fileSize":1024,"mimeType":"image/png","description":"Post image","isPublic":true,"isNSFW":false,"altText":"Screenshot","uploadedBy":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","uploadedAt":"2026-05-02T10:00:00Z","checksum":"abc123"}
+{
+  "fileId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb19",
+  "fileName": "stored-file.png",
+  "originalFileName": "file.png",
+  "fileUrl": "https://s3.ap-south-1.amazonaws.com/lm-sm-001/lambrk/posts/media/image/main/019e5a43-e0c2-7baa-9f6d-b9b9b82afb19.png",
+  "thumbnailUrl": "https://s3.ap-south-1.amazonaws.com/lm-sm-001/lambrk/posts/media/image/thumb/019e5a43-e0c2-7baa-9f6d-b9b9b82afb19.jpg",
+  "type": "POST_IMAGE",
+  "fileSize": 1024,
+  "mimeType": "image/png",
+  "description": "Post image",
+  "isPublic": true,
+  "isNSFW": false,
+  "altText": "Screenshot",
+  "uploadedBy": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "uploadedAt": "2026-05-02T10:00:00Z",
+  "checksum": "abc123"
+}
 ```
 ### DELETE `/api/files/{fileId}`
 

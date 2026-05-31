@@ -18,7 +18,17 @@ curl -X GET 'http://localhost:9500/api/logs?page=0&size=50' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### GET `/api/logs/user/{userId}`
 
@@ -36,7 +46,17 @@ curl -X GET 'http://localhost:9500/api/logs/user/b0eebc99-9c0b-4ef8-bb6d-6bb9bd3
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### GET `/api/logs/endpoint`
 
@@ -54,7 +74,17 @@ curl -X GET 'http://localhost:9500/api/logs/endpoint?path=/api/posts&page=0&size
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### GET `/api/logs/method/{method}`
 
@@ -72,7 +102,17 @@ curl -X GET 'http://localhost:9500/api/logs/method/GET?page=0&size=50' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### GET `/api/logs/status/{statusCode}`
 
@@ -90,7 +130,17 @@ curl -X GET 'http://localhost:9500/api/logs/status/500?page=0&size=50' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### GET `/api/logs/errors`
 
@@ -108,7 +158,17 @@ curl -X GET 'http://localhost:9500/api/logs/errors?page=0&size=50' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### GET `/api/logs/exceptions`
 
@@ -126,7 +186,17 @@ curl -X GET 'http://localhost:9500/api/logs/exceptions?page=0&size=50' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### GET `/api/logs/anonymous`
 
@@ -144,7 +214,17 @@ curl -X GET 'http://localhost:9500/api/logs/anonymous?page=0&size=50' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### GET `/api/logs/authenticated`
 
@@ -162,5 +242,15 @@ curl -X GET 'http://localhost:9500/api/logs/authenticated?page=0&size=50' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```

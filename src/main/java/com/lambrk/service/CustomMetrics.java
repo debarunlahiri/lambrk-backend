@@ -17,33 +17,33 @@ public class CustomMetrics {
     }
 
     public void recordPostCreated(String community) {
-        meterRegistry.counter("reddit.posts.created", "community", community).increment();
+        meterRegistry.counter("lambrk.posts.created", "community", community).increment();
     }
 
     public void recordCommentCreated(String community) {
-        meterRegistry.counter("reddit.comments.created", "community", community).increment();
+        meterRegistry.counter("lambrk.comments.created", "community", community).increment();
     }
 
     public void recordVoteCast(String voteType) {
-        meterRegistry.counter("reddit.votes.cast", "type", voteType).increment();
+        meterRegistry.counter("lambrk.votes.cast", "type", voteType).increment();
     }
 
     public void recordUserLogin(String userId) {
-        meterRegistry.counter("reddit.users.login", "userId", userId).increment();
+        meterRegistry.counter("lambrk.users.login", "userId", userId).increment();
     }
 
     public void recordUserRegistration() {
-        meterRegistry.counter("reddit.users.registered").increment();
+        meterRegistry.counter("lambrk.users.registered").increment();
     }
 
     public void recordModeration(String contentType, boolean approved) {
-        meterRegistry.counter("reddit.moderation.result",
+        meterRegistry.counter("lambrk.moderation.result",
             "type", contentType,
             "approved", String.valueOf(approved)).increment();
     }
 
     public void recordModerationError(String contentType) {
-        meterRegistry.counter("reddit.moderation.error", "type", contentType).increment();
+        meterRegistry.counter("lambrk.moderation.error", "type", contentType).increment();
     }
 
     public void recordRecommendationError() {
@@ -59,36 +59,36 @@ public class CustomMetrics {
     }
 
     public void recordCommunityCreated() {
-        meterRegistry.counter("reddit.communities.created").increment();
+        meterRegistry.counter("lambrk.communities.created").increment();
     }
 
     public void recordCommunitySubscription(boolean subscribed) {
-        meterRegistry.counter("reddit.communities.subscription",
+        meterRegistry.counter("lambrk.communities.subscription",
             "action", subscribed ? "subscribe" : "unsubscribe").increment();
     }
 
     public void recordSearchQuery(String type) {
-        meterRegistry.counter("reddit.search.queries", "type", type).increment();
+        meterRegistry.counter("lambrk.search.queries", "type", type).increment();
     }
 
     public void recordNotificationCreated(String type) {
-        meterRegistry.counter("reddit.notifications.created", "type", type).increment();
+        meterRegistry.counter("lambrk.notifications.created", "type", type).increment();
     }
 
     public void recordNotificationRead() {
-        meterRegistry.counter("reddit.notifications.read").increment();
+        meterRegistry.counter("lambrk.notifications.read").increment();
     }
 
     public void recordAdminAction(String action) {
-        meterRegistry.counter("reddit.admin.actions", "type", action).increment();
+        meterRegistry.counter("lambrk.admin.actions", "type", action).increment();
     }
 
     public void recordFileUpload(String type) {
-        meterRegistry.counter("reddit.files.uploaded", "type", type).increment();
+        meterRegistry.counter("lambrk.files.uploaded", "type", type).increment();
     }
 
     public void recordWebSocketConnection(String type) {
-        meterRegistry.counter("reddit.websocket.connections", "type", type).increment();
+        meterRegistry.counter("lambrk.websocket.connections", "type", type).increment();
     }
 
     public Timer.Sample startTimer() {

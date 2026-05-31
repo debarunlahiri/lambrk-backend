@@ -137,7 +137,7 @@ public class SearchService {
     }
 
     private List<UserResponse> searchUsers(SearchRequest request) {
-        Pageable pageable = createPageable(request);
+        Pageable pageable = createUserPageable(request);
         
         Page<User> users = userRepository.searchActiveUsers(request.query(), pageable);
         
@@ -148,7 +148,7 @@ public class SearchService {
     }
 
     private List<CommunityResponse> searchCommunities(SearchRequest request) {
-        Pageable pageable = createPageable(request);
+        Pageable pageable = createCommunityPageable(request);
         
         Page<Community> communities = communityRepository.searchCommunities(request.query(), pageable);
         
@@ -178,6 +178,30 @@ public class SearchService {
             case HOT -> Sort.by(Sort.Direction.DESC, "score");
             case TOP -> Sort.by(Sort.Direction.DESC, "score");
             case CONTROVERSIAL -> Sort.by(Sort.Direction.DESC, "likeCount").and(Sort.by(Sort.Direction.ASC, "dislikeCount"));
+        };
+        
+        return PageRequest.of(request.page(), request.size(), sort);
+    }
+
+    private Pageable createUserPageable(SearchRequest request) {
+        Sort sort = switch (request.sort()) {
+            case RELEVANCE -> Sort.by(Sort.Direction.DESC, "karma");
+            case NEW -> Sort.by(Sort.Direction.DESC, "createdAt");
+            case HOT -> Sort.by(Sort.Direction.DESC, "karma");
+            case TOP -> Sort.by(Sort.Direction.DESC, "karma");
+            case CONTROVERSIAL -> Sort.by(Sort.Direction.DESC, "karma");
+        };
+        
+        return PageRequest.of(request.page(), request.size(), sort);
+    }
+
+    private Pageable createCommunityPageable(SearchRequest request) {
+        Sort sort = switch (request.sort()) {
+            case RELEVANCE -> Sort.by(Sort.Direction.DESC, "subscriberCount");
+            case NEW -> Sort.by(Sort.Direction.DESC, "createdAt");
+            case HOT -> Sort.by(Sort.Direction.DESC, "subscriberCount");
+            case TOP -> Sort.by(Sort.Direction.DESC, "subscriberCount");
+            case CONTROVERSIAL -> Sort.by(Sort.Direction.DESC, "subscriberCount");
         };
         
         return PageRequest.of(request.page(), request.size(), sort);

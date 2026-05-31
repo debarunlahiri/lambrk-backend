@@ -11,7 +11,21 @@ Advanced search.
 **Request body**
 
 ```json
-{"query":"spring boot","type":"ALL","sort":"RELEVANCE","timeFilter":"ALL","communities":[],"flairs":[],"includeNSFW":false,"includeOver18":false,"minScore":null,"minComments":null,"minVotes":null,"page":0,"size":20}
+{
+  "query": "spring boot",
+  "type": "ALL",
+  "sort": "RELEVANCE",
+  "timeFilter": "ALL",
+  "communities": [],
+  "flairs": [],
+  "includeNSFW": false,
+  "includeOver18": false,
+  "minScore": null,
+  "minComments": null,
+  "minVotes": null,
+  "page": 0,
+  "size": 20
+}
 ```
 
 **cURL**
@@ -40,7 +54,24 @@ curl -X POST 'http://localhost:9500/api/search' \
 **Response**
 
 ```json
-{"posts":[],"comments":[],"users":[],"communities":[],"metadata":{"query":"spring boot","type":"ALL","sort":"RELEVANCE","timeFilter":"ALL","totalResults":0,"pageNumber":0,"pageSize":20,"totalPages":0,"searchTimeMs":12,"suggestions":[]}}
+{
+  "posts": [],
+  "comments": [],
+  "users": [],
+  "communities": [],
+  "metadata": {
+    "query": "spring boot",
+    "type": "ALL",
+    "sort": "RELEVANCE",
+    "timeFilter": "ALL",
+    "totalResults": 0,
+    "pageNumber": 0,
+    "pageSize": 20,
+    "totalPages": 0,
+    "searchTimeMs": 12,
+    "suggestions": []
+  }
+}
 ```
 ### GET `/api/search/posts`
 
@@ -62,7 +93,24 @@ curl -X GET 'http://localhost:9500/api/search/posts?query=spring&page=0&size=20&
 **Response**
 
 ```json
-{"posts":[],"comments":[],"users":[],"communities":[],"metadata":{"query":"spring boot","type":"ALL","sort":"RELEVANCE","timeFilter":"ALL","totalResults":0,"pageNumber":0,"pageSize":20,"totalPages":0,"searchTimeMs":12,"suggestions":[]}}
+{
+  "posts": [],
+  "comments": [],
+  "users": [],
+  "communities": [],
+  "metadata": {
+    "query": "spring boot",
+    "type": "ALL",
+    "sort": "RELEVANCE",
+    "timeFilter": "ALL",
+    "totalResults": 0,
+    "pageNumber": 0,
+    "pageSize": 20,
+    "totalPages": 0,
+    "searchTimeMs": 12,
+    "suggestions": []
+  }
+}
 ```
 ### GET `/api/search/comments`
 
@@ -84,7 +132,24 @@ curl -X GET 'http://localhost:9500/api/search/comments?query=spring&page=0&size=
 **Response**
 
 ```json
-{"posts":[],"comments":[],"users":[],"communities":[],"metadata":{"query":"spring boot","type":"ALL","sort":"RELEVANCE","timeFilter":"ALL","totalResults":0,"pageNumber":0,"pageSize":20,"totalPages":0,"searchTimeMs":12,"suggestions":[]}}
+{
+  "posts": [],
+  "comments": [],
+  "users": [],
+  "communities": [],
+  "metadata": {
+    "query": "spring boot",
+    "type": "ALL",
+    "sort": "RELEVANCE",
+    "timeFilter": "ALL",
+    "totalResults": 0,
+    "pageNumber": 0,
+    "pageSize": 20,
+    "totalPages": 0,
+    "searchTimeMs": 12,
+    "suggestions": []
+  }
+}
 ```
 ### GET `/api/search/users`
 
@@ -106,7 +171,24 @@ curl -X GET 'http://localhost:9500/api/search/users?query=spring&page=0&size=20&
 **Response**
 
 ```json
-{"posts":[],"comments":[],"users":[],"communities":[],"metadata":{"query":"spring boot","type":"ALL","sort":"RELEVANCE","timeFilter":"ALL","totalResults":0,"pageNumber":0,"pageSize":20,"totalPages":0,"searchTimeMs":12,"suggestions":[]}}
+{
+  "posts": [],
+  "comments": [],
+  "users": [],
+  "communities": [],
+  "metadata": {
+    "query": "spring boot",
+    "type": "ALL",
+    "sort": "RELEVANCE",
+    "timeFilter": "ALL",
+    "totalResults": 0,
+    "pageNumber": 0,
+    "pageSize": 20,
+    "totalPages": 0,
+    "searchTimeMs": 12,
+    "suggestions": []
+  }
+}
 ```
 ### GET `/api/search/communities`
 
@@ -128,7 +210,24 @@ curl -X GET 'http://localhost:9500/api/search/communities?query=spring&page=0&si
 **Response**
 
 ```json
-{"posts":[],"comments":[],"users":[],"communities":[],"metadata":{"query":"spring boot","type":"ALL","sort":"RELEVANCE","timeFilter":"ALL","totalResults":0,"pageNumber":0,"pageSize":20,"totalPages":0,"searchTimeMs":12,"suggestions":[]}}
+{
+  "posts": [],
+  "comments": [],
+  "users": [],
+  "communities": [],
+  "metadata": {
+    "query": "spring boot",
+    "type": "ALL",
+    "sort": "RELEVANCE",
+    "timeFilter": "ALL",
+    "totalResults": 0,
+    "pageNumber": 0,
+    "pageSize": 20,
+    "totalPages": 0,
+    "searchTimeMs": 12,
+    "suggestions": []
+  }
+}
 ```
 ### GET `/api/search/all`
 
@@ -150,7 +249,24 @@ curl -X GET 'http://localhost:9500/api/search/all?query=spring&page=0&size=20&so
 **Response**
 
 ```json
-{"posts":[],"comments":[],"users":[],"communities":[],"metadata":{"query":"spring boot","type":"ALL","sort":"RELEVANCE","timeFilter":"ALL","totalResults":0,"pageNumber":0,"pageSize":20,"totalPages":0,"searchTimeMs":12,"suggestions":[]}}
+{
+  "posts": [],
+  "comments": [],
+  "users": [],
+  "communities": [],
+  "metadata": {
+    "query": "spring boot",
+    "type": "ALL",
+    "sort": "RELEVANCE",
+    "timeFilter": "ALL",
+    "totalResults": 0,
+    "pageNumber": 0,
+    "pageSize": 20,
+    "totalPages": 0,
+    "searchTimeMs": 12,
+    "suggestions": []
+  }
+}
 ```
 ### GET `/api/search/suggestions`
 
@@ -173,7 +289,12 @@ curl -X GET 'http://localhost:9500/api/search/suggestions?query=spring&type=post
 **Response**
 
 ```json
-["spring tutorial","spring guide","spring examples","spring best practices"]
+[
+  "spring tutorial",
+  "spring guide",
+  "spring examples",
+  "spring best practices"
+]
 ```
 ### GET `/api/search/trending`
 
@@ -198,5 +319,22 @@ curl -X GET 'http://localhost:9500/api/search/trending?page=0&size=20' \
 **Response**
 
 ```json
-{"posts":[],"comments":[],"users":[],"communities":[],"metadata":{"query":"spring boot","type":"ALL","sort":"RELEVANCE","timeFilter":"ALL","totalResults":0,"pageNumber":0,"pageSize":20,"totalPages":0,"searchTimeMs":12,"suggestions":[]}}
+{
+  "posts": [],
+  "comments": [],
+  "users": [],
+  "communities": [],
+  "metadata": {
+    "query": "spring boot",
+    "type": "ALL",
+    "sort": "RELEVANCE",
+    "timeFilter": "ALL",
+    "totalResults": 0,
+    "pageNumber": 0,
+    "pageSize": 20,
+    "totalPages": 0,
+    "searchTimeMs": 12,
+    "suggestions": []
+  }
+}
 ```

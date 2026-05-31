@@ -1,6 +1,6 @@
 # Lambrk Backend API Documentation
 
-Lambrk is a Reddit-like backend built with Spring Boot. This documentation reflects the endpoints currently implemented in the controllers under `src/main/java/com/lambrk/controller` and websocket mappings under `src/main/java/com/lambrk/websocket`.
+Lambrk is a Lambrk-like backend built with Spring Boot. This documentation reflects the endpoints currently implemented in the controllers under `src/main/java/com/lambrk/controller` and websocket mappings under `src/main/java/com/lambrk/websocket`.
 
 ## Base URL
 
@@ -51,6 +51,7 @@ Auth tokens are returned by [Auth API](docs/api/AUTH_API.md). The application is
 | GET | `/api/users/{userId}` | User | Get user by id. |
 | GET | `/api/users/username/{username}` | User | Get user by username. |
 | GET | `/api/users/me` | User | Get current authenticated user. |
+| PUT | `/api/users/me` | User | Update current user profile. |
 | GET | `/api/users/top` | User | List top users by karma. |
 | GET | `/api/users/search` | User | Search active users. |
 | DELETE | `/api/users/{userId}` | Admin | Delete user. |
@@ -81,9 +82,10 @@ Auth tokens are returned by [Auth API](docs/api/AUTH_API.md). The application is
 | PUT | `/api/posts/{postId}` | User | Update own post. |
 | DELETE | `/api/posts/{postId}` | User | Delete own post. |
 | GET | `/api/posts/stickied` | User | Stickied posts, optionally by community. |
-| POST | `/api/comments` | User | Create comment or reply. |
+| POST | `/api/comments` | User | Create top-level comment. |
+| POST | `/api/comments/{commentId}/reply` | User | Reply to a comment. |
 | GET | `/api/comments/{commentId}` | User | Get comment. |
-| GET | `/api/comments/post/{postId}` | User | Comments for post. |
+| GET | `/api/comments/post/{postId}` | User | Comments for post (with reply preview). |
 | GET | `/api/comments/{commentId}/replies` | User | Replies for comment. |
 | GET | `/api/comments/user/{userId}` | User | Comments by user. |
 | PUT | `/api/comments/{commentId}` | User | Update own comment content. |
@@ -121,7 +123,7 @@ Auth tokens are returned by [Auth API](docs/api/AUTH_API.md). The application is
 | DELETE | `/api/notifications` | User | Delete all notifications. |
 | GET | `/api/notifications/count/unread` | User | Unread count. |
 | GET | `/api/notifications/type/{type}` | User | Notifications by type. |
-| POST | `/api/files/upload` | User | Upload file. |
+| POST | `/api/files/upload` | User | Upload files (bulk, up to 20). |
 | GET | `/api/files/{fileId}` | User | File metadata. |
 | GET | `/api/files/{fileId}/content` | User | Download file content. |
 | GET | `/api/files` | User | Current user's files. |

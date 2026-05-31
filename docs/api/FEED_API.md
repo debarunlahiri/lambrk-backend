@@ -28,7 +28,22 @@ curl -X GET 'http://localhost:9500/api/feed?limit=20&sortBy=algorithm&includeNsf
 **Response**
 
 ```json
-{"posts":[],"suggestedUsers":[],"algorithmInfo":{"sortMethod":"algorithm","timeDecayFactor":1.0,"freshnessHours":24,"factorsConsidered":["score","freshness"],"processingTimeMs":10},"totalAvailable":0,"hasMore":false}
+{
+  "posts": [],
+  "suggestedUsers": [],
+  "algorithmInfo": {
+    "sortMethod": "algorithm",
+    "timeDecayFactor": 1.0,
+    "freshnessHours": 24,
+    "factorsConsidered": [
+      "score",
+      "freshness"
+    ],
+    "processingTimeMs": 10
+  },
+  "totalAvailable": 0,
+  "hasMore": false
+}
 ```
 ### POST `/api/feed`
 
@@ -39,7 +54,17 @@ Get feed with advanced filters.
 **Request body**
 
 ```json
-{"userId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","limit":20,"sortBy":"algorithm","postTypes":["TEXT"],"includeNsfw":false,"includeFromFollowingOnly":false,"timeDecayFactor":1.0}
+{
+  "userId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "limit": 20,
+  "sortBy": "algorithm",
+  "postTypes": [
+    "TEXT"
+  ],
+  "includeNsfw": false,
+  "includeFromFollowingOnly": false,
+  "timeDecayFactor": 1.0
+}
 ```
 
 **cURL**
@@ -49,7 +74,7 @@ curl -X POST 'http://localhost:9500/api/feed' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "userId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "userId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
   "limit": 20,
   "sortBy": "algorithm",
   "postTypes": [
@@ -64,7 +89,22 @@ curl -X POST 'http://localhost:9500/api/feed' \
 **Response**
 
 ```json
-{"posts":[],"suggestedUsers":[],"algorithmInfo":{"sortMethod":"algorithm","timeDecayFactor":1.0,"freshnessHours":24,"factorsConsidered":["score","freshness"],"processingTimeMs":10},"totalAvailable":0,"hasMore":false}
+{
+  "posts": [],
+  "suggestedUsers": [],
+  "algorithmInfo": {
+    "sortMethod": "algorithm",
+    "timeDecayFactor": 1.0,
+    "freshnessHours": 24,
+    "factorsConsidered": [
+      "score",
+      "freshness"
+    ],
+    "processingTimeMs": 10
+  },
+  "totalAvailable": 0,
+  "hasMore": false
+}
 ```
 ### GET `/api/feed/hot`
 
@@ -88,7 +128,22 @@ curl -X GET 'http://localhost:9500/api/feed/hot?limit=20' \
 **Response**
 
 ```json
-{"posts":[],"suggestedUsers":[],"algorithmInfo":{"sortMethod":"algorithm","timeDecayFactor":1.0,"freshnessHours":24,"factorsConsidered":["score","freshness"],"processingTimeMs":10},"totalAvailable":0,"hasMore":false}
+{
+  "posts": [],
+  "suggestedUsers": [],
+  "algorithmInfo": {
+    "sortMethod": "algorithm",
+    "timeDecayFactor": 1.0,
+    "freshnessHours": 24,
+    "factorsConsidered": [
+      "score",
+      "freshness"
+    ],
+    "processingTimeMs": 10
+  },
+  "totalAvailable": 0,
+  "hasMore": false
+}
 ```
 ### GET `/api/feed/new`
 
@@ -112,7 +167,22 @@ curl -X GET 'http://localhost:9500/api/feed/new?limit=20' \
 **Response**
 
 ```json
-{"posts":[],"suggestedUsers":[],"algorithmInfo":{"sortMethod":"algorithm","timeDecayFactor":1.0,"freshnessHours":24,"factorsConsidered":["score","freshness"],"processingTimeMs":10},"totalAvailable":0,"hasMore":false}
+{
+  "posts": [],
+  "suggestedUsers": [],
+  "algorithmInfo": {
+    "sortMethod": "algorithm",
+    "timeDecayFactor": 1.0,
+    "freshnessHours": 24,
+    "factorsConsidered": [
+      "score",
+      "freshness"
+    ],
+    "processingTimeMs": 10
+  },
+  "totalAvailable": 0,
+  "hasMore": false
+}
 ```
 ### GET `/api/feed/top`
 
@@ -137,7 +207,22 @@ curl -X GET 'http://localhost:9500/api/feed/top?limit=20&timePeriod=all' \
 **Response**
 
 ```json
-{"posts":[],"suggestedUsers":[],"algorithmInfo":{"sortMethod":"algorithm","timeDecayFactor":1.0,"freshnessHours":24,"factorsConsidered":["score","freshness"],"processingTimeMs":10},"totalAvailable":0,"hasMore":false}
+{
+  "posts": [],
+  "suggestedUsers": [],
+  "algorithmInfo": {
+    "sortMethod": "algorithm",
+    "timeDecayFactor": 1.0,
+    "freshnessHours": 24,
+    "factorsConsidered": [
+      "score",
+      "freshness"
+    ],
+    "processingTimeMs": 10
+  },
+  "totalAvailable": 0,
+  "hasMore": false
+}
 ```
 ### GET `/api/feed/discover`
 
@@ -161,5 +246,20 @@ curl -X GET 'http://localhost:9500/api/feed/discover?limit=20' \
 **Response**
 
 ```json
-{"posts":[],"suggestedUsers":[],"algorithmInfo":{"sortMethod":"algorithm","timeDecayFactor":1.0,"freshnessHours":24,"factorsConsidered":["score","freshness"],"processingTimeMs":10},"totalAvailable":0,"hasMore":false}
+{
+  "posts": [],
+  "suggestedUsers": [],
+  "algorithmInfo": {
+    "sortMethod": "algorithm",
+    "timeDecayFactor": 1.0,
+    "freshnessHours": 24,
+    "factorsConsidered": [
+      "score",
+      "freshness"
+    ],
+    "processingTimeMs": 10
+  },
+  "totalAvailable": 0,
+  "hasMore": false
+}
 ```

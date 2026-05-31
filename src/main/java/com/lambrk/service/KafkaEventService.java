@@ -3,8 +3,11 @@ package com.lambrk.service;
 import com.lambrk.domain.Post;
 import com.lambrk.domain.Comment;
 import com.lambrk.domain.Vote;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -14,12 +17,15 @@ import java.util.UUID;
 @Profile("!test")
 public class KafkaEventService {
 
+    private static final Logger logger = LoggerFactory.getLogger(KafkaEventService.class);
+
     private final StreamBridge streamBridge;
 
     public KafkaEventService(StreamBridge streamBridge) {
         this.streamBridge = streamBridge;
     }
 
+    @Async
     public void sendPostCreatedEvent(Post post) {
         try {
             PostEvent event = new PostEvent(
@@ -31,10 +37,12 @@ public class KafkaEventService {
                 "POST_CREATED"
             );
             streamBridge.send("postCreated-out-0", event);
-        } catch (Exception ignored) {
+        } catch (Throwable t) {
+            logger.warn("Failed to send postCreated event for post {}: {}", post.getId(), t.getMessage());
         }
     }
 
+    @Async
     public void sendPostUpdatedEvent(Post post) {
         try {
             PostEvent event = new PostEvent(
@@ -46,10 +54,12 @@ public class KafkaEventService {
                 "POST_UPDATED"
             );
             streamBridge.send("postUpdated-out-0", event);
-        } catch (Exception ignored) {
+        } catch (Throwable t) {
+            logger.warn("Failed to send postUpdated event for post {}: {}", post.getId(), t.getMessage());
         }
     }
 
+    @Async
     public void sendCommentCreatedEvent(Comment comment) {
         try {
             CommentEvent event = new CommentEvent(
@@ -62,10 +72,12 @@ public class KafkaEventService {
                 "COMMENT_CREATED"
             );
             streamBridge.send("commentCreated-out-0", event);
-        } catch (Exception ignored) {
+        } catch (Throwable t) {
+            logger.warn("Failed to send commentCreated event for comment {}: {}", comment.getId(), t.getMessage());
         }
     }
 
+    @Async
     public void sendVoteCastEvent(Vote vote) {
         try {
             VoteEvent event = new VoteEvent(
@@ -78,7 +90,8 @@ public class KafkaEventService {
                 "VOTE_CAST"
             );
             streamBridge.send("voteCast-out-0", event);
-        } catch (Exception ignored) {
+        } catch (Throwable t) {
+            logger.warn("Failed to send voteCast event for vote {}: {}", vote.getId(), t.getMessage());
         }
     }
 

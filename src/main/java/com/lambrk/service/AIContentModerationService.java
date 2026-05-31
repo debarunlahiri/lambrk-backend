@@ -62,7 +62,7 @@ public class AIContentModerationService {
         
         this.chatClient = ChatClient.builder(chatModel)
             .defaultSystem("""
-                You are a content moderator for a Reddit-like platform. Your task is to analyze content 
+                You are a content moderator for a Lambrk-like platform. Your task is to analyze content 
                 for policy violations. Respond with a JSON object containing:
                 - "approved": boolean (true if content is acceptable)
                 - "reason": string (explanation for decision)
@@ -352,13 +352,13 @@ public class AIContentModerationService {
 
     private List<Recommendation> getSubscribedCommunitiesContent(UUID userId, int limit) {
         User user = userRepository.findById(userId).orElse(null);
-        if (user == null || user.getSubscribedCommunities() == null) return List.of();
-        
+        if (user == null || user.getMemberships() == null) return List.of();
+
         Pageable pageable = PageRequest.of(0, limit);
-        
+
         List<Recommendation> recommendations = new ArrayList<>();
-        
-        for (Community community : user.getSubscribedCommunities()) {
+
+        for (Community community : user.getActiveSubscribedCommunities()) {
             Page<Post> posts = postRepository.findByCommunityAndIsArchivedFalse(community, pageable);
             for (Post post : posts.getContent()) {
                 if (!post.isOver18()) {

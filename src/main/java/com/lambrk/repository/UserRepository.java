@@ -46,10 +46,10 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     @Modifying
     void updateUserKarma(@Param("userId") UUID userId, @Param("delta") int delta);
 
-    @Query("SELECT u FROM User u JOIN u.subscribedCommunities s WHERE s.id = :communityId")
+    @Query("SELECT u FROM User u JOIN u.memberships m WHERE m.community.id = :communityId AND m.status = 'ACTIVE'")
     Set<User> findSubscribersByCommunityId(@Param("communityId") UUID communityId);
 
-    @Query("SELECT u FROM User u JOIN u.moderatedCommunities s WHERE s.id = :communityId")
+    @Query("SELECT u FROM User u JOIN u.moderatorRoles m WHERE m.community.id = :communityId AND m.isActive = true")
     Set<User> findModeratorsByCommunityId(@Param("communityId") UUID communityId);
 
     @Query("SELECT u FROM User u WHERE u.username LIKE %:query% OR u.email LIKE %:query%")

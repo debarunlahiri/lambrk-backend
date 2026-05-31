@@ -12,10 +12,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableAsync
 @EnableTransactionManagement
 @EnableConfigurationProperties
-public class RedditBackendApplication {
+public class LambrkBackendApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(RedditBackendApplication.class, args);
+        SpringApplication.run(LambrkBackendApplication.class, args);
     }
 
 }

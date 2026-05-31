@@ -14,7 +14,13 @@ curl -X GET 'http://localhost:9500/api/users/f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a9
 **Response**
 
 ```json
-{"type":"https://api.reddit-backend.com/errors/not-found","title":"Resource Not Found","status":404,"detail":"User not found with id: 999999","timestamp":"2026-05-02T10:00:00Z"}
+{
+  "type": "https://api.lambrk-backend.com/errors/not-found",
+  "title": "Resource Not Found",
+  "status": 404,
+  "detail": "User not found with id: 999999",
+  "timestamp": "2026-05-02T10:00:00Z"
+}
 ```
 
 ## Validation Error Response
@@ -30,7 +36,18 @@ curl -X POST 'http://localhost:9500/api/auth/register' \
 **Response**
 
 ```json
-{"type":"https://api.reddit-backend.com/errors/validation","title":"Validation Error","status":400,"detail":"Validation failed","timestamp":"2026-05-02T10:00:00Z","fieldErrors":{"username":"Username must be between 3 and 50 characters","email":"Email should be valid","password":"Password must be at least 8 characters"}}
+{
+  "type": "https://api.lambrk-backend.com/errors/validation",
+  "title": "Validation Error",
+  "status": 400,
+  "detail": "Validation failed",
+  "timestamp": "2026-05-02T10:00:00Z",
+  "fieldErrors": {
+    "username": "Username must be between 3 and 50 characters",
+    "email": "Email should be valid",
+    "password": "Password must be at least 8 characters"
+  }
+}
 ```
 
 ## Error Types
@@ -52,5 +69,10 @@ curl -X POST 'http://localhost:9500/api/auth/register' \
 ## Feed Map Error
 
 ```json
-{"timestamp":"2026-05-02T10:00:00Z","status":400,"error":"Bad Request","message":"Invalid request"}
+{
+  "timestamp": "2026-05-02T10:00:00Z",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Invalid request"
+}
 ```

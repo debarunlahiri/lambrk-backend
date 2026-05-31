@@ -11,7 +11,11 @@ Vote on a post.
 **Request body**
 
 ```json
-{"voteType":"LIKE","postId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","commentId":null}
+{
+  "voteType": "LIKE",
+  "postId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb16",
+  "commentId": null
+}
 ```
 
 **cURL**
@@ -22,7 +26,7 @@ curl -X POST 'http://localhost:9500/api/votes/post' \
   -H 'Content-Type: application/json' \
   -d '{
   "voteType": "LIKE",
-  "postId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "postId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb16",
   "commentId": null
 }'
 ```
@@ -39,7 +43,11 @@ Vote on a comment.
 **Request body**
 
 ```json
-{"voteType":"DISLIKE","postId":null,"commentId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"}
+{
+  "voteType": "DISLIKE",
+  "postId": null,
+  "commentId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb17"
+}
 ```
 
 **cURL**
@@ -51,7 +59,7 @@ curl -X POST 'http://localhost:9500/api/votes/comment' \
   -d '{
   "voteType": "DISLIKE",
   "postId": null,
-  "commentId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+  "commentId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb17"
 }'
 ```
 

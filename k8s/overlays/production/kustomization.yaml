@@ -22,7 +22,7 @@ configMapGenerator:
     behavior: merge
     literals:
       - SPRING_PROFILES_ACTIVE=prod
-      - LOGGING_LEVEL_COM_EXAMPLE_REDDIT=INFO
+      - LOGGING_LEVEL_COM_EXAMPLE_LAMBRK=INFO
 
 commonLabels:
   environment: production

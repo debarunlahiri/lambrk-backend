@@ -404,6 +404,13 @@ public class FeedService {
     }
 
     private FeedResponse.FeedPost convertToFeedPost(Post post, double score, List<String> reasons, UserInteractionData interactionData) {
+        boolean isSubscribed = interactionData != null
+            && interactionData.subscribedCommunityIds().contains(post.getCommunity().getId());
+        boolean isLiked = interactionData != null
+            && interactionData.likedPostIds().contains(post.getId());
+        boolean isDisliked = interactionData != null
+            && interactionData.dislikedPostIds().contains(post.getId());
+
         FeedResponse.PostUserInfo authorInfo = new FeedResponse.PostUserInfo(
             post.getAuthor().getId(),
             post.getAuthor().getUsername(),
@@ -419,16 +426,16 @@ public class FeedService {
             post.getCommunity().getName(),
             post.getCommunity().getTitle(),
             post.getCommunity().getIconImageUrl(),
-            interactionData.subscribedCommunityIds().contains(post.getCommunity().getId())
+            isSubscribed
         );
         
         FeedResponse.UserInteraction userInteraction = new FeedResponse.UserInteraction(
-            interactionData.likedPostIds().contains(post.getId()),
-            interactionData.dislikedPostIds().contains(post.getId()),
-            false, // hasCommented - would need comment repository
-            false, // hasViewed - would need view tracking
-            false, // isSaved
-            false, // isHidden
+            isLiked,
+            isDisliked,
+            false,
+            false,
+            false,
+            false,
             0,
             null
         );

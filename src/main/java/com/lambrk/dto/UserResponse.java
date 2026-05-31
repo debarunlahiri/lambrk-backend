@@ -6,28 +6,34 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record UserResponse(
-    
+
     UUID id,
-    
+
     String username,
-    
+
     String displayName,
-    
+
     String bio,
-    
+
     String avatarUrl,
-    
+
+    String headerImageUrl,
+
+    String location,
+
+    String website,
+
     boolean isActive,
-    
+
     boolean isVerified,
-    
+
     int karma,
-    
+
     Instant createdAt,
-    
+
     Instant updatedAt
 ) {
-    
+
     public static UserResponse from(User user) {
         return new UserResponse(
             user.getId(),
@@ -35,6 +41,9 @@ public record UserResponse(
             user.getDisplayName(),
             user.getBio(),
             user.getAvatarUrl(),
+            user.getHeaderImageUrl(),
+            user.getLocation(),
+            user.getWebsite(),
             user.isActive(),
             user.isVerified(),
             user.getKarma(),

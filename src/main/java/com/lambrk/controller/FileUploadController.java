@@ -41,14 +41,22 @@ public class FileUploadController {
     @NewSpan("upload-file")
     @Counted(value = "files.uploaded")
     @Timed(value = "files.upload.duration")
-    public ResponseEntity<FileUploadResponse> uploadFile(
-            @RequestParam("file") MultipartFile file,
+    public ResponseEntity<List<FileUploadResponse>> uploadFile(
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
             @Valid @ModelAttribute FileUploadRequest request,
             @AuthenticationPrincipal UserPrincipal userDetails) {
-        
+
+        if (files == null || files.isEmpty()) {
+            throw new IllegalArgumentException("No files provided. Attach files using the 'files' form field.");
+        }
+
+        if (files.size() > 20) {
+            throw new IllegalArgumentException("Maximum 20 files allowed per upload");
+        }
+
         UUID userId = getUserId(userDetails);
-        FileUploadResponse response = fileUploadService.uploadFile(file, request, userId);
-        return ResponseEntity.ok(response);
+        List<FileUploadResponse> responses = fileUploadService.uploadFiles(files, request, userId);
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{fileId}")

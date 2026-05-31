@@ -69,11 +69,11 @@ public class Community {
     @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Post> posts = new HashSet<>();
 
-    @ManyToMany(mappedBy = "subscribedCommunities", fetch = FetchType.LAZY)
-    private Set<User> members = new HashSet<>();
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<UserCommunityMembership> memberships = new HashSet<>();
 
-    @ManyToMany(mappedBy = "moderatedCommunities", fetch = FetchType.LAZY)
-    private Set<User> moderators = new HashSet<>();
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<UserCommunityModerator> moderators = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -100,7 +100,7 @@ public class Community {
     public Community(UUID id, String name, String title, String description, String sidebarText,
                      String headerImageUrl, String iconImageUrl, boolean isPublic, boolean isRestricted,
                      boolean isOver18, int memberCount, int subscriberCount, int activeUserCount,
-                     Set<Post> posts, Set<User> members, Set<User> moderators, Set<Category> categories,
+                     Set<Post> posts, Set<UserCommunityMembership> memberships, Set<UserCommunityModerator> moderators, Set<Category> categories,
                      User createdBy, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.name = name;
@@ -116,7 +116,7 @@ public class Community {
         this.subscriberCount = subscriberCount;
         this.activeUserCount = activeUserCount;
         this.posts = posts != null ? posts : new HashSet<>();
-        this.members = members != null ? members : new HashSet<>();
+        this.memberships = memberships != null ? memberships : new HashSet<>();
         this.moderators = moderators != null ? moderators : new HashSet<>();
         this.categories = categories != null ? categories : new HashSet<>();
         this.createdBy = createdBy;
@@ -157,10 +157,25 @@ public class Community {
     public void setActiveUserCount(int activeUserCount) { this.activeUserCount = activeUserCount; }
     public Set<Post> getPosts() { return posts; }
     public void setPosts(Set<Post> posts) { this.posts = posts; }
-    public Set<User> getMembers() { return members; }
-    public void setMembers(Set<User> members) { this.members = members; }
-    public Set<User> getModerators() { return moderators; }
-    public void setModerators(Set<User> moderators) { this.moderators = moderators; }
+    public Set<UserCommunityMembership> getMemberships() { return memberships; }
+    public void setMemberships(Set<UserCommunityMembership> memberships) { this.memberships = memberships; }
+    public Set<UserCommunityModerator> getModerators() { return moderators; }
+    public void setModerators(Set<UserCommunityModerator> moderators) { this.moderators = moderators; }
+
+    // Convenience methods
+    public Set<User> getActiveMembers() {
+        return memberships.stream()
+            .filter(m -> m.getStatus() == UserCommunityMembership.MembershipStatus.ACTIVE)
+            .map(UserCommunityMembership::getUser)
+            .collect(java.util.stream.Collectors.toSet());
+    }
+
+    public Set<User> getActiveModeratorUsers() {
+        return moderators.stream()
+            .filter(UserCommunityModerator::isActive)
+            .map(UserCommunityModerator::getUser)
+            .collect(java.util.stream.Collectors.toSet());
+    }
     public Set<Category> getCategories() { return categories; }
     public void setCategories(Set<Category> categories) { this.categories = categories; }
     public User getCreatedBy() { return createdBy; }

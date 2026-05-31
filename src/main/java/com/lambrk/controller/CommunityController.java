@@ -105,21 +105,19 @@ public class CommunityController {
     @PostMapping("/{communityId}/subscribe")
     @NewSpan("subscribe-community")
     @Timed(value = "communities.subscribe.duration")
-    public ResponseEntity<Void> subscribe(
+    public ResponseEntity<CommunityResponse> subscribe(
             @PathVariable @SpanTag UUID communityId,
             @AuthenticationPrincipal UserPrincipal userDetails) {
-        communityService.subscribe(communityId, getUserId(userDetails));
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(communityService.subscribe(communityId, getUserId(userDetails)));
     }
 
     @PostMapping("/{communityId}/unsubscribe")
     @NewSpan("unsubscribe-community")
     @Timed(value = "communities.unsubscribe.duration")
-    public ResponseEntity<Void> unsubscribe(
+    public ResponseEntity<CommunityResponse> unsubscribe(
             @PathVariable @SpanTag UUID communityId,
             @AuthenticationPrincipal UserPrincipal userDetails) {
-        communityService.unsubscribe(communityId, getUserId(userDetails));
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(communityService.unsubscribe(communityId, getUserId(userDetails)));
     }
 
     @GetMapping("/user/subscriptions")

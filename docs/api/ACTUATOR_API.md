@@ -21,7 +21,13 @@ curl -X GET 'http://localhost:9500/actuator/health'
 **Response**
 
 ```json
-{"status":"UP","groups":["liveness","readiness"]}
+{
+  "status": "UP",
+  "groups": [
+    "liveness",
+    "readiness"
+  ]
+}
 ```
 
 ### GET `/actuator/info`
@@ -41,7 +47,11 @@ curl -X GET 'http://localhost:9500/actuator/info'
 **Response**
 
 ```json
-{"app":{"name":"lambrk-backend"}}
+{
+  "app": {
+    "name": "lambrk-backend"
+  }
+}
 ```
 
 ### GET `/actuator/prometheus`
@@ -101,7 +111,14 @@ curl -X GET 'http://localhost:9500/v3/api-docs'
 **Response**
 
 ```json
-{"openapi":"3.1.0","info":{"title":"Reddit Backend API","version":"1.0.0"},"paths":{}}
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Lambrk Backend API",
+    "version": "1.0.0"
+  },
+  "paths": {}
+}
 ```
 
 ### GET `/v3/api-docs/{group}`
@@ -125,7 +142,14 @@ curl -X GET 'http://localhost:9500/v3/api-docs/posts'
 **Response**
 
 ```json
-{"openapi":"3.1.0","info":{"title":"Reddit Backend API","version":"1.0.0"},"paths":{}}
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Lambrk Backend API",
+    "version": "1.0.0"
+  },
+  "paths": {}
+}
 ```
 
 ## Protected Actuator Endpoints
@@ -148,5 +172,10 @@ curl -X GET 'http://localhost:9500/actuator/metrics' \
 **Response**
 
 ```json
-{"names":["http.server.requests","jvm.memory.used"]}
+{
+  "names": [
+    "http.server.requests",
+    "jvm.memory.used"
+  ]
+}
 ```

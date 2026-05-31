@@ -92,7 +92,7 @@ public class JwtTokenProvider {
                     builder.claim("userId", userId.toString());
                 }
 
-                return builder.signWith(key, SignatureAlgorithm.HS512).compact();
+                return builder.signWith(key, SignatureAlgorithm.HS256).compact();
             });
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate token", e);
@@ -112,7 +112,7 @@ public class JwtTokenProvider {
                     .issuedAt(Date.from(now))
                     .expiration(Date.from(expiryDate))
                     .claim("tokenType", "refresh")
-                    .signWith(key, SignatureAlgorithm.HS512)
+                    .signWith(key, SignatureAlgorithm.HS256)
                     .compact();
             });
         } catch (Exception e) {

@@ -25,10 +25,10 @@ Published to `post.created` and `post.updated`.
 
 ```json
 {
-  "postId": 1,
+  "postId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb16",
   "title": "My first post about Spring Boot 3.5",
-  "authorId": 2,
-  "communityId": 1,
+  "authorId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "communityId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb15",
   "timestamp": "2026-02-07T14:00:00Z",
   "eventType": "POST_CREATED"
 }
@@ -36,10 +36,10 @@ Published to `post.created` and `post.updated`.
 
 | Field       | Type    | Description                          |
 |-------------|---------|--------------------------------------|
-| postId      | Long    | ID of the post                       |
+| postId      | UUID    | ID of the post                       |
 | title       | String  | Post title                           |
-| authorId    | Long    | ID of the author                     |
-| communityId | Long    | ID of the community                  |
+| authorId    | UUID    | ID of the author                     |
+| communityId | UUID    | ID of the community                  |
 | timestamp   | Instant | When the event occurred              |
 | eventType   | String  | `POST_CREATED` or `POST_UPDATED`     |
 
@@ -49,10 +49,10 @@ Published to `comment.created`.
 
 ```json
 {
-  "commentId": 10,
+  "commentId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb17",
   "content": "Great post!",
-  "authorId": 3,
-  "postId": 1,
+  "authorId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "postId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb16",
   "parentCommentId": null,
   "timestamp": "2026-02-07T14:05:00Z",
   "eventType": "COMMENT_CREATED"
@@ -61,10 +61,10 @@ Published to `comment.created`.
 
 | Field            | Type         | Description                    |
 |------------------|--------------|--------------------------------|
-| commentId        | Long         | ID of the comment              |
+| commentId        | UUID         | ID of the comment              |
 | content          | String       | Comment text                   |
-| authorId         | Long         | ID of the author               |
-| postId           | Long         | ID of the parent post          |
+| authorId         | UUID         | ID of the author               |
+| postId           | UUID         | ID of the parent post          |
 | parentCommentId  | Long or null | ID of parent comment (replies) |
 | timestamp        | Instant      | When the event occurred        |
 | eventType        | String       | `COMMENT_CREATED`              |
@@ -75,10 +75,10 @@ Published to `vote.cast`.
 
 ```json
 {
-  "voteId": 50,
+  "voteId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb1e",
   "voteType": "LIKE",
-  "userId": 2,
-  "postId": 1,
+  "userId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "postId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb16",
   "commentId": null,
   "timestamp": "2026-02-07T14:10:00Z",
   "eventType": "VOTE_CAST"
@@ -87,11 +87,11 @@ Published to `vote.cast`.
 
 | Field     | Type         | Description                       |
 |-----------|--------------|-----------------------------------|
-| voteId    | Long         | ID of the vote                    |
+| voteId    | UUID         | ID of the vote                    |
 | voteType  | String       | `LIKE` or `DISLIKE`            |
-| userId    | Long         | ID of the voter                   |
-| postId    | Long or null | Post ID (if post vote)            |
-| commentId | Long or null | Comment ID (if comment vote)      |
+| userId    | UUID         | ID of the voter                   |
+| postId    | UUID or null | Post ID (if post vote)            |
+| commentId | UUID or null | Comment ID (if comment vote)      |
 | timestamp | Instant      | When the event occurred           |
 | eventType | String       | `VOTE_CAST`                       |
 
@@ -101,11 +101,11 @@ Published to `file.uploaded` and `file.deleted`.
 
 ```json
 {
-  "fileId": 1001,
+  "fileId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb19",
   "fileName": "abc123def456.jpg",
   "fileType": "AVATAR",
   "fileSize": 1048576,
-  "userId": 2,
+  "userId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
   "timestamp": "2026-02-07T16:00:00Z",
   "eventType": "FILE_UPLOADED"
 }
@@ -113,11 +113,11 @@ Published to `file.uploaded` and `file.deleted`.
 
 | Field     | Type    | Description                          |
 |-----------|---------|--------------------------------------|
-| fileId    | Long    | ID of the file                       |
+| fileId    | UUID    | ID of the file                       |
 | fileName  | String  | Unique file name                     |
 | fileType  | String  | `AVATAR`, `POST_IMAGE`, `POST_VIDEO`, `COMMUNITY_ICON`, `COMMUNITY_HEADER`, `BANNER` |
 | fileSize  | Long    | File size in bytes                   |
-| userId    | Long    | ID of the uploader                   |
+| userId    | UUID    | ID of the uploader                   |
 | timestamp | Instant | When the event occurred              |
 | eventType | String  | `FILE_UPLOADED` or `FILE_DELETED`    |
 

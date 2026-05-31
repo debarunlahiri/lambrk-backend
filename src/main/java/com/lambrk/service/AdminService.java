@@ -106,16 +106,9 @@ public class AdminService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
-        User updated = new User(
-            user.getId(), user.getUsername(), user.getEmail(), user.getPassword(),
-            user.getDisplayName(), user.getBio(), user.getAvatarUrl(),
-            false, user.isVerified(), user.getKarma(),
-            user.getPosts(), user.getComments(), user.getVotes(),
-            user.getSubscribedCommunities(), user.getModeratedCommunities(),
-            user.getCreatedAt(), now
-        );
-
-        userRepository.save(updated);
+        user.setActive(false);
+        user.setUpdatedAt(now);
+        userRepository.save(user);
 
         return new AdminAction(
             UuidV7Generator.generate(), AdminAction.AdminActionType.BAN_USER, userId, "User",
@@ -232,17 +225,13 @@ public class AdminService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
-        // Remove from all moderated communities
-        User updated = new User(
-            user.getId(), user.getUsername(), user.getEmail(), user.getPassword(),
-            user.getDisplayName(), user.getBio(), user.getAvatarUrl(),
-            user.isActive(), user.isVerified(), user.getKarma(),
-            user.getPosts(), user.getComments(), user.getVotes(),
-            user.getSubscribedCommunities(), Set.of(), // Clear moderated communities
-            user.getCreatedAt(), now
-        );
-
-        userRepository.save(updated);
+        // Deactivate all moderator roles for this user
+        user.getModeratorRoles().forEach(m -> {
+            m.setActive(false);
+            m.setRemovedAt(now);
+        });
+        user.setUpdatedAt(now);
+        userRepository.save(user);
 
         return new AdminAction(
             UuidV7Generator.generate(), AdminAction.AdminActionType.REMOVE_MODERATOR, userId, "User",

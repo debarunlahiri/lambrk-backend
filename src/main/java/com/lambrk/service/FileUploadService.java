@@ -18,7 +18,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.lambrk.util.UuidV7Generator;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,7 +45,7 @@ public class FileUploadService {
     private static final String ERROR_FILE_TOO_LARGE = "File size exceeds maximum allowed size: %d bytes";
     private static final String ERROR_FILE_TYPE_NOT_ALLOWED = "File type not allowed: %s";
     private static final String ERROR_FILE_NAME_REQUIRED = "File name is required";
-    private static final String ERROR_USER_NOT_FOUND = "User not found: %d";
+    private static final String ERROR_USER_NOT_FOUND = "User not found: %s";
     private static final String ERROR_FILE_NOT_FOUND = "File not found: %s";
     private static final String ERROR_ACCESS_DENIED = "Access denied to file: %s";
     private static final String ERROR_UPLOAD_FAILED = "Failed to upload file";
@@ -94,40 +102,91 @@ public class FileUploadService {
     @CircuitBreaker(name = "userService")
     @Retry(name = "userService")
     public FileUploadResponse uploadFile(MultipartFile file, FileUploadRequest request, UUID userId) {
-        validateFile(file, request);
+        return uploadFiles(List.of(file), request, userId).get(0);
+    }
 
-        // Check free tier limits before upload
-        freeTierLimitService.checkUploadAllowed(userId, file.getSize());
+    @CacheEvict(value = "fileUploads", allEntries = true)
+    @CircuitBreaker(name = "userService")
+    @Retry(name = "userService")
+    public List<FileUploadResponse> uploadFiles(List<MultipartFile> files, FileUploadRequest request, UUID userId) {
+        if (files.size() > 20) {
+            throw new IllegalArgumentException("Maximum 20 files allowed per upload");
+        }
+
+        long totalSize = files.stream().mapToLong(MultipartFile::getSize).sum();
+        freeTierLimitService.checkUploadAllowed(userId, totalSize);
 
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException(String.format(ERROR_USER_NOT_FOUND, userId)));
 
+        return files.stream().map(file -> uploadSingleFile(file, request, user)).toList();
+    }
+
+    private FileUploadResponse uploadSingleFile(MultipartFile file, FileUploadRequest request, User user) {
+        validateFile(file, request);
+
         try {
             String originalFilename = file.getOriginalFilename();
             String extension = getFileExtension(originalFilename);
-            String uniqueFilename = UUID.randomUUID().toString() + extension;
+            String uniqueFilename = UuidV7Generator.generate().toString() + extension;
             String checksum;
+            String thumbKey = null;
 
             if (s3Enabled) {
-                // Upload to S3
-                String directory = getDirectoryForType(request.type());
-                String s3Key = s3StorageService.uploadFile(file, directory);
-                uniqueFilename = s3Key;
-                checksum = calculateChecksum(file);
+                if (isProfileOrCoverType(request.type())) {
+                    UUID photoId = UuidV7Generator.generate();
+                    String basePath = getProfileCoverBasePath(request.type(), user.getId(), photoId);
+                    String mainKey = basePath + "main/" + photoId + extension;
+                    byte[] fileBytes = file.getBytes();
+                    s3StorageService.uploadBytes(fileBytes, mainKey, file.getContentType());
+                    uniqueFilename = mainKey;
+                    checksum = calculateChecksum(fileBytes);
+
+                    if (isImageType(request.type())) {
+                        try {
+                            byte[] thumbnailBytes = generateThumbnail(fileBytes);
+                            thumbKey = basePath + "thumb/" + photoId + ".jpg";
+                            s3StorageService.uploadBytes(thumbnailBytes, thumbKey, "image/jpeg");
+                        } catch (Exception e) {
+                            System.err.println("Thumbnail generation failed: " + e.getMessage());
+                        }
+                    }
+                } else {
+                    String directory = getDirectoryForType(request.type());
+                    String s3Key = s3StorageService.uploadFile(file, directory);
+                    uniqueFilename = s3Key;
+                    checksum = calculateChecksum(file);
+
+                    if (isImageType(request.type())) {
+                        try {
+                            byte[] thumbnailBytes = generateThumbnail(file);
+                            thumbKey = "lambrk/posts/media/image/thumb/" + UuidV7Generator.generate() + ".jpg";
+                            s3StorageService.uploadBytes(thumbnailBytes, thumbKey, "image/jpeg");
+                        } catch (Exception e) {
+                            System.err.println("Thumbnail generation failed: " + e.getMessage());
+                        }
+                    }
+                }
             } else {
-                // Local storage fallback
                 Path filePath = Paths.get(uploadDirectory, uniqueFilename);
                 Files.copy(file.getInputStream(), filePath);
                 checksum = calculateChecksum(filePath);
             }
 
-            // Create file upload record using custom constructor (type first, no id)
+            String s3Url = s3Enabled
+                ? s3StorageService.getPublicUrl(uniqueFilename)
+                : getFileUrl(uniqueFilename);
+
+            String thumbnailUrl = thumbKey != null
+                ? s3StorageService.getPublicUrl(thumbKey)
+                : getThumbnailUrl(uniqueFilename);
+
             FileUpload fileUpload = new FileUpload(
                 FileUpload.FileUploadType.valueOf(request.type().name()),
                 uniqueFilename,
                 originalFilename,
-                getFileUrl(uniqueFilename),
-                getThumbnailUrl(uniqueFilename),
+                s3Url,
+                thumbnailUrl,
                 file.getSize(),
                 file.getContentType(),
                 request.description(),
@@ -141,10 +200,7 @@ public class FileUploadService {
             );
 
             FileUpload saved = fileUploadRepository.save(fileUpload);
-
-            // Record usage for free tier tracking
-            freeTierLimitService.recordUpload(userId, file.getSize());
-
+            freeTierLimitService.recordUpload(user.getId(), file.getSize());
             customMetrics.recordFileUpload(request.type().name());
 
             return FileUploadResponse.from(saved);
@@ -267,20 +323,20 @@ public class FileUploadService {
 
     private void validateFile(MultipartFile file, FileUploadRequest request) {
         if (file.isEmpty()) {
-            throw new RuntimeException(ERROR_FILE_EMPTY);
+            throw new IllegalArgumentException(ERROR_FILE_EMPTY);
         }
-        
+
         if (file.getSize() > maxFileSize) {
-            throw new RuntimeException(String.format(ERROR_FILE_TOO_LARGE, maxFileSize));
+            throw new IllegalArgumentException(String.format(ERROR_FILE_TOO_LARGE, maxFileSize));
         }
-        
+
         String contentType = file.getContentType();
         if (!allowedTypes.contains(contentType)) {
-            throw new RuntimeException(String.format(ERROR_FILE_TYPE_NOT_ALLOWED, contentType));
+            throw new IllegalArgumentException(String.format(ERROR_FILE_TYPE_NOT_ALLOWED, contentType));
         }
-        
+
         if (file.getOriginalFilename() == null || file.getOriginalFilename().isBlank()) {
-            throw new RuntimeException(ERROR_FILE_NAME_REQUIRED);
+            throw new IllegalArgumentException(ERROR_FILE_NAME_REQUIRED);
         }
     }
 
@@ -338,16 +394,65 @@ public class FileUploadService {
 
     private String getDirectoryForType(FileUploadRequest.FileType type) {
         return switch (type) {
-            case AVATAR -> "avatars";
-            case POST_IMAGE -> "posts/images";
-            case POST_VIDEO -> "posts/videos";
-            case COMMUNITY_ICON -> "communities/icons";
-            case COMMUNITY_HEADER -> "communities/headers";
-            case BANNER -> "banners";
+            case AVATAR -> "lambrk/posts/media/image/main";
+            case POST_IMAGE -> "lambrk/posts/media/image/main";
+            case POST_VIDEO -> "lambrk/posts/media/video";
+            case COMMUNITY_ICON -> "lambrk/posts/media/image/main";
+            case COMMUNITY_HEADER -> "lambrk/posts/media/image/main";
+            case BANNER -> "lambrk/posts/media/image/main";
+            case PROFILE_IMAGE -> "lambrk/profile/profile_img";
+            case COVER_IMAGE -> "lambrk/profile/cover_img";
         };
+    }
+
+    private String getProfileCoverBasePath(FileUploadRequest.FileType type, UUID userId, UUID photoId) {
+        String folder = switch (type) {
+            case PROFILE_IMAGE -> "profile_img";
+            case COVER_IMAGE -> "cover_img";
+            default -> "profile_img";
+        };
+        return "lambrk/profile/" + folder + "/" + userId + "/" + photoId + "/";
+    }
+
+    private boolean isProfileOrCoverType(FileUploadRequest.FileType type) {
+        return type == FileUploadRequest.FileType.PROFILE_IMAGE
+            || type == FileUploadRequest.FileType.COVER_IMAGE;
     }
 
     public FreeTierLimitService.FreeTierStatus getUserFreeTierStatus(UUID userId) {
         return freeTierLimitService.getUserStatus(userId);
+    }
+
+    private boolean isImageType(FileUploadRequest.FileType type) {
+        return type == FileUploadRequest.FileType.POST_IMAGE
+            || type == FileUploadRequest.FileType.AVATAR
+            || type == FileUploadRequest.FileType.COMMUNITY_ICON
+            || type == FileUploadRequest.FileType.COMMUNITY_HEADER
+            || type == FileUploadRequest.FileType.BANNER
+            || type == FileUploadRequest.FileType.PROFILE_IMAGE
+            || type == FileUploadRequest.FileType.COVER_IMAGE;
+    }
+
+    private byte[] generateThumbnail(MultipartFile file) throws IOException {
+        return generateThumbnail(file.getBytes());
+    }
+
+    private byte[] generateThumbnail(byte[] imageBytes) throws IOException {
+        BufferedImage original = ImageIO.read(new ByteArrayInputStream(imageBytes));
+        if (original == null) {
+            throw new IOException("Cannot read image");
+        }
+
+        int thumbWidth = 300;
+        int thumbHeight = (int) ((double) original.getHeight() / original.getWidth() * thumbWidth);
+        BufferedImage thumbnail = new BufferedImage(thumbWidth, thumbHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = thumbnail.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.drawImage(original, 0, 0, thumbWidth, thumbHeight, null);
+        g.dispose();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(thumbnail, "jpg", baos);
+        return baos.toByteArray();
     }
 }

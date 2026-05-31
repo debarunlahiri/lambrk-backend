@@ -33,17 +33,17 @@ public class WebSocketController {
     @Counted(value = "websocket.connections")
     @Timed(value = "websocket.connect.duration")
     public void handleConnect(Principal principal) {
-        // Handle new WebSocket connection
+        if (principal == null) {
+            return;
+        }
         String username = principal.getName();
         
-        // Send connection confirmation
         messagingTemplate.convertAndSendToUser(
             username,
             "/queue/connected",
-            "Connected to Reddit WebSocket"
+            "Connected to Lambrk WebSocket"
         );
         
-        // Send unread notifications count
         sendUnreadCount(username);
     }
 
@@ -51,11 +51,12 @@ public class WebSocketController {
     @Counted(value = "websocket.notifications.subscribed")
     @Timed(value = "websocket.notifications.subscribe.duration")
     public void subscribeToNotifications(Principal principal) {
+        if (principal == null) {
+            return;
+        }
         String username = principal.getName();
         
-        // Send recent notifications
-        // This would need to be implemented in NotificationService
-        List<NotificationResponse> notifications = List.of(); // Placeholder
+        List<NotificationResponse> notifications = List.of();
         
         messagingTemplate.convertAndSendToUser(
             username,
@@ -68,10 +69,11 @@ public class WebSocketController {
     @Counted(value = "websocket.posts.subscribed")
     @Timed(value = "websocket.posts.subscribe.duration")
     public void subscribeToPost(@Payload UUID postId, Principal principal) {
-        // User wants real-time updates for a specific post
+        if (principal == null) {
+            return;
+        }
         String username = principal.getName();
         
-        // Send confirmation
         messagingTemplate.convertAndSendToUser(
             username,
             "/queue/post/" + postId + "/subscribed",
@@ -83,10 +85,11 @@ public class WebSocketController {
     @Counted(value = "websocket.communities.subscribed")
     @Timed(value = "websocket.communities.subscribe.duration")
     public void subscribeToCommunity(@Payload UUID communityId, Principal principal) {
-        // User wants real-time updates for a specific community
+        if (principal == null) {
+            return;
+        }
         String username = principal.getName();
         
-        // Send confirmation
         messagingTemplate.convertAndSendToUser(
             username,
             "/queue/community/" + communityId + "/subscribed",

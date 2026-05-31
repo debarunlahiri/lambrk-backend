@@ -2,6 +2,10 @@
 
 Base path: `/api/notifications`. JWT required.
 
+> **Auto-generated notifications:** Some notifications are created automatically by the system and do not need to be sent manually:
+> - `COMMENT_REPLY` — sent when someone replies to your comment via `POST /api/comments/{commentId}/reply`.
+> - `COMMENT_MENTION` — sent when someone tags you with `@username` in a comment or reply.
+
 ### POST `/api/notifications`
 
 Create notification.
@@ -11,7 +15,18 @@ Create notification.
 **Request body**
 
 ```json
-{"type":"COMMENT_REPLY","recipientId":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","title":"New reply","message":"Someone replied","relatedPostId":"a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","relatedCommentId":"c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","relatedUserId":"d3eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","actionUrl":"/posts/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","actionText":"View","isRead":false}
+{
+  "type": "COMMENT_REPLY",
+  "recipientId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "title": "New reply",
+  "message": "Someone replied",
+  "relatedPostId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb16",
+  "relatedCommentId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb17",
+  "relatedUserId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "actionUrl": "/posts/019e5a43-e0c2-7baa-9f6d-b9b9b82afb16",
+  "actionText": "View",
+  "isRead": false
+}
 ```
 
 **cURL**
@@ -22,13 +37,13 @@ curl -X POST 'http://localhost:9500/api/notifications' \
   -H 'Content-Type: application/json' \
   -d '{
   "type": "COMMENT_REPLY",
-  "recipientId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "recipientId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
   "title": "New reply",
   "message": "Someone replied",
-  "relatedPostId": "a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-  "relatedCommentId": "c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-  "relatedUserId": "d3eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-  "actionUrl": "/posts/a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "relatedPostId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb16",
+  "relatedCommentId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb17",
+  "relatedUserId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "actionUrl": "/posts/019e5a43-e0c2-7baa-9f6d-b9b9b82afb16",
   "actionText": "View",
   "isRead": false
 }'
@@ -37,7 +52,24 @@ curl -X POST 'http://localhost:9500/api/notifications' \
 **Response**
 
 ```json
-{"id":"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","type":"COMMENT_REPLY","recipientId":1,"title":"New reply","message":"Someone replied","relatedPostId":10,"relatedPostTitle":null,"relatedCommentId":20,"relatedCommentPreview":null,"relatedUserId":2,"relatedUsername":null,"actionUrl":"/posts/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","actionText":"View","isRead":false,"createdAt":"2026-05-02T10:00:00Z","readAt":null}
+{
+  "id": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb1c",
+  "type": "COMMENT_REPLY",
+  "recipientId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "title": "New reply",
+  "message": "Someone replied",
+  "relatedPostId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb16",
+  "relatedPostTitle": null,
+  "relatedCommentId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb17",
+  "relatedCommentPreview": null,
+  "relatedUserId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb14",
+  "relatedUsername": null,
+  "actionUrl": "/posts/019e5a43-e0c2-7baa-9f6d-b9b9b82afb16",
+  "actionText": "View",
+  "isRead": false,
+  "createdAt": "2026-05-02T10:00:00Z",
+  "readAt": null
+}
 ```
 ### GET `/api/notifications`
 
@@ -62,7 +94,17 @@ curl -X GET 'http://localhost:9500/api/notifications?page=0&size=20' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### GET `/api/notifications/unread`
 
@@ -87,7 +129,17 @@ curl -X GET 'http://localhost:9500/api/notifications/unread?page=0&size=20' \
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
 ### PUT `/api/notifications/{notificationId}/read`
 
@@ -194,5 +246,15 @@ curl -X GET 'http://localhost:9500/api/notifications/type/COMMENT_REPLY?page=0&s
 **Response**
 
 ```json
-{"content":[],"totalElements":0,"totalPages":0,"size":20,"number":0,"first":true,"last":true,"numberOfElements":0,"empty":true}
+{
+  "content": [],
+  "totalElements": 0,
+  "totalPages": 0,
+  "size": 20,
+  "number": 0,
+  "first": true,
+  "last": true,
+  "numberOfElements": 0,
+  "empty": true
+}
 ```
