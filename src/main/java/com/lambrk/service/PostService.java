@@ -10,6 +10,7 @@ import com.lambrk.repository.CommunityRepository;
 import com.lambrk.repository.UserRepository;
 import com.lambrk.repository.VoteRepository;
 import com.lambrk.repository.FileUploadRepository;
+import com.lambrk.repository.BookmarkRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -36,12 +37,14 @@ public class PostService {
     private final CommunityRepository communityRepository;
     private final VoteRepository voteRepository;
     private final FileUploadRepository fileUploadRepository;
+    private final BookmarkRepository bookmarkRepository;
     private final S3StorageService s3StorageService;
     private final KafkaEventService kafkaEventService;
 
     public PostService(PostRepository postRepository, UserRepository userRepository,
                       CommunityRepository communityRepository, VoteRepository voteRepository,
                       FileUploadRepository fileUploadRepository,
+                      BookmarkRepository bookmarkRepository,
                       S3StorageService s3StorageService,
                       KafkaEventService kafkaEventService) {
         this.postRepository = postRepository;
@@ -49,6 +52,7 @@ public class PostService {
         this.communityRepository = communityRepository;
         this.voteRepository = voteRepository;
         this.fileUploadRepository = fileUploadRepository;
+        this.bookmarkRepository = bookmarkRepository;
         this.s3StorageService = s3StorageService;
         this.kafkaEventService = kafkaEventService;
     }
@@ -113,9 +117,6 @@ public class PostService {
                 fileUploadRepository.findAllById(request.mediaIds()).forEach(f -> f.setPost(savedPost));
             }
 
-            // Update user karma
-            userRepository.updateUserKarma(authorId, 1);
-            
             // Send Kafka event
             kafkaEventService.sendPostCreatedEvent(savedPost);
 
@@ -146,16 +147,18 @@ public class PostService {
             }
         }
 
-        return PostResponse.from(post, userVote);
+        boolean bookmarked = isBookmarked(post, currentUserId);
+        return PostResponse.from(post, userVote, bookmarked);
     }
 
     @Cacheable(value = "hotPosts", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     @Transactional(readOnly = true)
     public Page<PostResponse> getHotPosts(Pageable pageable, UUID currentUserId) {
         Page<Post> posts = postRepository.findHotPosts(pageable);
+        java.util.Set<UUID> bookmarkedIds = getBookmarkedPostIds(currentUserId);
         return posts.map(post -> {
             String userVote = getUserVote(post, currentUserId);
-            return PostResponse.from(post, userVote);
+            return PostResponse.from(post, userVote, bookmarkedIds.contains(post.getId()));
         });
     }
 
@@ -163,9 +166,10 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostResponse> getNewPosts(Pageable pageable, UUID currentUserId) {
         Page<Post> posts = postRepository.findNewPosts(pageable);
+        java.util.Set<UUID> bookmarkedIds = getBookmarkedPostIds(currentUserId);
         return posts.map(post -> {
             String userVote = getUserVote(post, currentUserId);
-            return PostResponse.from(post, userVote);
+            return PostResponse.from(post, userVote, bookmarkedIds.contains(post.getId()));
         });
     }
 
@@ -173,9 +177,10 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostResponse> getTopPosts(Pageable pageable, UUID currentUserId) {
         Page<Post> posts = postRepository.findTopPosts(pageable);
+        java.util.Set<UUID> bookmarkedIds = getBookmarkedPostIds(currentUserId);
         return posts.map(post -> {
             String userVote = getUserVote(post, currentUserId);
-            return PostResponse.from(post, userVote);
+            return PostResponse.from(post, userVote, bookmarkedIds.contains(post.getId()));
         });
     }
 
@@ -185,9 +190,10 @@ public class PostService {
             .orElseThrow(() -> new RuntimeException("Community not found"));
         
         Page<Post> posts = postRepository.findByCommunity(community, pageable);
+        java.util.Set<UUID> bookmarkedIds = getBookmarkedPostIds(currentUserId);
         return posts.map(post -> {
             String userVote = getUserVote(post, currentUserId);
-            return PostResponse.from(post, userVote);
+            return PostResponse.from(post, userVote, bookmarkedIds.contains(post.getId()));
         });
     }
 
@@ -197,9 +203,10 @@ public class PostService {
             .orElseThrow(() -> new RuntimeException("User not found"));
         
         Page<Post> posts = postRepository.findByAuthor(user, pageable);
+        java.util.Set<UUID> bookmarkedIds = getBookmarkedPostIds(currentUserId);
         return posts.map(post -> {
             String userVote = getUserVote(post, currentUserId);
-            return PostResponse.from(post, userVote);
+            return PostResponse.from(post, userVote, bookmarkedIds.contains(post.getId()));
         });
     }
 
@@ -207,9 +214,10 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostResponse> searchPosts(String query, Pageable pageable, UUID currentUserId) {
         Page<Post> posts = postRepository.searchPosts(query, pageable);
+        java.util.Set<UUID> bookmarkedIds = getBookmarkedPostIds(currentUserId);
         return posts.map(post -> {
             String userVote = getUserVote(post, currentUserId);
-            return PostResponse.from(post, userVote);
+            return PostResponse.from(post, userVote, bookmarkedIds.contains(post.getId()));
         });
     }
 
@@ -262,6 +270,42 @@ public class PostService {
         return PostResponse.from(savedPost);
     }
 
+    @Transactional(readOnly = true)
+    public Page<PostResponse> getMediaPosts(List<com.lambrk.domain.Post.PostType> types, Pageable pageable, UUID currentUserId) {
+        Page<Post> posts = postRepository.findMediaPosts(types, pageable);
+        java.util.Set<UUID> bookmarkedIds = getBookmarkedPostIds(currentUserId);
+        return posts.map(post -> PostResponse.from(post, getUserVote(post, currentUserId), bookmarkedIds.contains(post.getId())));
+    }
+
+    @Transactional
+    public void incrementViewCount(UUID postId) {
+        postRepository.incrementPostViewCount(postId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostResponse> getRelatedPosts(UUID postId, int size, UUID currentUserId) {
+        Post post = postRepository.findById(postId)
+            .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        UUID authorId = post.getAuthor().getId();
+        UUID communityId = post.getCommunity() != null ? post.getCommunity().getId() : null;
+
+        Pageable pageable = PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<com.lambrk.domain.Post.PostType> mediaTypes = List.of(
+            com.lambrk.domain.Post.PostType.IMAGE,
+            com.lambrk.domain.Post.PostType.VIDEO
+        );
+
+        Page<Post> related = postRepository.findRelatedMediaPosts(
+            postId, authorId, communityId, mediaTypes, pageable
+        );
+
+        java.util.Set<UUID> bookmarkedIds = getBookmarkedPostIds(currentUserId);
+        return related.stream()
+            .map(p -> PostResponse.from(p, getUserVote(p, currentUserId), bookmarkedIds.contains(p.getId())))
+            .toList();
+    }
+
     @CacheEvict(value = {"posts", "hotPosts", "newPosts", "topPosts", "searchPosts"}, allEntries = true)
     public void deletePost(UUID postId, UUID currentUserId) {
         Post post = postRepository.findById(postId)
@@ -304,26 +348,39 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public List<PostResponse> getStickiedPosts(UUID communityId, UUID currentUserId) {
-        List<Post> posts = communityId != null 
+        List<Post> posts = communityId != null
             ? postRepository.findStickiedPostsByCommunity(communityId)
             : postRepository.findStickiedPosts();
-            
+
+        java.util.Set<UUID> bookmarkedIds = getBookmarkedPostIds(currentUserId);
         return posts.stream()
             .map(post -> {
                 String userVote = getUserVote(post, currentUserId);
-                return PostResponse.from(post, userVote);
+                return PostResponse.from(post, userVote, bookmarkedIds.contains(post.getId()));
             })
             .toList();
     }
 
-    private String getUserVote(Post post, UUID currentUserId) {
+    public String getUserVote(Post post, UUID currentUserId) {
         if (currentUserId == null) return null;
-        
+
         User currentUser = userRepository.findById(currentUserId).orElse(null);
         if (currentUser == null) return null;
-        
+
         return voteRepository.findByUserAndPost(currentUser, post)
             .map(vote -> vote.getVoteType().name())
             .orElse(null);
+    }
+
+    private boolean isBookmarked(Post post, UUID currentUserId) {
+        if (currentUserId == null) return false;
+        User currentUser = userRepository.findById(currentUserId).orElse(null);
+        if (currentUser == null) return false;
+        return bookmarkRepository.existsByUserAndPost(currentUser, post);
+    }
+
+    private java.util.Set<UUID> getBookmarkedPostIds(UUID currentUserId) {
+        if (currentUserId == null) return java.util.Set.of();
+        return bookmarkRepository.findBookmarkedPostIdsByUserId(currentUserId);
     }
 }

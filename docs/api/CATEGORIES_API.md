@@ -8,7 +8,20 @@ Base path: `/api/categories`. JWT required for all endpoints. Write operations r
 
 Create a new category. Admin only.
 
-**Request body:**
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` (Admin) |
+| `name` | Body | string | **Yes** | Display name (2–50 chars) |
+| `description` | Body | string | No | Category description |
+| `iconUrl` | Body | string | No | Icon SVG/PNG URL |
+| `imageUrl` | Body | string | No | Cover image URL |
+| `color` | Body | string | No | Hex color code |
+| `slug` | Body | string | **Yes** | URL-friendly identifier |
+| `sortOrder` | Body | integer | No | Display order |
+
+**Request body**
 
 ```json
 {
@@ -22,7 +35,15 @@ Create a new category. Admin only.
 }
 ```
 
-**Response:**
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `CategoryResponse` | Created category |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not an admin |
+
+**Response body**
 
 ```json
 {
@@ -46,9 +67,24 @@ Create a new category. Admin only.
 
 List all categories ordered by sortOrder and name.
 
-**Query params:** `page`, `size`.
+**What to send**
 
-**Response:**
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `page` | Query | integer | No | `0` | Page number |
+| `size` | Query | integer | No | `20` | Page size |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `Page<CategoryResponse>` | Paginated categories |
+| `401` | error | JWT missing or invalid |
+
+**Response body**
 
 ```json
 {
@@ -67,7 +103,7 @@ List all categories ordered by sortOrder and name.
       "updatedAt": "2026-05-23T10:00:00Z"
     }
   ],
-  "pageable": { ... },
+  "pageable": { },
   "totalElements": 5,
   "totalPages": 1
 }
@@ -79,7 +115,26 @@ List all categories ordered by sortOrder and name.
 
 Get category by UUID.
 
-**Response:** same as POST response.
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| `categoryId` | Path | UUID | **Yes** | Category UUID |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `CategoryResponse` | Category details |
+| `401` | error | JWT missing or invalid |
+| `404` | error | Category not found |
+
+**Response body**
+
+Same as POST response.
 
 ---
 
@@ -87,7 +142,26 @@ Get category by UUID.
 
 Get category by slug.
 
-**Response:** same as POST response.
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| `slug` | Path | string | **Yes** | Category slug |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `CategoryResponse` | Category details |
+| `401` | error | JWT missing or invalid |
+| `404` | error | Category not found |
+
+**Response body**
+
+Same as POST response.
 
 ---
 
@@ -95,9 +169,36 @@ Get category by slug.
 
 Update a category. Admin only.
 
-**Request body:** same as POST.
+**What to send**
 
-**Response:** same as POST response.
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` (Admin) |
+| `categoryId` | Path | UUID | **Yes** | Category UUID |
+| `name` | Body | string | No | Display name |
+| `description` | Body | string | No | Description |
+| `iconUrl` | Body | string | No | Icon URL |
+| `imageUrl` | Body | string | No | Cover image URL |
+| `color` | Body | string | No | Hex color |
+| `slug` | Body | string | No | URL slug |
+| `sortOrder` | Body | integer | No | Display order |
+
+**Request body**
+
+Same as POST request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `CategoryResponse` | Updated category |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not an admin |
+| `404` | error | Category not found |
+
+**Response body**
+
+Same as POST response.
 
 ---
 
@@ -105,7 +206,23 @@ Update a category. Admin only.
 
 Delete a category. Admin only.
 
-**Response:** `204 No Content`.
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` (Admin) |
+| `categoryId` | Path | UUID | **Yes** | Category UUID |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `204` | empty | Category deleted |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not an admin |
+| `404` | error | Category not found |
 
 ---
 

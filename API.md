@@ -30,11 +30,13 @@ Auth tokens are returned by [Auth API](docs/api/AUTH_API.md). The application is
 | Posts | [POSTS_API.md](docs/api/POSTS_API.md) | `/api/posts` |
 | Comments | [COMMENTS_API.md](docs/api/COMMENTS_API.md) | `/api/comments` |
 | Votes | [VOTES_API.md](docs/api/VOTES_API.md) | `/api/votes` |
+| Bookmarks | [BOOKMARKS_API.md](docs/api/BOOKMARKS_API.md) | `/api/bookmarks` |
 | Feed | [FEED_API.md](docs/api/FEED_API.md) | `/api/feed` |
 | Search | [SEARCH_API.md](docs/api/SEARCH_API.md) | `/api/search` |
 | Recommendations | [RECOMMENDATIONS_API.md](docs/api/RECOMMENDATIONS_API.md) | `/api/recommendations` |
 | Notifications | [NOTIFICATIONS_API.md](docs/api/NOTIFICATIONS_API.md) | `/api/notifications` |
 | Files | [FILES_API.md](docs/api/FILES_API.md) | `/api/files` |
+| LoopMix (Reels) | [LOOPMIX_API.md](docs/api/LOOPMIX_API.md) | `/api/posts/media`, `/view`, `/related` |
 | Admin | [ADMIN_API.md](docs/api/ADMIN_API.md) | `/api/admin` |
 | Logs | [LOGS_API.md](docs/api/LOGS_API.md) | `/api/logs` |
 | WebSocket | [WEBSOCKET_API.md](docs/api/WEBSOCKET_API.md) | `/ws` STOMP |
@@ -48,12 +50,28 @@ Auth tokens are returned by [Auth API](docs/api/AUTH_API.md). The application is
 | POST | `/api/auth/register` | Public | Register a user and return JWT tokens. |
 | POST | `/api/auth/login` | Public | Authenticate and return JWT tokens. |
 | POST | `/api/auth/refresh` | Public | Refresh access token from refresh token string. |
-| GET | `/api/users/{userId}` | User | Get user by id. |
-| GET | `/api/users/username/{username}` | User | Get user by username. |
+| GET | `/api/users/{userId}` | Public | Get user by id with social counts. |
+| GET | `/api/users/username/{username}` | Public | Get user by username with social counts. |
 | GET | `/api/users/me` | User | Get current authenticated user. |
 | PUT | `/api/users/me` | User | Update current user profile. |
-| GET | `/api/users/top` | User | List top users by karma. |
-| GET | `/api/users/search` | User | Search active users. |
+| GET | `/api/users/top` | Public | List top users by karma. |
+| GET | `/api/users/search` | Public | Search active users. |
+| POST | `/api/users/{userId}/follow` | User | Follow a user. |
+| DELETE | `/api/users/{userId}/follow` | User | Unfollow a user. |
+| GET | `/api/users/{userId}/followers` | Public | List followers. |
+| GET | `/api/users/{userId}/following` | Public | List followed users. |
+| GET | `/api/users/{userId}/friends` | Public | List accepted friends. |
+| GET | `/api/users/{userId}/mutual/followers` | Public | Mutual followers with another user. |
+| GET | `/api/users/{userId}/mutual/following` | Public | Mutual followed users with another user. |
+| GET | `/api/users/{userId}/mutual/friends` | Public | Mutual friends with another user. |
+| GET | `/api/users/{userId}/social-stats` | Public | Follower/following/friend counts. |
+| POST | `/api/users/{userId}/friend-request` | User | Send friend request. |
+| POST | `/api/users/{userId}/friend-request/accept` | User | Accept friend request. |
+| POST | `/api/users/{userId}/friend-request/decline` | User | Decline friend request. |
+| DELETE | `/api/users/{userId}/friend-request` | User | Cancel outgoing friend request. |
+| DELETE | `/api/users/{userId}/friend` | User | Remove friend. |
+| GET | `/api/users/me/friend-requests/incoming` | User | Incoming pending friend requests. |
+| GET | `/api/users/me/friend-requests/outgoing` | User | Outgoing pending friend requests. |
 | DELETE | `/api/users/{userId}` | Admin | Delete user. |
 | POST | `/api/communities` | User | Create community. |
 | GET | `/api/communities` | User | List public communities. |
@@ -93,6 +111,11 @@ Auth tokens are returned by [Auth API](docs/api/AUTH_API.md). The application is
 | GET | `/api/comments/search` | User | Search comments. |
 | POST | `/api/votes/post` | User | Vote on post. |
 | POST | `/api/votes/comment` | User | Vote on comment. |
+| POST | `/api/bookmarks/{postId}` | User | Bookmark a post. |
+| DELETE | `/api/bookmarks/{postId}` | User | Remove bookmark. |
+| GET | `/api/bookmarks` | User | List bookmarked posts. |
+| GET | `/api/bookmarks/{postId}/status` | User | Check bookmark status. |
+| GET | `/api/bookmarks/count` | User | Bookmark count. |
 | GET | `/api/feed` | User role | Personalized feed. |
 | POST | `/api/feed` | User role | Personalized feed with filters. |
 | GET | `/api/feed/hot` | User role | Hot feed. |

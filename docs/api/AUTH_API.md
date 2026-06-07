@@ -2,17 +2,41 @@
 
 Base path: `/api/auth`. These endpoints are public.
 
+---
+
 ### POST `/api/auth/register`
 
 Register a new account and return JWT tokens.
 
 **Auth:** Public
 
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `username` | Body | string | **Yes** | Unique username (3–50 chars) |
+| `email` | Body | string | **Yes** | Valid email address |
+| `password` | Body | string | **Yes** | Minimum 8 characters |
+| `displayName` | Body | string | No | Public display name |
+
 **Request body**
 
 ```json
-{"username":"johndoe","email":"john@example.com","password":"securePassword123","displayName":"John Doe"}
+{
+  "username": "johndoe",
+  "email": "john@example.com",
+  "password": "securePassword123",
+  "displayName": "John Doe"
+}
 ```
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `AuthResponse` | Tokens and user info |
+| `400` | error | Validation failure |
+| `409` | error | Duplicate username/email |
 
 **cURL**
 
@@ -27,7 +51,7 @@ curl -X POST 'http://localhost:9500/api/auth/register' \
 }'
 ```
 
-**Response**
+**Response body**
 
 ```json
 {
@@ -49,17 +73,37 @@ curl -X POST 'http://localhost:9500/api/auth/register' \
   }
 }
 ```
+
+---
+
 ### POST `/api/auth/login`
 
 Authenticate with username and password.
 
 **Auth:** Public
 
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `username` | Body | string | **Yes** | Registered username |
+| `password` | Body | string | **Yes** | Account password |
+
 **Request body**
 
 ```json
-{"username":"johndoe","password":"securePassword123"}
+{
+  "username": "johndoe",
+  "password": "securePassword123"
+}
 ```
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `AuthResponse` | Tokens and user info |
+| `401` | error | Bad credentials |
 
 **cURL**
 
@@ -72,7 +116,7 @@ curl -X POST 'http://localhost:9500/api/auth/login' \
 }'
 ```
 
-**Response**
+**Response body**
 
 ```json
 {
@@ -94,17 +138,33 @@ curl -X POST 'http://localhost:9500/api/auth/login' \
   }
 }
 ```
+
+---
+
 ### POST `/api/auth/refresh`
 
 Refresh tokens using the raw refresh-token string.
 
 **Auth:** Public
 
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `refreshToken` | Body | string | **Yes** | Raw JWT refresh token |
+
 **Request body**
 
 ```text
 eyJhbGciOi...
 ```
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `AuthResponse` | New tokens and user info |
+| `401` | error | Invalid or expired refresh token |
 
 **cURL**
 
@@ -114,7 +174,7 @@ curl -X POST 'http://localhost:9500/api/auth/refresh' \
   -d 'eyJhbGciOi...'
 ```
 
-**Response**
+**Response body**
 
 ```json
 {

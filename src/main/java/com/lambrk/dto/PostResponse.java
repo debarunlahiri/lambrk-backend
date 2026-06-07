@@ -60,10 +60,12 @@ public record PostResponse(
 
     String userVote, // LIKE, DISLIKE, or null
 
+    boolean isBookmarked,
+
     List<MediaResponse> media
 ) {
 
-    public static PostResponse from(Post post, String userVote) {
+    public static PostResponse from(Post post, String userVote, boolean isBookmarked) {
         List<MediaResponse> mediaList = post.getMedia() != null
             ? post.getMedia().stream().map(MediaResponse::from).toList()
             : List.of();
@@ -94,11 +96,16 @@ public record PostResponse(
             post.getUpdatedAt(),
             post.getArchivedAt(),
             userVote,
+            isBookmarked,
             mediaList
         );
     }
-    
+
+    public static PostResponse from(Post post, String userVote) {
+        return from(post, userVote, false);
+    }
+
     public static PostResponse from(Post post) {
-        return from(post, null);
+        return from(post, null, false);
     }
 }

@@ -39,14 +39,12 @@ public class FeedController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('USER')")
     @Operation(
         summary = "Get personalized feed",
-        description = "Returns a personalized feed of posts and suggested users based on the user's interactions and preferences using an algorithmic ranking system."
+        description = "Returns a personalized feed of posts and suggested users. Authenticated users get personalized ranking; anonymous users get trending content."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Feed generated successfully"),
-        @ApiResponse(responseCode = "401", description = "Not authenticated"),
         @ApiResponse(responseCode = "429", description = "Rate limit exceeded")
     })
     public ResponseEntity<FeedResponse> getFeed(
@@ -80,7 +78,6 @@ public class FeedController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('USER')")
     @Operation(
         summary = "Get personalized feed with filters",
         description = "Returns a personalized feed with advanced filtering options for post types and content preferences."
@@ -114,7 +111,6 @@ public class FeedController {
     }
 
     @GetMapping("/hot")
-    @PreAuthorize("hasRole('USER')")
     @Operation(
         summary = "Get hot/trending feed",
         description = "Returns trending posts based on popularity and recent activity."
@@ -141,7 +137,6 @@ public class FeedController {
     }
 
     @GetMapping("/new")
-    @PreAuthorize("hasRole('USER')")
     @Operation(
         summary = "Get newest posts feed",
         description = "Returns the most recent posts with minimal algorithmic ranking."
@@ -168,7 +163,6 @@ public class FeedController {
     }
 
     @GetMapping("/top")
-    @PreAuthorize("hasRole('USER')")
     @Operation(
         summary = "Get top posts feed",
         description = "Returns highest scoring posts of all time or specified time period."
@@ -197,7 +191,6 @@ public class FeedController {
     }
 
     @GetMapping("/discover")
-    @PreAuthorize("hasRole('USER')")
     @Operation(
         summary = "Discover new content",
         description = "Returns posts from communities the user doesn't follow to discover new content."

@@ -2,6 +2,7 @@ package com.lambrk.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -52,6 +53,20 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/info").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                // Feed endpoints — public (personalized for logged-in, trending for anonymous)
+                .requestMatchers("/api/feed/**").permitAll()
+                // Search and public discovery endpoints
+                .requestMatchers("/api/search/**").permitAll()
+                .requestMatchers("/api/posts/hot", "/api/posts/new", "/api/posts/top", "/api/posts/search").permitAll()
+                .requestMatchers("/api/communities/trending", "/api/communities/search").permitAll()
+                .requestMatchers("/api/users/me").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/users/search", "/api/users/top", "/api/users/username/*", "/api/users/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users/*/followers", "/api/users/*/following", "/api/users/*/friends", "/api/users/*/social-stats").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users/*/mutual/followers", "/api/users/*/mutual/following", "/api/users/*/mutual/friends").permitAll()
+                // LoopMix / Reels endpoints — public discovery
+                .requestMatchers("/api/posts/media").permitAll()
+                .requestMatchers("/api/posts/*/view").permitAll()
+                .requestMatchers("/api/posts/*/related").permitAll()
                 // WebSocket endpoints
                 .requestMatchers("/ws/**").permitAll()
                 // Admin endpoints

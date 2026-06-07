@@ -147,8 +147,10 @@ public class FeedService {
         // Get active communities from post history
         Map<UUID, Integer> communityActivityScore = new HashMap<>();
         userPosts.forEach(post -> {
-            UUID communityId = post.getCommunity().getId();
-            communityActivityScore.merge(communityId, 1, (a, b) -> a + b);
+            if (post.getCommunity() != null) {
+                UUID communityId = post.getCommunity().getId();
+                communityActivityScore.merge(communityId, 1, (a, b) -> a + b);
+            }
         });
 
         return new UserInteractionData(
@@ -171,7 +173,7 @@ public class FeedService {
             // Use findAll and filter since findByCommunityIdIn doesn't exist
             candidatePosts = postRepository.findAll(pageable).getContent()
                 .stream()
-                .filter(p -> interactionData.subscribedCommunityIds().contains(p.getCommunity().getId()))
+                .filter(p -> p.getCommunity() != null && interactionData.subscribedCommunityIds().contains(p.getCommunity().getId()))
                 .collect(Collectors.toList());
         } else {
             candidatePosts = postRepository.findAll(pageable).getContent();
@@ -248,6 +250,10 @@ public class FeedService {
     }
 
     private double calculateCommunityAffinity(Post post, UserInteractionData interactionData) {
+        if (post.getCommunity() == null) {
+            return 30.0; // Base score for posts without a community
+        }
+        
         UUID communityId = post.getCommunity().getId();
         
         if (interactionData.subscribedCommunityIds().contains(communityId)) {
@@ -290,7 +296,7 @@ public class FeedService {
     private List<String> generateScoreReasons(Post post, UserInteractionData interactionData, double score) {
         List<String> reasons = new ArrayList<>();
         
-        if (interactionData.subscribedCommunityIds().contains(post.getCommunity().getId())) {
+        if (post.getCommunity() != null && interactionData.subscribedCommunityIds().contains(post.getCommunity().getId())) {
             reasons.add("From your subscribed community");
         }
         

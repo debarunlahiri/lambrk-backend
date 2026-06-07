@@ -2,11 +2,26 @@
 
 Base path: `/api/admin`. JWT required with `ADMIN` role.
 
+---
+
 ### POST `/api/admin/actions`
 
 Perform generic admin action.
 
 **Auth:** Admin
+
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` (Admin) |
+| `action` | Body | string | **Yes** | Action type (`BAN_USER`, etc.) |
+| `targetId` | Body | UUID | **Yes** | Target entity UUID |
+| `reason` | Body | string | **Yes** | Reason for action |
+| `notes` | Body | string | No | Additional notes |
+| `durationDays` | Body | integer | No | Duration if temporary |
+| `permanent` | Body | boolean | No | `false` |
+| `notifyUser` | Body | boolean | No | `true` |
 
 **Request body**
 
@@ -21,6 +36,14 @@ Perform generic admin action.
   "notifyUser": true
 }
 ```
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `AdminActionResponse` | Performed action |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not an admin |
 
 **cURL**
 
@@ -56,18 +79,32 @@ curl -X POST 'http://localhost:9500/api/admin/actions' \
   "result": "Action completed"
 }
 ```
+
+---
+
 ### GET `/api/admin/actions`
 
 List admin actions.
 
 **Auth:** Admin
 
-**Query/path parameters**
+**What to send**
 
-| Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `page` | integer | no | `0` | Zero-based page index. |
-| `size` | integer | no | `20` | Page size. |
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
+| `page` | Query | integer | No | `0` | Page number |
+| `size` | Query | integer | No | `20` | Page size |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `Page<AdminActionResponse>` | Paginated actions |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not an admin |
 
 **cURL**
 
@@ -91,18 +128,33 @@ curl -X GET 'http://localhost:9500/api/admin/actions?page=0&size=20' \
   "empty": true
 }
 ```
+
+---
+
 ### GET `/api/admin/actions/user/{userId}`
 
 List actions by user.
 
 **Auth:** Admin
 
-**Query/path parameters**
+**What to send**
 
-| Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `page` | integer | no | `0` | Zero-based page index. |
-| `size` | integer | no | `20` | Page size. |
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
+| `userId` | Path | UUID | **Yes** | — | User UUID |
+| `page` | Query | integer | No | `0` | Page number |
+| `size` | Query | integer | No | `20` | Page size |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `Page<AdminActionResponse>` | Actions for the user |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not an admin |
 
 **cURL**
 
@@ -126,18 +178,32 @@ curl -X GET 'http://localhost:9500/api/admin/actions/user/b0eebc99-9c0b-4ef8-bb6
   "empty": true
 }
 ```
+
+---
+
 ### GET `/api/admin/actions/active`
 
 List active actions.
 
 **Auth:** Admin
 
-**Query/path parameters**
+**What to send**
 
-| Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `page` | integer | no | `0` | Zero-based page index. |
-| `size` | integer | no | `20` | Page size. |
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
+| `page` | Query | integer | No | `0` | Page number |
+| `size` | Query | integer | No | `20` | Page size |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `Page<AdminActionResponse>` | Active actions |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not an admin |
 
 **cURL**
 
@@ -161,15 +227,35 @@ curl -X GET 'http://localhost:9500/api/admin/actions/active?page=0&size=20' \
   "empty": true
 }
 ```
+
+---
+
 ### POST `/api/admin/ban-user/{userId}`
 
 Perform ban user action.
 
 **Auth:** Admin
 
-**Query/path parameters**
+**What to send**
 
-Query string: `reason=Spam&durationDays=7&permanent=false&notifyUser=true`.
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
+| `userId` | Path | UUID | **Yes** | — | User UUID |
+| `reason` | Query | string | **Yes** | — | Ban reason |
+| `durationDays` | Query | integer | No | — | Ban duration |
+| `permanent` | Query | boolean | No | `false` | Permanent ban |
+| `notifyUser` | Query | boolean | No | `true` | Notify user |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `AdminActionResponse` | Ban action result |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not an admin |
 
 **cURL**
 
@@ -195,15 +281,34 @@ curl -X POST 'http://localhost:9500/api/admin/ban-user/b0eebc99-9c0b-4ef8-bb6d-6
   "result": "Action completed"
 }
 ```
+
+---
+
 ### POST `/api/admin/suspend-user/{userId}`
 
 Perform suspend user action.
 
 **Auth:** Admin
 
-**Query/path parameters**
+**What to send**
 
-Query string: `reason=Abuse&durationDays=3&notifyUser=true`.
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
+| `userId` | Path | UUID | **Yes** | — | User UUID |
+| `reason` | Query | string | **Yes** | — | Suspend reason |
+| `durationDays` | Query | integer | No | — | Suspend duration |
+| `notifyUser` | Query | boolean | No | `true` | Notify user |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `AdminActionResponse` | Suspend action result |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not an admin |
 
 **cURL**
 
@@ -229,15 +334,33 @@ curl -X POST 'http://localhost:9500/api/admin/suspend-user/b0eebc99-9c0b-4ef8-bb
   "result": "Action completed"
 }
 ```
+
+---
+
 ### POST `/api/admin/delete-post/{postId}`
 
 Perform delete post action.
 
 **Auth:** Admin
 
-**Query/path parameters**
+**What to send**
 
-Query string: `reason=Rule%20violation&notifyUser=true`.
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
+| `postId` | Path | UUID | **Yes** | — | Post UUID |
+| `reason` | Query | string | **Yes** | — | Delete reason |
+| `notifyUser` | Query | boolean | No | `true` | Notify user |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `AdminActionResponse` | Delete action result |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not an admin |
 
 **cURL**
 
@@ -263,15 +386,33 @@ curl -X POST 'http://localhost:9500/api/admin/delete-post/b0eebc99-9c0b-4ef8-bb6
   "result": "Action completed"
 }
 ```
+
+---
+
 ### POST `/api/admin/delete-comment/{commentId}`
 
 Perform delete comment action.
 
 **Auth:** Admin
 
-**Query/path parameters**
+**What to send**
 
-Query string: `reason=Rule%20violation&notifyUser=true`.
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
+| `commentId` | Path | UUID | **Yes** | — | Comment UUID |
+| `reason` | Query | string | **Yes** | — | Delete reason |
+| `notifyUser` | Query | boolean | No | `true` | Notify user |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `AdminActionResponse` | Delete action result |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not an admin |
 
 **cURL**
 
@@ -297,15 +438,35 @@ curl -X POST 'http://localhost:9500/api/admin/delete-comment/b0eebc99-9c0b-4ef8-
   "result": "Action completed"
 }
 ```
+
+---
+
 ### POST `/api/admin/lock-post/{postId}`
 
 Perform lock post action.
 
 **Auth:** Admin
 
-**Query/path parameters**
+**What to send**
 
-Query string: `reason=Heated&durationDays=1&permanent=false&notifyUser=true`.
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
+| `postId` | Path | UUID | **Yes** | — | Post UUID |
+| `reason` | Query | string | **Yes** | — | Lock reason |
+| `durationDays` | Query | integer | No | — | Lock duration |
+| `permanent` | Query | boolean | No | `false` | Permanent lock |
+| `notifyUser` | Query | boolean | No | `true` | Notify user |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `AdminActionResponse` | Lock action result |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not an admin |
 
 **cURL**
 
@@ -331,15 +492,33 @@ curl -X POST 'http://localhost:9500/api/admin/lock-post/b0eebc99-9c0b-4ef8-bb6d-
   "result": "Action completed"
 }
 ```
+
+---
+
 ### POST `/api/admin/quarantine-post/{postId}`
 
 Perform quarantine post action.
 
 **Auth:** Admin
 
-**Query/path parameters**
+**What to send**
 
-Query string: `reason=Review&notifyUser=true`.
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
+| `postId` | Path | UUID | **Yes** | — | Post UUID |
+| `reason` | Query | string | **Yes** | — | Quarantine reason |
+| `notifyUser` | Query | boolean | No | `true` | Notify user |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `AdminActionResponse` | Quarantine action result |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not an admin |
 
 **cURL**
 
@@ -365,15 +544,33 @@ curl -X POST 'http://localhost:9500/api/admin/quarantine-post/b0eebc99-9c0b-4ef8
   "result": "Action completed"
 }
 ```
+
+---
+
 ### POST `/api/admin/remove-moderator/{userId}`
 
 Perform remove moderator action.
 
 **Auth:** Admin
 
-**Query/path parameters**
+**What to send**
 
-Query string: `reason=Policy&notifyUser=true`.
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
+| `userId` | Path | UUID | **Yes** | — | User UUID |
+| `reason` | Query | string | **Yes** | — | Removal reason |
+| `notifyUser` | Query | boolean | No | `true` | Notify user |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `AdminActionResponse` | Remove moderator result |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not an admin |
 
 **cURL**
 

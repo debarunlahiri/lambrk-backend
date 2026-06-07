@@ -2,6 +2,8 @@
 
 Lambrk uses Spring STOMP messaging over WebSocket. `WebSocketConfig` registers `/ws` with native WebSocket and SockJS, application prefix `/app`, broker prefixes `/topic` and `/queue`, and user prefix `/user`.
 
+---
+
 ## Handshake
 
 ### GET `/ws`
@@ -9,6 +11,21 @@ Lambrk uses Spring STOMP messaging over WebSocket. `WebSocketConfig` registers `
 Open a websocket/STOMP connection.
 
 **Auth:** JWT should be sent by the client during connect, commonly in STOMP `CONNECT` headers.
+
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | STOMP header | string | **Yes** | `Bearer <jwt>` |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `101` | — | WebSocket upgrade successful |
+| `401` | — | JWT invalid (STOMP ERROR frame) |
 
 **Browser/STOMP example**
 
@@ -28,13 +45,28 @@ client.activate();
 
 **cURL note:** curl is not useful for STOMP messaging after websocket upgrade. Use a STOMP client, browser client, or websocket test tool.
 
+---
+
 ## Client Messages
 
 ### SEND `/app/connect`
 
 Confirm connection and push unread count.
 
-**Request payload:** none
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | STOMP header | string | **Yes** | `Bearer <jwt>` |
+
+No request payload.
+
+**Response**
+
+| Destination | Body | Description |
+|-------------|------|-------------|
+| `/user/queue/connected` | text | Connection confirmation |
+| `/user/queue/notifications/unread-count` | integer | Unread count |
 
 **STOMP send**
 
@@ -49,11 +81,25 @@ client.publish({ destination: '/app/connect' });
 /user/queue/notifications/unread-count -> 0
 ```
 
+---
+
 ### SEND `/app/subscribe/notifications`
 
 Subscribe to notification updates.
 
-**Request payload:** none
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | STOMP header | string | **Yes** | `Bearer <jwt>` |
+
+No request payload.
+
+**Response**
+
+| Destination | Body | Description |
+|-------------|------|-------------|
+| `/user/queue/notifications` | `NotificationResponse` or list | Notification updates |
 
 **STOMP send**
 
@@ -69,15 +115,31 @@ client.publish({ destination: '/app/subscribe/notifications' });
 
 Sent to `/user/queue/notifications`. Current controller returns an empty placeholder list.
 
+---
+
 ### SEND `/app/subscribe/posts/{postId}`
 
 Subscribe to updates for one post.
+
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | STOMP header | string | **Yes** | `Bearer <jwt>` |
+| `postId` | Path | UUID | **Yes** | Post UUID |
+| `body` | Body | string | **Yes** | Post UUID string |
 
 **Request payload**
 
 ```json
 "019e5a43-e0c2-7baa-9f6d-b9b9b82afb16"
 ```
+
+**Response**
+
+| Destination | Body | Description |
+|-------------|------|-------------|
+| `/user/queue/post/{postId}/subscribed` | text | Subscription confirmation |
 
 **STOMP send**
 
@@ -91,15 +153,31 @@ client.publish({ destination: '/app/subscribe/posts/019e5a43-e0c2-7baa-9f6d-b9b9
 /user/queue/post/019e5a43-e0c2-7baa-9f6d-b9b9b82afb16/subscribed -> "Subscribed to post updates: 019e5a43-e0c2-7baa-9f6d-b9b9b82afb16"
 ```
 
+---
+
 ### SEND `/app/subscribe/community/{communityId}`
 
 Subscribe to updates for one community.
+
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | STOMP header | string | **Yes** | `Bearer <jwt>` |
+| `communityId` | Path | UUID | **Yes** | Community UUID |
+| `body` | Body | string | **Yes** | Community UUID string |
 
 **Request payload**
 
 ```json
 "019e5a43-e0c2-7baa-9f6d-b9b9b82afb15"
 ```
+
+**Response**
+
+| Destination | Body | Description |
+|-------------|------|-------------|
+| `/user/queue/community/{communityId}/subscribed` | text | Subscription confirmation |
 
 **STOMP send**
 
@@ -112,6 +190,8 @@ client.publish({ destination: '/app/subscribe/community/019e5a43-e0c2-7baa-9f6d-
 ```text
 /user/queue/community/019e5a43-e0c2-7baa-9f6d-b9b9b82afb15/subscribed -> "Subscribed to community updates: 019e5a43-e0c2-7baa-9f6d-b9b9b82afb15"
 ```
+
+---
 
 ## Server Push Destinations
 

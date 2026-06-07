@@ -59,7 +59,7 @@ public class VoteService {
                 int likeDelta = request.voteType() == Vote.VoteType.LIKE ? -1 : 0;
                 int dislikeDelta = request.voteType() == Vote.VoteType.DISLIKE ? -1 : 0;
                 postRepository.updatePostScore(post.getId(), scoreDelta, likeDelta, dislikeDelta);
-                userRepository.updateUserKarma(post.getAuthor().getId(), scoreDelta);
+                updateAuthorKarma(post.getAuthor().getId(), userId, scoreDelta);
             } else {
                 // Flip vote
                 Vote flipped = new Vote(old.getId(), request.voteType(), user, post, null,
@@ -69,7 +69,7 @@ public class VoteService {
                 int likeDelta = request.voteType() == Vote.VoteType.LIKE ? 1 : -1;
                 int dislikeDelta = request.voteType() == Vote.VoteType.DISLIKE ? 1 : -1;
                 postRepository.updatePostScore(post.getId(), scoreDelta, likeDelta, dislikeDelta);
-                userRepository.updateUserKarma(post.getAuthor().getId(), scoreDelta);
+                updateAuthorKarma(post.getAuthor().getId(), userId, scoreDelta);
             }
         } else {
             Vote vote = new Vote(request.voteType(), user, post, null);
@@ -78,7 +78,7 @@ public class VoteService {
             int likeDelta = request.voteType() == Vote.VoteType.LIKE ? 1 : 0;
             int dislikeDelta = request.voteType() == Vote.VoteType.DISLIKE ? 1 : 0;
             postRepository.updatePostScore(post.getId(), scoreDelta, likeDelta, dislikeDelta);
-            userRepository.updateUserKarma(post.getAuthor().getId(), scoreDelta);
+            updateAuthorKarma(post.getAuthor().getId(), userId, scoreDelta);
             kafkaEventService.sendVoteCastEvent(saved);
         }
 
@@ -103,7 +103,7 @@ public class VoteService {
                 int likeDelta = request.voteType() == Vote.VoteType.LIKE ? -1 : 0;
                 int dislikeDelta = request.voteType() == Vote.VoteType.DISLIKE ? -1 : 0;
                 commentRepository.updateCommentScore(comment.getId(), scoreDelta, likeDelta, dislikeDelta);
-                userRepository.updateUserKarma(comment.getAuthor().getId(), scoreDelta);
+                updateAuthorKarma(comment.getAuthor().getId(), userId, scoreDelta);
             } else {
                 Vote flipped = new Vote(old.getId(), request.voteType(), user, null, comment,
                     old.getIpAddress(), old.getUserAgent(), old.getCreatedAt(), java.time.Instant.now());
@@ -112,7 +112,7 @@ public class VoteService {
                 int likeDelta = request.voteType() == Vote.VoteType.LIKE ? 1 : -1;
                 int dislikeDelta = request.voteType() == Vote.VoteType.DISLIKE ? 1 : -1;
                 commentRepository.updateCommentScore(comment.getId(), scoreDelta, likeDelta, dislikeDelta);
-                userRepository.updateUserKarma(comment.getAuthor().getId(), scoreDelta);
+                updateAuthorKarma(comment.getAuthor().getId(), userId, scoreDelta);
             }
         } else {
             Vote vote = new Vote(request.voteType(), user, null, comment);
@@ -121,10 +121,16 @@ public class VoteService {
             int likeDelta = request.voteType() == Vote.VoteType.LIKE ? 1 : 0;
             int dislikeDelta = request.voteType() == Vote.VoteType.DISLIKE ? 1 : 0;
             commentRepository.updateCommentScore(comment.getId(), scoreDelta, likeDelta, dislikeDelta);
-            userRepository.updateUserKarma(comment.getAuthor().getId(), scoreDelta);
+            updateAuthorKarma(comment.getAuthor().getId(), userId, scoreDelta);
             kafkaEventService.sendVoteCastEvent(saved);
         }
 
         customMetrics.recordVoteCast(request.voteType().name());
+    }
+
+    private void updateAuthorKarma(UUID authorId, UUID voterId, int delta) {
+        if (!authorId.equals(voterId)) {
+            userRepository.updateUserKarma(authorId, delta);
+        }
     }
 }

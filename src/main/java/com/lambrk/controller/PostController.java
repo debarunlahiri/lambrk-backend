@@ -143,6 +143,62 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+    // =====================================
+    // LoopMix Endpoints (Reels / Shorts)
+    // =====================================
+
+    @GetMapping("/media")
+    @NewSpan("get-media-posts")
+    @Timed(value = "posts.media.duration", description = "Time taken to get media posts")
+    @Counted(value = "posts.media.fetched", extraTags = {"type", "loopmix"})
+    public ResponseEntity<Page<PostResponse>> getMediaPosts(
+            @RequestParam(defaultValue = "ALL") String type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal UserPrincipal userDetails) {
+
+        com.lambrk.domain.Post.PostType[] mediaTypes;
+        switch (type.toUpperCase()) {
+            case "IMAGE" -> mediaTypes = new com.lambrk.domain.Post.PostType[]{
+                com.lambrk.domain.Post.PostType.IMAGE
+            };
+            case "VIDEO" -> mediaTypes = new com.lambrk.domain.Post.PostType[]{
+                com.lambrk.domain.Post.PostType.VIDEO
+            };
+            default -> mediaTypes = new com.lambrk.domain.Post.PostType[]{
+                com.lambrk.domain.Post.PostType.IMAGE,
+                com.lambrk.domain.Post.PostType.VIDEO
+            };
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        UUID currentUserId = getUserIdFromUserDetails(userDetails);
+        Page<PostResponse> response = postService.getMediaPosts(List.of(mediaTypes), pageable, currentUserId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{postId}/view")
+    @NewSpan("increment-post-view")
+    @Timed(value = "posts.view.duration", description = "Time taken to record a view")
+    @Counted(value = "posts.view.recorded", extraTags = {"type", "loopmix"})
+    public ResponseEntity<Void> recordView(@PathVariable @SpanTag UUID postId) {
+        postService.incrementViewCount(postId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{postId}/related")
+    @NewSpan("get-related-posts")
+    @Timed(value = "posts.related.duration", description = "Time taken to get related posts")
+    public ResponseEntity<List<PostResponse>> getRelatedPosts(
+            @PathVariable @SpanTag UUID postId,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal UserPrincipal userDetails) {
+
+        UUID currentUserId = getUserIdFromUserDetails(userDetails);
+        List<PostResponse> response = postService.getRelatedPosts(postId, size, currentUserId);
+        return ResponseEntity.ok(response);
+    }
+
     @PutMapping("/{postId}")
     @NewSpan("update-post")
     @Timed(value = "posts.update.duration", description = "Time taken to update a post")

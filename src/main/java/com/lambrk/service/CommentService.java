@@ -81,7 +81,6 @@ public class CommentService {
         if (parent != null) {
             commentRepository.updateCommentReplyCount(parent.getId(), 1);
         }
-        userRepository.updateUserKarma(authorId, 1);
 
         String communityName = post.getCommunity() != null ? post.getCommunity().getName() : "direct";
         customMetrics.recordCommentCreated(communityName);
@@ -120,7 +119,6 @@ public class CommentService {
 
         postRepository.updatePostCommentCount(post.getId(), 1);
         commentRepository.updateCommentReplyCount(parent.getId(), 1);
-        userRepository.updateUserKarma(authorId, 1);
 
         String communityName = post.getCommunity() != null ? post.getCommunity().getName() : "direct";
         customMetrics.recordCommentCreated(communityName);

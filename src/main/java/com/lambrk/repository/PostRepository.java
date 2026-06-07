@@ -96,4 +96,18 @@ public interface PostRepository extends JpaRepository<Post, UUID>, JpaSpecificat
 
     @Query("SELECT p FROM Post p WHERE p.createdAt >= :since AND p.author.id = :authorId AND p.isArchived = false ORDER BY p.createdAt DESC")
     Page<Post> findUserPostsSince(@Param("authorId") UUID authorId, @Param("since") Instant since, Pageable pageable);
+
+    // LoopMix: posts with media (IMAGE or VIDEO)
+    @Query("SELECT p FROM Post p WHERE p.postType IN (:types) AND p.isArchived = false ORDER BY p.createdAt DESC")
+    Page<Post> findMediaPosts(@Param("types") List<Post.PostType> types, Pageable pageable);
+
+    // LoopMix: related media posts (same author or same community, excluding current post)
+    @Query("SELECT p FROM Post p WHERE p.id != :postId AND p.postType IN (:types) AND p.isArchived = false AND (p.author.id = :authorId OR (p.community IS NOT NULL AND p.community.id = :communityId)) ORDER BY p.createdAt DESC")
+    Page<Post> findRelatedMediaPosts(
+        @Param("postId") UUID postId,
+        @Param("authorId") UUID authorId,
+        @Param("communityId") UUID communityId,
+        @Param("types") List<Post.PostType> types,
+        Pageable pageable
+    );
 }

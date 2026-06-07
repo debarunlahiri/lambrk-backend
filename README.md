@@ -64,12 +64,14 @@ Full endpoint docs live in the **`docs/api/`** folder:
 | [COMMUNITIES_API.md](docs/api/COMMUNITIES_API.md) | `GET/POST/PUT /api/communities/*` |
 | [CATEGORIES_API.md](docs/api/CATEGORIES_API.md) | `GET/POST/PUT/DELETE /api/categories/*` |
 | [VOTES_API.md](docs/api/VOTES_API.md) | `POST /api/votes/post`, `/api/votes/comment` |
+| [BOOKMARKS_API.md](docs/api/BOOKMARKS_API.md) | `POST/DELETE/GET /api/bookmarks/*` - Save posts for later |
 | [USERS_API.md](docs/api/USERS_API.md) | `GET/DELETE /api/users/*` |
 | [SEARCH_API.md](docs/api/SEARCH_API.md) | `GET/POST /api/search/*` - Advanced search with filters |
 | [NOTIFICATIONS_API.md](docs/api/NOTIFICATIONS_API.md) | `GET/POST/PUT/DELETE /api/notifications/*` |
 | [ADMIN_API.md](docs/api/ADMIN_API.md) | `POST /api/admin/*` - Admin operations |
 | [RECOMMENDATIONS_API.md](docs/api/RECOMMENDATIONS_API.md) | `GET/POST /api/recommendations/*` - ML recommendations |
 | [FILES_API.md](docs/api/FILES_API.md) | `GET/POST/PUT/DELETE /api/files/*` - File uploads |
+| [LOOPMIX_API.md](docs/api/LOOPMIX_API.md) | `GET /api/posts/media` - Short-form video/image feed |
 | [WEBSOCKET_API.md](docs/api/WEBSOCKET_API.md) | WebSocket real-time updates |
 | [ERRORS_API.md](docs/api/ERRORS_API.md) | RFC 7807 error catalogue, rate limits, circuit breakers |
 | [ACTUATOR_API.md](docs/api/ACTUATOR_API.md) | Health, Prometheus, tracing, custom metrics |

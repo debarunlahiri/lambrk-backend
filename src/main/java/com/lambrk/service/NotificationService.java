@@ -242,6 +242,90 @@ public class NotificationService {
         }
     }
 
+    public void createFollowNotification(UUID followerId, UUID followedUserId) {
+        if (followerId.equals(followedUserId)) {
+            return;
+        }
+
+        try {
+            User follower = userRepository.findById(followerId)
+                .orElseThrow(() -> new RuntimeException("Follower not found: " + followerId));
+
+            NotificationRequest notification = new NotificationRequest(
+                NotificationRequest.NotificationType.USER_FOLLOW,
+                followedUserId,
+                "New follower",
+                String.format("%s started following you", follower.getUsername()),
+                null,
+                null,
+                followerId,
+                "/users/" + follower.getUsername(),
+                "View profile",
+                false
+            );
+
+            createNotification(notification);
+        } catch (Exception e) {
+            System.err.println("Failed to create follow notification: " + e.getMessage());
+        }
+    }
+
+    public void createFriendRequestNotification(UUID requesterId, UUID addresseeId) {
+        if (requesterId.equals(addresseeId)) {
+            return;
+        }
+
+        try {
+            User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new RuntimeException("Requester not found: " + requesterId));
+
+            NotificationRequest notification = new NotificationRequest(
+                NotificationRequest.NotificationType.FRIEND_REQUEST,
+                addresseeId,
+                "New friend request",
+                String.format("%s sent you a friend request", requester.getUsername()),
+                null,
+                null,
+                requesterId,
+                "/users/" + requester.getUsername(),
+                "View request",
+                false
+            );
+
+            createNotification(notification);
+        } catch (Exception e) {
+            System.err.println("Failed to create friend request notification: " + e.getMessage());
+        }
+    }
+
+    public void createFriendRequestAcceptedNotification(UUID acceptedByUserId, UUID requesterId) {
+        if (acceptedByUserId.equals(requesterId)) {
+            return;
+        }
+
+        try {
+            User acceptedBy = userRepository.findById(acceptedByUserId)
+                .orElseThrow(() -> new RuntimeException("Friend not found: " + acceptedByUserId));
+
+            NotificationRequest notification = new NotificationRequest(
+                NotificationRequest.NotificationType.FRIEND_REQUEST_ACCEPTED,
+                requesterId,
+                "Friend request accepted",
+                String.format("%s accepted your friend request", acceptedBy.getUsername()),
+                null,
+                null,
+                acceptedByUserId,
+                "/users/" + acceptedBy.getUsername(),
+                "View profile",
+                false
+            );
+
+            createNotification(notification);
+        } catch (Exception e) {
+            System.err.println("Failed to create friend request accepted notification: " + e.getMessage());
+        }
+    }
+
     public void createMentionNotification(String content, UUID postId, UUID commentId, UUID mentionedUserId, UUID authorId) {
         if (mentionedUserId.equals(authorId)) {
             return; // Don't notify for self-mentions

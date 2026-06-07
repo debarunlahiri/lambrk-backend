@@ -2,11 +2,22 @@
 
 Base path: `/api/comments`. JWT required.
 
+---
+
 ### POST `/api/comments`
 
 Create a top-level comment on a post.
 
 **Auth:** User
+
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| `content` | Body | string | **Yes** | Comment text (supports `@mention`) |
+| `postId` | Body | UUID | **Yes** | Target post UUID |
+| `parentCommentId` | Body | UUID | No | `null` for top-level |
 
 **Request body**
 
@@ -19,6 +30,14 @@ Create a top-level comment on a post.
 ```
 
 > **@mention tagging:** Include `@username` in the content. Every tagged user (who is not the author) receives a `COMMENT_MENTION` notification.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `CommentResponse` | Created comment |
+| `401` | error | JWT missing or invalid |
+| `404` | error | Post not found |
 
 **cURL**
 
@@ -72,11 +91,22 @@ curl -X POST 'http://localhost:9500/api/comments' \
   "userVote": null
 }
 ```
+
+---
+
 ### POST `/api/comments/{commentId}/reply`
 
 Reply to an existing comment. This sends a `COMMENT_REPLY` notification to the parent comment author (unless replying to yourself).
 
 **Auth:** User
+
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| `commentId` | Path | UUID | **Yes** | Parent comment UUID |
+| `body` | Body | string | **Yes** | Reply text (raw text) |
 
 **Request body**
 
@@ -85,6 +115,14 @@ Raw text or JSON string with the reply content. Use `@username` to tag users.
 ```text
 Thanks for the insight @johndoe!
 ```
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `CommentResponse` | Created reply |
+| `401` | error | JWT missing or invalid |
+| `404` | error | Parent comment not found |
 
 **cURL**
 
@@ -134,11 +172,31 @@ curl -X POST 'http://localhost:9500/api/comments/019e5a43-e0c2-7baa-9f6d-b9b9b82
   "userVote": null
 }
 ```
+
+---
+
 ### GET `/api/comments/{commentId}`
 
 Get one comment.
 
 **Auth:** User
+
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| `commentId` | Path | UUID | **Yes** | Comment UUID |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `CommentResponse` | Comment details |
+| `401` | error | JWT missing or invalid |
+| `404` | error | Comment not found |
 
 **cURL**
 
@@ -186,18 +244,33 @@ curl -X GET 'http://localhost:9500/api/comments/b0eebc99-9c0b-4ef8-bb6d-6bb9bd38
   "userVote": null
 }
 ```
+
+---
+
 ### GET `/api/comments/post/{postId}`
 
 Get top-level comments for a post, sorted by score descending. Each comment includes up to 3 recent replies in the `replies` array.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-| Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `page` | integer | no | `0` | Zero-based page index. |
-| `size` | integer | no | `20` | Page size. |
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `postId` | Path | UUID | **Yes** | — | Post UUID |
+| `page` | Query | integer | No | `0` | Zero-based page index |
+| `size` | Query | integer | No | `20` | Page size |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `Page<CommentResponse>` | Paginated comments with previews |
+| `401` | error | JWT missing or invalid |
+| `404` | error | Post not found |
 
 **cURL**
 
@@ -293,11 +366,31 @@ curl -X GET 'http://localhost:9500/api/comments/post/019e5a43-e0c2-7baa-9f6d-b9b
   "empty": false
 }
 ```
+
+---
+
 ### GET `/api/comments/{commentId}/replies`
 
 Get replies for a comment.
 
 **Auth:** User
+
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| `commentId` | Path | UUID | **Yes** | Comment UUID |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `List<CommentResponse>` | Replies list |
+| `401` | error | JWT missing or invalid |
+| `404` | error | Comment not found |
 
 **cURL**
 
@@ -311,18 +404,32 @@ curl -X GET 'http://localhost:9500/api/comments/b0eebc99-9c0b-4ef8-bb6d-6bb9bd38
 ```json
 []
 ```
+
+---
+
 ### GET `/api/comments/user/{userId}`
 
 Get comments by user.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-| Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `page` | integer | no | `0` | Zero-based page index. |
-| `size` | integer | no | `20` | Page size. |
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `userId` | Path | UUID | **Yes** | — | User UUID |
+| `page` | Query | integer | No | `0` | Zero-based page index |
+| `size` | Query | integer | No | `20` | Page size |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `Page<CommentResponse>` | Paginated user comments |
+| `401` | error | JWT missing or invalid |
 
 **cURL**
 
@@ -346,11 +453,22 @@ curl -X GET 'http://localhost:9500/api/comments/user/b0eebc99-9c0b-4ef8-bb6d-6bb
   "empty": true
 }
 ```
+
+---
+
 ### PUT `/api/comments/{commentId}`
 
 Update comment content. Body is raw text.
 
 **Auth:** User
+
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| `commentId` | Path | UUID | **Yes** | Comment UUID |
+| `body` | Body | string | **Yes** | Updated comment text |
 
 **Request body**
 
@@ -358,13 +476,21 @@ Update comment content. Body is raw text.
 Updated comment text
 ```
 
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `CommentResponse` | Updated comment |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not the author |
+| `404` | error | Comment not found |
+
 **cURL**
 
 ```bash
 curl -X PUT 'http://localhost:9500/api/comments/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: text/plain' \
-  -H 'Content-Type: application/json' \
   -d 'Updated comment text'
 ```
 
@@ -407,11 +533,32 @@ curl -X PUT 'http://localhost:9500/api/comments/b0eebc99-9c0b-4ef8-bb6d-6bb9bd38
   "userVote": null
 }
 ```
+
+---
+
 ### DELETE `/api/comments/{commentId}`
 
 Delete comment.
 
 **Auth:** User
+
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| `commentId` | Path | UUID | **Yes** | Comment UUID |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `204` | empty | Comment deleted |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not the author |
+| `404` | error | Comment not found |
 
 **cURL**
 
@@ -423,19 +570,32 @@ curl -X DELETE 'http://localhost:9500/api/comments/b0eebc99-9c0b-4ef8-bb6d-6bb9b
 **Response**
 
 `204 No Content`
+
+---
+
 ### GET `/api/comments/search`
 
 Search comments.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-| Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `page` | integer | no | `0` | Zero-based page index. |
-| `size` | integer | no | `20` | Page size. |
-| `query` | string | yes | - | Search text. |
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `query` | Query | string | **Yes** | — | Search text |
+| `page` | Query | integer | No | `0` | Zero-based page index |
+| `size` | Query | integer | No | `20` | Page size |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `Page<CommentResponse>` | Paginated search results |
+| `401` | error | JWT missing or invalid |
 
 **cURL**
 

@@ -2,11 +2,28 @@
 
 Base path: `/api/recommendations`. JWT required.
 
+---
+
 ### POST `/api/recommendations`
 
 Get recommendations.
 
 **Auth:** User
+
+**What to send**
+
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `userId` | Body | UUID | No | — | Target user UUID |
+| `type` | Body | string | No | `POSTS` | `POSTS`, `COMMUNITIES`, `USERS`, `COMMENTS` |
+| `limit` | Body | integer | No | `20` | Number of results |
+| `excludeCommunities` | Body | array | No | `[]` | Community UUIDs to exclude |
+| `excludeUsers` | Body | array | No | `[]` | User UUIDs to exclude |
+| `includeNSFW` | Body | boolean | No | `false` | Include NSFW |
+| `includeOver18` | Body | boolean | No | `false` | Include Over18 |
+| `contextCommunityId` | Body | UUID | No | `null` | Context community |
+| `contextPostId` | Body | UUID | No | `null` | Context post |
 
 **Request body**
 
@@ -23,6 +40,13 @@ Get recommendations.
   "contextPostId": null
 }
 ```
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `RecommendationResponse` | Recommendations with explanation |
+| `401` | error | JWT missing or invalid |
 
 **cURL**
 
@@ -60,15 +84,31 @@ curl -X POST 'http://localhost:9500/api/recommendations' \
   ]
 }
 ```
+
+---
+
 ### GET `/api/recommendations/posts/{userId}`
 
 Get recommended posts.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-Optional `limit` plus endpoint-specific exclude/context flags.
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `userId` | Path | UUID | **Yes** | — | Target user UUID |
+| `limit` | Query | integer | No | `20` | Number of results |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `RecommendationResponse` | Recommended posts |
+| `401` | error | JWT missing or invalid |
 
 **cURL**
 
@@ -94,15 +134,31 @@ curl -X GET 'http://localhost:9500/api/recommendations/posts/b0eebc99-9c0b-4ef8-
   ]
 }
 ```
+
+---
+
 ### GET `/api/recommendations/communities/{userId}`
 
 Get recommended communities.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-Optional `limit` plus endpoint-specific exclude/context flags.
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `userId` | Path | UUID | **Yes** | — | Target user UUID |
+| `limit` | Query | integer | No | `20` | Number of results |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `RecommendationResponse` | Recommended communities |
+| `401` | error | JWT missing or invalid |
 
 **cURL**
 
@@ -128,15 +184,31 @@ curl -X GET 'http://localhost:9500/api/recommendations/communities/b0eebc99-9c0b
   ]
 }
 ```
+
+---
+
 ### GET `/api/recommendations/users/{userId}`
 
 Get recommended users.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-Optional `limit` plus endpoint-specific exclude/context flags.
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `userId` | Path | UUID | **Yes** | — | Target user UUID |
+| `limit` | Query | integer | No | `20` | Number of results |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `RecommendationResponse` | Recommended users |
+| `401` | error | JWT missing or invalid |
 
 **cURL**
 
@@ -162,15 +234,31 @@ curl -X GET 'http://localhost:9500/api/recommendations/users/b0eebc99-9c0b-4ef8-
   ]
 }
 ```
+
+---
+
 ### GET `/api/recommendations/comments/{userId}`
 
 Get recommended comments.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-Optional `limit` plus endpoint-specific exclude/context flags.
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `userId` | Path | UUID | **Yes** | — | Target user UUID |
+| `limit` | Query | integer | No | `20` | Number of results |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `RecommendationResponse` | Recommended comments |
+| `401` | error | JWT missing or invalid |
 
 **cURL**
 
@@ -196,15 +284,34 @@ curl -X GET 'http://localhost:9500/api/recommendations/comments/b0eebc99-9c0b-4e
   ]
 }
 ```
+
+---
+
 ### GET `/api/recommendations/context/{userId}`
 
 Get contextual recommendations.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-Optional `contextCommunityId`, `contextPostId`, `type`, `limit`.
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `userId` | Path | UUID | **Yes** | — | Target user UUID |
+| `contextCommunityId` | Query | UUID | No | — | Context community |
+| `contextPostId` | Query | UUID | No | — | Context post |
+| `type` | Query | string | No | `posts` | Recommendation type |
+| `limit` | Query | integer | No | `20` | Number of results |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `RecommendationResponse` | Contextual recommendations |
+| `401` | error | JWT missing or invalid |
 
 **cURL**
 
@@ -230,15 +337,31 @@ curl -X GET 'http://localhost:9500/api/recommendations/context/b0eebc99-9c0b-4ef
   ]
 }
 ```
+
+---
+
 ### GET `/api/recommendations/trending`
 
 Get trending recommendations.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-Optional `type` default `posts`, `limit` default `20`.
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `type` | Query | string | No | `posts` | Recommendation type |
+| `limit` | Query | integer | No | `20` | Number of results |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `RecommendationResponse` | Trending recommendations |
+| `401` | error | JWT missing or invalid |
 
 **cURL**
 

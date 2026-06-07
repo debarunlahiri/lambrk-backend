@@ -2,11 +2,29 @@
 
 Base path: `/api/posts`. JWT required.
 
+---
+
 ### POST `/api/posts`
 
 Create a post.
 
 **Auth:** User
+
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| `title` | Body | string | **Yes** | Post title |
+| `content` | Body | string | No | Post body text |
+| `url` | Body | string | No | External URL (for LINK posts) |
+| `postType` | Body | string | **Yes** | `TEXT`, `LINK`, `IMAGE`, `VIDEO` |
+| `flairText` | Body | string | No | Flair label |
+| `flairCssClass` | Body | string | No | Flair CSS class |
+| `isSpoiler` | Body | boolean | No | `false` |
+| `isOver18` | Body | boolean | No | `false` |
+| `communityId` | Body | UUID | **Yes** | Target community UUID |
+| `mediaIds` | Body | array | No | Uploaded file UUIDs |
 
 **Request body**
 
@@ -24,6 +42,14 @@ Create a post.
   "mediaIds": []
 }
 ```
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `PostResponse` | Created post |
+| `401` | error | JWT missing or invalid |
+| `404` | error | Community not found |
 
 **cURL**
 
@@ -48,6 +74,8 @@ curl -X POST 'http://localhost:9500/api/posts' \
 **Create a post with images**
 
 Upload files first via `POST /api/files/upload`, then include the returned `fileId`s in `mediaIds`:
+
+**cURL**
 
 ```bash
 curl -X POST 'http://localhost:9500/api/posts' \
@@ -146,14 +174,35 @@ curl -X POST 'http://localhost:9500/api/posts' \
   "createdAt": "2026-05-02T10:00:00Z",
   "updatedAt": "2026-05-02T10:00:00Z",
   "archivedAt": null,
-  "userVote": null
+  "userVote": null,
+  "isBookmarked": false
 }
 ```
+
+---
+
 ### GET `/api/posts/{postId}`
 
 Get one post.
 
 **Auth:** User
+
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| `postId` | Path | UUID | **Yes** | UUID of the post |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `PostResponse` | Post details |
+| `401` | error | JWT missing or invalid |
+| `404` | error | Post not found |
 
 **cURL**
 
@@ -247,21 +296,35 @@ curl -X GET 'http://localhost:9500/api/posts/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a1
   "createdAt": "2026-05-02T10:00:00Z",
   "updatedAt": "2026-05-02T10:00:00Z",
   "archivedAt": null,
-  "userVote": null
+  "userVote": null,
+  "isBookmarked": false
 }
 ```
+
+---
+
 ### GET `/api/posts/hot`
 
 Get hot posts.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-| Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `page` | integer | no | `0` | Zero-based page index. |
-| `size` | integer | no | `20` | Page size. |
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `page` | Query | integer | No | `0` | Zero-based page index |
+| `size` | Query | integer | No | `20` | Page size |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `Page<PostResponse>` | Paginated hot posts |
+| `401` | error | JWT missing or invalid |
 
 **cURL**
 
@@ -290,18 +353,31 @@ curl -X GET 'http://localhost:9500/api/posts/hot?page=0&size=20' \
   "empty": false
 }
 ```
+
+---
+
 ### GET `/api/posts/new`
 
 Get newest posts.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-| Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `page` | integer | no | `0` | Zero-based page index. |
-| `size` | integer | no | `20` | Page size. |
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `page` | Query | integer | No | `0` | Zero-based page index |
+| `size` | Query | integer | No | `20` | Page size |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `Page<PostResponse>` | Paginated newest posts |
+| `401` | error | JWT missing or invalid |
 
 **cURL**
 
@@ -330,18 +406,31 @@ curl -X GET 'http://localhost:9500/api/posts/new?page=0&size=20' \
   "empty": false
 }
 ```
+
+---
+
 ### GET `/api/posts/top`
 
 Get top posts.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-| Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `page` | integer | no | `0` | Zero-based page index. |
-| `size` | integer | no | `20` | Page size. |
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `page` | Query | integer | No | `0` | Zero-based page index |
+| `size` | Query | integer | No | `20` | Page size |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `Page<PostResponse>` | Paginated top posts |
+| `401` | error | JWT missing or invalid |
 
 **cURL**
 
@@ -370,18 +459,33 @@ curl -X GET 'http://localhost:9500/api/posts/top?page=0&size=20' \
   "empty": false
 }
 ```
+
+---
+
 ### GET `/api/posts/community/{communityId}`
 
 Get posts in a community.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-| Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `page` | integer | no | `0` | Zero-based page index. |
-| `size` | integer | no | `20` | Page size. |
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `communityId` | Path | UUID | **Yes** | — | Community UUID |
+| `page` | Query | integer | No | `0` | Zero-based page index |
+| `size` | Query | integer | No | `20` | Page size |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `Page<PostResponse>` | Paginated community posts |
+| `401` | error | JWT missing or invalid |
+| `404` | error | Community not found |
 
 **cURL**
 
@@ -410,18 +514,32 @@ curl -X GET 'http://localhost:9500/api/posts/community/b0eebc99-9c0b-4ef8-bb6d-6
   "empty": false
 }
 ```
+
+---
+
 ### GET `/api/posts/user/{userId}`
 
 Get posts by user.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-| Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `page` | integer | no | `0` | Zero-based page index. |
-| `size` | integer | no | `20` | Page size. |
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `userId` | Path | UUID | **Yes** | — | Author UUID |
+| `page` | Query | integer | No | `0` | Zero-based page index |
+| `size` | Query | integer | No | `20` | Page size |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `Page<PostResponse>` | Paginated user posts |
+| `401` | error | JWT missing or invalid |
 
 **cURL**
 
@@ -450,19 +568,32 @@ curl -X GET 'http://localhost:9500/api/posts/user/b0eebc99-9c0b-4ef8-bb6d-6bb9bd
   "empty": false
 }
 ```
+
+---
+
 ### GET `/api/posts/search`
 
 Search posts.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-| Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `page` | integer | no | `0` | Zero-based page index. |
-| `size` | integer | no | `20` | Page size. |
-| `query` | string | yes | - | Search text. |
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `query` | Query | string | **Yes** | — | Search text |
+| `page` | Query | integer | No | `0` | Zero-based page index |
+| `size` | Query | integer | No | `20` | Page size |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `Page<PostResponse>` | Paginated search results |
+| `401` | error | JWT missing or invalid |
 
 **cURL**
 
@@ -491,11 +622,26 @@ curl -X GET 'http://localhost:9500/api/posts/search?query=spring&page=0&size=20'
   "empty": false
 }
 ```
+
+---
+
 ### PUT `/api/posts/{postId}`
 
 Update a post.
 
 **Auth:** User
+
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| `postId` | Path | UUID | **Yes** | UUID of the post |
+| `title` | Body | string | No | Updated title |
+| `content` | Body | string | No | Updated body |
+| `url` | Body | string | No | Updated URL |
+| `postType` | Body | string | No | Post type |
+| `communityId` | Body | UUID | No | Target community |
 
 **Request body**
 
@@ -508,6 +654,15 @@ Update a post.
   "communityId": "019e5a43-e0c2-7baa-9f6d-b9b9b82afb15"
 }
 ```
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `PostResponse` | Updated post |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not the author |
+| `404` | error | Post or community not found |
 
 **cURL**
 
@@ -609,14 +764,36 @@ curl -X PUT 'http://localhost:9500/api/posts/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a1
   "createdAt": "2026-05-02T10:00:00Z",
   "updatedAt": "2026-05-02T10:00:00Z",
   "archivedAt": null,
-  "userVote": null
+  "userVote": null,
+  "isBookmarked": false
 }
 ```
+
+---
+
 ### DELETE `/api/posts/{postId}`
 
 Delete a post.
 
 **Auth:** User
+
+**What to send**
+
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| `postId` | Path | UUID | **Yes** | UUID of the post |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `204` | empty | Post deleted |
+| `401` | error | JWT missing or invalid |
+| `403` | error | Not the author |
+| `404` | error | Post not found |
 
 **cURL**
 
@@ -628,17 +805,30 @@ curl -X DELETE 'http://localhost:9500/api/posts/b0eebc99-9c0b-4ef8-bb6d-6bb9bd38
 **Response**
 
 `204 No Content`
+
+---
+
 ### GET `/api/posts/stickied`
 
 List stickied posts.
 
 **Auth:** User
 
-**Query/path parameters**
+**What to send**
 
-| Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `communityId` | UUID | no | - | Filter by community. |
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
+| `communityId` | Query | UUID | No | — | Filter by community |
+
+No request body.
+
+**Response**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| `200` | `List<PostResponse>` | Stickied posts |
+| `401` | error | JWT missing or invalid |
 
 **cURL**
 
