@@ -14,10 +14,12 @@ import com.lambrk.repository.UserFriendshipRepository;
 import com.lambrk.repository.UserRepository;
 import com.lambrk.util.UuidV7Generator;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -49,12 +51,20 @@ public class UserSocialService {
 
         User follower = getUser(followerId);
         User following = getUser(followingId);
+        if (following.isHideFollowButton()) {
+            throw new UnauthorizedActionException("Follow is not available for this user");
+        }
 
-        UserFollow follow = userFollowRepository.findByFollowerAndFollowing(follower, following)
+        Optional<UserFollow> existingFollow = userFollowRepository.findByFollowerAndFollowing(follower, following);
+        boolean shouldNotify = existingFollow.isEmpty();
+
+        UserFollow follow = existingFollow
             .orElseGet(() -> new UserFollow(UuidV7Generator.generate(), follower, following, source));
         follow.activate(source);
         userFollowRepository.save(follow);
-        notificationService.createFollowNotification(followerId, followingId);
+        if (shouldNotify) {
+            notifySafely(() -> notificationService.createFollowNotification(followerId, followingId));
+        }
     }
 
     public void unfollow(UUID followerId, UUID followingId) {
@@ -73,6 +83,9 @@ public class UserSocialService {
 
         User requester = getUser(requesterId);
         User addressee = getUser(addresseeId);
+        if (addressee.isHideAddFriendButton()) {
+            throw new UnauthorizedActionException("Friend requests are not available for this user");
+        }
         OrderedUsers orderedUsers = orderUsers(requester, addressee);
 
         Optional<UserFriendship> existing = userFriendshipRepository.findByUserOneAndUserTwo(
@@ -90,7 +103,7 @@ public class UserSocialService {
             }
             friendship.requestAgain(requester, addressee, request != null ? request.source() : null, request != null ? request.message() : null);
             UserFriendship saved = userFriendshipRepository.save(friendship);
-            notificationService.createFriendRequestNotification(requesterId, addresseeId);
+            notifySafely(() -> notificationService.createFriendRequestNotification(requesterId, addresseeId));
             return saved;
         }
 
@@ -104,7 +117,7 @@ public class UserSocialService {
             request != null ? request.message() : null
         );
         UserFriendship saved = userFriendshipRepository.save(friendship);
-        notificationService.createFriendRequestNotification(requesterId, addresseeId);
+        notifySafely(() -> notificationService.createFriendRequestNotification(requesterId, addresseeId));
         return saved;
     }
 
@@ -115,7 +128,7 @@ public class UserSocialService {
         requirePendingAddressee(friendship, currentUserId);
         friendship.accept(currentUser);
         UserFriendship saved = userFriendshipRepository.save(friendship);
-        notificationService.createFriendRequestAcceptedNotification(currentUserId, requesterId);
+        notifySafely(() -> notificationService.createFriendRequestAcceptedNotification(currentUserId, requesterId));
         return saved;
     }
 
@@ -154,14 +167,20 @@ public class UserSocialService {
     @Transactional(readOnly = true)
     public Page<SocialUserResponse> getFollowers(UUID userId, UUID currentUserId, Pageable pageable) {
         User user = getUser(userId);
-        return userFollowRepository.findFollowers(user, pageable)
+        if (!canViewFollowerList(user, currentUserId)) {
+            return Page.empty(pageable);
+        }
+        return filterHiddenMutualUsers(userFollowRepository.findFollowers(user, pageable), currentUserId, pageable)
             .map(follower -> toSocialUserResponse(follower, currentUserId));
     }
 
     @Transactional(readOnly = true)
     public Page<SocialUserResponse> getFollowing(UUID userId, UUID currentUserId, Pageable pageable) {
         User user = getUser(userId);
-        return userFollowRepository.findFollowing(user, pageable)
+        if (!canViewFollowingList(user, currentUserId)) {
+            return Page.empty(pageable);
+        }
+        return filterHiddenMutualUsers(userFollowRepository.findFollowing(user, pageable), currentUserId, pageable)
             .map(following -> toSocialUserResponse(following, currentUserId));
     }
 
@@ -176,7 +195,10 @@ public class UserSocialService {
     public Page<SocialUserResponse> getMutualFollowers(UUID userId, UUID withUserId, UUID currentUserId, Pageable pageable) {
         User user = getUser(userId);
         User withUser = getUser(withUserId);
-        return userFollowRepository.findMutualFollowers(user, withUser, pageable)
+        if (!canViewFollowerList(user, currentUserId) || !canViewFollowerList(withUser, currentUserId)) {
+            return Page.empty(pageable);
+        }
+        return filterHiddenMutualUsers(userFollowRepository.findMutualFollowers(user, withUser, pageable), currentUserId, pageable)
             .map(mutualUser -> toSocialUserResponse(mutualUser, currentUserId));
     }
 
@@ -184,7 +206,10 @@ public class UserSocialService {
     public Page<SocialUserResponse> getMutualFollowing(UUID userId, UUID withUserId, UUID currentUserId, Pageable pageable) {
         User user = getUser(userId);
         User withUser = getUser(withUserId);
-        return userFollowRepository.findMutualFollowing(user, withUser, pageable)
+        if (!canViewFollowingList(user, currentUserId) || !canViewFollowingList(withUser, currentUserId)) {
+            return Page.empty(pageable);
+        }
+        return filterHiddenMutualUsers(userFollowRepository.findMutualFollowing(user, withUser, pageable), currentUserId, pageable)
             .map(mutualUser -> toSocialUserResponse(mutualUser, currentUserId));
     }
 
@@ -192,7 +217,7 @@ public class UserSocialService {
     public Page<SocialUserResponse> getMutualFriends(UUID userId, UUID withUserId, UUID currentUserId, Pageable pageable) {
         User user = getUser(userId);
         User withUser = getUser(withUserId);
-        return userFriendshipRepository.findMutualFriends(user, withUser, pageable)
+        return filterHiddenMutualUsers(userFriendshipRepository.findMutualFriends(user, withUser, pageable), currentUserId, pageable)
             .map(mutualUser -> toSocialUserResponse(mutualUser, currentUserId));
     }
 
@@ -226,12 +251,26 @@ public class UserSocialService {
     }
 
     @Transactional(readOnly = true)
+    public SocialStatsResponse getStats(UUID userId, UUID currentUserId) {
+        User user = getUser(userId);
+        SocialStatsResponse stats = getStats(userId);
+        boolean owner = currentUserId != null && currentUserId.equals(user.getId());
+        boolean friend = isFriend(currentUserId, user);
+        return new SocialStatsResponse(
+            canViewFollowerCount(user, currentUserId, friend, owner) ? stats.followerCount() : 0,
+            canViewFollowingCount(user, currentUserId, friend, owner) ? stats.followingCount() : 0,
+            stats.friendCount()
+        );
+    }
+
+    @Transactional(readOnly = true)
     public SocialUserResponse toSocialUserResponse(User user, UUID currentUserId) {
         SocialStatsResponse stats = getStats(user.getId());
         boolean followedByCurrentUser = false;
         boolean followingCurrentUser = false;
         boolean friend = false;
         String friendshipStatus = null;
+        boolean owner = currentUserId != null && currentUserId.equals(user.getId());
 
         if (currentUserId != null) {
             User currentUser = getUser(currentUserId);
@@ -262,7 +301,45 @@ public class UserSocialService {
             followingCurrentUser,
             friend,
             friendshipStatus
+            ,
+            canViewFollowerCount(user, currentUserId, friend, owner),
+            canViewFollowingCount(user, currentUserId, friend, owner),
+            canViewFollowerList(user, currentUserId, friend, owner),
+            canViewFollowingList(user, currentUserId, friend, owner),
+            canShowAddFriendButton(user, currentUserId, friend, owner),
+            canShowFollowButton(user, currentUserId, owner),
+            canShowInMutualLists(user, currentUserId)
         );
+    }
+
+    public User updatePrivacySettings(UUID userId, com.lambrk.dto.UserPrivacySettingsRequest request) {
+        User user = getUser(userId);
+        if (request.privateAccount() != null) {
+            applyPrivateAccountPreset(user, request.privateAccount());
+        } else {
+            if (request.hideFollowerCount() != null) user.setHideFollowerCount(request.hideFollowerCount());
+            if (request.hideFollowingCount() != null) user.setHideFollowingCount(request.hideFollowingCount());
+            if (request.hideFollowerList() != null) user.setHideFollowerList(request.hideFollowerList());
+            if (request.hideFollowingList() != null) user.setHideFollowingList(request.hideFollowingList());
+            if (request.hideAddFriendButton() != null) user.setHideAddFriendButton(request.hideAddFriendButton());
+            if (request.hideFollowButton() != null) user.setHideFollowButton(request.hideFollowButton());
+            if (request.hideFromMutualList() != null) user.setHideFromMutualList(request.hideFromMutualList());
+            if (request.messageButtonEnabled() != null) user.setMessageButtonEnabled(request.messageButtonEnabled());
+        }
+        user.setUpdatedAt(java.time.Instant.now());
+        return userRepository.save(user);
+    }
+
+    private void applyPrivateAccountPreset(User user, boolean privateAccount) {
+        user.setPrivateAccount(privateAccount);
+        user.setHideFollowerCount(privateAccount);
+        user.setHideFollowingCount(privateAccount);
+        user.setHideFollowerList(privateAccount);
+        user.setHideFollowingList(privateAccount);
+        user.setHideAddFriendButton(privateAccount);
+        user.setHideFollowButton(privateAccount);
+        user.setHideFromMutualList(privateAccount);
+        user.setMessageButtonEnabled(!privateAccount);
     }
 
     private User getUser(UUID userId) {
@@ -280,6 +357,65 @@ public class UserSocialService {
         return userFriendshipRepository.findByUserOneAndUserTwo(orderedUsers.userOne(), orderedUsers.userTwo());
     }
 
+    private boolean canViewFollowerCount(User user, UUID currentUserId, boolean friend, boolean owner) {
+        return canViewPrivateAccount(user, currentUserId, friend, owner) && (owner || !user.isHideFollowerCount());
+    }
+
+    private boolean canViewFollowingCount(User user, UUID currentUserId, boolean friend, boolean owner) {
+        return canViewPrivateAccount(user, currentUserId, friend, owner) && (owner || !user.isHideFollowingCount());
+    }
+
+    private boolean canViewFollowerList(User user, UUID currentUserId) {
+        boolean owner = currentUserId != null && currentUserId.equals(user.getId());
+        return canViewFollowerList(user, currentUserId, isFriend(currentUserId, user), owner);
+    }
+
+    private boolean canViewFollowerList(User user, UUID currentUserId, boolean friend, boolean owner) {
+        return canViewPrivateAccount(user, currentUserId, friend, owner) && (owner || !user.isHideFollowerList());
+    }
+
+    private boolean canViewFollowingList(User user, UUID currentUserId) {
+        boolean owner = currentUserId != null && currentUserId.equals(user.getId());
+        return canViewFollowingList(user, currentUserId, isFriend(currentUserId, user), owner);
+    }
+
+    private boolean canViewFollowingList(User user, UUID currentUserId, boolean friend, boolean owner) {
+        return canViewPrivateAccount(user, currentUserId, friend, owner) && (owner || !user.isHideFollowingList());
+    }
+
+    private boolean canShowAddFriendButton(User user, UUID currentUserId, boolean friend, boolean owner) {
+        return !owner && !friend && canViewPrivateAccount(user, currentUserId, friend, owner) && !user.isHideAddFriendButton();
+    }
+
+    private boolean canShowFollowButton(User user, UUID currentUserId, boolean owner) {
+        return !owner && !user.isHideFollowButton();
+    }
+
+    private boolean canShowInMutualLists(User user, UUID currentUserId) {
+        return (currentUserId != null && currentUserId.equals(user.getId())) || !user.isHideFromMutualList();
+    }
+
+    private Page<User> filterHiddenMutualUsers(Page<User> users, UUID currentUserId, Pageable pageable) {
+        List<User> visibleUsers = users.getContent().stream()
+            .filter(user -> canShowInMutualLists(user, currentUserId))
+            .toList();
+        return new PageImpl<>(visibleUsers, pageable, visibleUsers.size());
+    }
+
+    private boolean canViewPrivateAccount(User user, UUID currentUserId, boolean friend, boolean owner) {
+        return owner || !user.isPrivateAccount() || friend;
+    }
+
+    private boolean isFriend(UUID currentUserId, User user) {
+        if (currentUserId == null || currentUserId.equals(user.getId())) {
+            return false;
+        }
+        User currentUser = getUser(currentUserId);
+        return findFriendship(currentUser, user)
+            .map(friendship -> friendship.getStatus() == UserFriendship.FriendshipStatus.ACCEPTED)
+            .orElse(false);
+    }
+
     private void requirePendingAddressee(UserFriendship friendship, UUID currentUserId) {
         if (friendship.getStatus() != UserFriendship.FriendshipStatus.PENDING
             || !friendship.getAddressee().getId().equals(currentUserId)) {
@@ -294,4 +430,12 @@ public class UserSocialService {
     }
 
     private record OrderedUsers(User userOne, User userTwo) {}
+
+    private void notifySafely(Runnable notificationAction) {
+        try {
+            notificationAction.run();
+        } catch (Exception e) {
+            System.err.println("Failed to create social notification: " + e.getMessage());
+        }
+    }
 }

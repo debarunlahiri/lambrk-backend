@@ -10,6 +10,8 @@ import com.lambrk.repository.NotificationRepository;
 import com.lambrk.repository.CommentRepository;
 import com.lambrk.repository.PostRepository;
 import com.lambrk.repository.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.cache.annotation.CacheEvict;
@@ -20,9 +22,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.lambrk.util.UuidV7Generator;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -36,24 +40,27 @@ public class NotificationService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private final KafkaTemplate kafkaTemplate;
+    private final KafkaTemplate<String, byte[]> kafkaTemplate;
+    private final ObjectMapper objectMapper;
     private final CustomMetrics customMetrics;
 
     public NotificationService(NotificationRepository notificationRepository,
                               UserRepository userRepository,
                               CommentRepository commentRepository,
                               PostRepository postRepository,
-                              KafkaTemplate kafkaTemplate,
+                              KafkaTemplate<String, byte[]> kafkaTemplate,
+                              ObjectMapper objectMapper,
                               CustomMetrics customMetrics) {
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
         this.kafkaTemplate = kafkaTemplate;
+        this.objectMapper = objectMapper;
         this.customMetrics = customMetrics;
     }
 
-    @CacheEvict(value = "notifications", key = "#request.recipientId()")
+    @CacheEvict(value = "notifications", allEntries = true)
     @CircuitBreaker(name = "userService")
     @Retry(name = "userService")
     public NotificationResponse createNotification(NotificationRequest request) {
@@ -98,6 +105,10 @@ public class NotificationService {
     public Page<NotificationResponse> getUnreadNotifications(UUID userId, Pageable pageable) {
         Page<Notification> notifications = notificationRepository.findByRecipientIdAndIsReadOrderByCreatedAtDesc(userId, false, pageable);
         return notifications.map(this::convertToResponse);
+    }
+
+    public long getUnreadNotificationCount(UUID userId) {
+        return notificationRepository.countUnreadNotifications(userId);
     }
 
     @CacheEvict(value = "notifications", allEntries = true)
@@ -242,6 +253,7 @@ public class NotificationService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createFollowNotification(UUID followerId, UUID followedUserId) {
         if (followerId.equals(followedUserId)) {
             return;
@@ -270,6 +282,7 @@ public class NotificationService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createFriendRequestNotification(UUID requesterId, UUID addresseeId) {
         if (requesterId.equals(addresseeId)) {
             return;
@@ -298,6 +311,7 @@ public class NotificationService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createFriendRequestAcceptedNotification(UUID acceptedByUserId, UUID requesterId) {
         if (acceptedByUserId.equals(requesterId)) {
             return;
@@ -358,15 +372,35 @@ public class NotificationService {
 
     private void sendRealTimeNotification(Notification notification) {
         try {
+            byte[] payload = toKafkaPayload(notification);
+            String recipientId = notification.getRecipient().getId().toString();
+
             // Send to WebSocket topic
-            kafkaTemplate.send("notifications", notification);
+            kafkaTemplate.send("notifications", notification.getId().toString(), payload);
             
             // Could also send to specific user topic
-            kafkaTemplate.send("user-" + notification.getRecipient().getId() + "-notifications", notification);
+            kafkaTemplate.send("user-" + recipientId + "-notifications", notification.getId().toString(), payload);
             
         } catch (Exception e) {
             System.err.println("Failed to send real-time notification: " + e.getMessage());
         }
+    }
+
+    private byte[] toKafkaPayload(Notification notification) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(new NotificationRealtimeEvent(
+            notification.getId(),
+            notification.getType().name(),
+            notification.getRecipient().getId(),
+            notification.getTitle(),
+            notification.getMessage(),
+            notification.getRelatedPostId(),
+            notification.getRelatedCommentId(),
+            notification.getRelatedUserId(),
+            notification.getActionUrl(),
+            notification.getActionText(),
+            notification.isRead(),
+            notification.getCreatedAt()
+        )).getBytes(StandardCharsets.UTF_8);
     }
 
     private NotificationResponse convertToResponse(Notification notification) {
@@ -391,20 +425,44 @@ public class NotificationService {
     }
 
     private String getPostTitle(UUID postId) {
+        if (postId == null) {
+            return null;
+        }
         return postRepository.findById(postId)
             .map(Post::getTitle)
             .orElse(null);
     }
 
     private String getCommentPreview(UUID commentId) {
+        if (commentId == null) {
+            return null;
+        }
         return commentRepository.findById(commentId)
             .map(c -> c.getContent().length() > 100 ? c.getContent().substring(0, 100) + "..." : c.getContent())
             .orElse(null);
     }
 
     private String getUsername(UUID userId) {
+        if (userId == null) {
+            return null;
+        }
         return userRepository.findById(userId)
             .map(User::getUsername)
             .orElse(null);
     }
+
+    private record NotificationRealtimeEvent(
+        UUID id,
+        String type,
+        UUID recipientId,
+        String title,
+        String message,
+        UUID relatedPostId,
+        UUID relatedCommentId,
+        UUID relatedUserId,
+        String actionUrl,
+        String actionText,
+        boolean read,
+        Instant createdAt
+    ) {}
 }

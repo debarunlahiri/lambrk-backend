@@ -55,6 +55,29 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     @Query("SELECT u FROM User u WHERE u.username LIKE %:query% OR u.email LIKE %:query%")
     Page<User> searchUsers(@Param("query") String query, Pageable pageable);
 
+    @Query("""
+        SELECT u
+        FROM User u
+        WHERE u.isActive = true
+          AND (
+              LOWER(u.username) LIKE LOWER(CONCAT('%', :query, '%'))
+              OR LOWER(u.displayName) LIKE LOWER(CONCAT('%', :query, '%'))
+              OR LOWER(REPLACE(u.username, ' ', '')) LIKE LOWER(CONCAT('%', :normalizedQuery, '%'))
+              OR LOWER(REPLACE(COALESCE(u.displayName, ''), ' ', '')) LIKE LOWER(CONCAT('%', :normalizedQuery, '%'))
+              OR (
+                  LOWER(CONCAT(CONCAT(' ', COALESCE(u.displayName, '')), ' ')) LIKE LOWER(CONCAT('% ', CONCAT(:firstToken, '%')))
+                  AND LOWER(CONCAT(CONCAT(' ', COALESCE(u.displayName, '')), ' ')) LIKE LOWER(CONCAT('% ', CONCAT(:lastToken, '%')))
+              )
+          )
+        """)
+    Page<User> searchActiveUsers(
+        @Param("query") String query,
+        @Param("normalizedQuery") String normalizedQuery,
+        @Param("firstToken") String firstToken,
+        @Param("lastToken") String lastToken,
+        Pageable pageable
+    );
+
     @Query("SELECT u FROM User u WHERE u.isActive = true AND (u.username LIKE %:query% OR u.displayName LIKE %:query%)")
     Page<User> searchActiveUsers(@Param("query") String query, Pageable pageable);
 

@@ -23,6 +23,15 @@ public record SocialUserResponse(
     boolean followingCurrentUser,
     boolean friend,
     String friendshipStatus,
+    boolean privateAccount,
+    boolean canViewFollowerCount,
+    boolean canViewFollowingCount,
+    boolean canViewFollowerList,
+    boolean canViewFollowingList,
+    boolean canShowAddFriendButton,
+    boolean canShowFollowButton,
+    boolean canShowInMutualLists,
+    boolean messageButtonEnabled,
     Instant createdAt
 ) {
 
@@ -32,7 +41,14 @@ public record SocialUserResponse(
         boolean followedByCurrentUser,
         boolean followingCurrentUser,
         boolean friend,
-        String friendshipStatus
+        String friendshipStatus,
+        boolean canViewFollowerCount,
+        boolean canViewFollowingCount,
+        boolean canViewFollowerList,
+        boolean canViewFollowingList,
+        boolean canShowAddFriendButton,
+        boolean canShowFollowButton,
+        boolean canShowInMutualLists
     ) {
         return new SocialUserResponse(
             user.getId(),
@@ -45,13 +61,22 @@ public record SocialUserResponse(
             user.getWebsite(),
             user.isVerified(),
             user.getKarma(),
-            stats.followerCount(),
-            stats.followingCount(),
+            canViewFollowerCount ? stats.followerCount() : 0,
+            canViewFollowingCount ? stats.followingCount() : 0,
             stats.friendCount(),
             followedByCurrentUser,
             followingCurrentUser,
             friend,
             friendshipStatus,
+            user.isPrivateAccount(),
+            canViewFollowerCount,
+            canViewFollowingCount,
+            canViewFollowerList,
+            canViewFollowingList,
+            canShowAddFriendButton,
+            canShowFollowButton,
+            canShowInMutualLists,
+            user.isMessageButtonEnabled(),
             user.getCreatedAt()
         );
     }

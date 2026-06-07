@@ -128,10 +128,7 @@ public class NotificationController {
             @AuthenticationPrincipal UserPrincipal userDetails) {
         
         UUID userId = getUserId(userDetails);
-        Pageable pageable = PageRequest.of(0, 1);
-        Page<NotificationResponse> unreadNotifications = notificationService.getUnreadNotifications(userId, pageable);
-        long count = unreadNotifications.getTotalElements();
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(notificationService.getUnreadNotificationCount(userId));
     }
 
     @GetMapping("/type/{type}")

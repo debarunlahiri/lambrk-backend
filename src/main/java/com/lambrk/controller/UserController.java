@@ -6,6 +6,8 @@ import com.lambrk.dto.FriendRequestCreateRequest;
 import com.lambrk.dto.FriendRequestResponse;
 import com.lambrk.dto.SocialStatsResponse;
 import com.lambrk.dto.SocialUserResponse;
+import com.lambrk.dto.UserPrivacySettingsRequest;
+import com.lambrk.dto.UserPrivacySettingsResponse;
 import com.lambrk.domain.User;
 import com.lambrk.exception.ResourceNotFoundException;
 import com.lambrk.exception.UnauthorizedActionException;
@@ -90,6 +92,26 @@ public class UserController {
 
         User saved = userRepository.save(user);
         return ResponseEntity.ok(UserResponse.from(saved));
+    }
+
+    @GetMapping("/me/privacy")
+    @NewSpan("get-current-user-privacy-settings")
+    @Timed(value = "users.me.privacy.duration")
+    public ResponseEntity<UserPrivacySettingsResponse> getCurrentUserPrivacySettings(
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        User user = userRepository.findByUsername(userPrincipal.getUsername())
+            .orElseThrow(() -> new ResourceNotFoundException("User", "username", userPrincipal.getUsername()));
+        return ResponseEntity.ok(UserPrivacySettingsResponse.from(user));
+    }
+
+    @PutMapping("/me/privacy")
+    @NewSpan("update-current-user-privacy-settings")
+    @Timed(value = "users.me.privacy.update.duration")
+    public ResponseEntity<UserPrivacySettingsResponse> updateCurrentUserPrivacySettings(
+            @Valid @RequestBody UserPrivacySettingsRequest request,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        User saved = userSocialService.updatePrivacySettings(userPrincipal.getUserId(), request);
+        return ResponseEntity.ok(UserPrivacySettingsResponse.from(saved));
     }
 
     @GetMapping("/top")
@@ -215,8 +237,10 @@ public class UserController {
     @GetMapping("/{userId}/social-stats")
     @NewSpan("get-user-social-stats")
     @Timed(value = "users.socialStats.duration")
-    public ResponseEntity<SocialStatsResponse> getSocialStats(@PathVariable @SpanTag UUID userId) {
-        return ResponseEntity.ok(userSocialService.getStats(userId));
+    public ResponseEntity<SocialStatsResponse> getSocialStats(
+            @PathVariable @SpanTag UUID userId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(userSocialService.getStats(userId, getUserId(userPrincipal)));
     }
 
     @PostMapping("/{userId}/friend-request")

@@ -67,6 +67,33 @@ public class User {
     @Column(name = "karma", nullable = false)
     private int karma = 0;
 
+    @Column(name = "private_account", nullable = false)
+    private boolean privateAccount = false;
+
+    @Column(name = "hide_follower_count", nullable = false)
+    private boolean hideFollowerCount = false;
+
+    @Column(name = "hide_following_count", nullable = false)
+    private boolean hideFollowingCount = false;
+
+    @Column(name = "hide_follower_list", nullable = false)
+    private boolean hideFollowerList = false;
+
+    @Column(name = "hide_following_list", nullable = false)
+    private boolean hideFollowingList = false;
+
+    @Column(name = "hide_add_friend_button", nullable = false)
+    private boolean hideAddFriendButton = false;
+
+    @Column(name = "hide_follow_button", nullable = false)
+    private boolean hideFollowButton = false;
+
+    @Column(name = "hide_from_mutual_list", nullable = false)
+    private boolean hideFromMutualList = false;
+
+    @Column(name = "message_button_enabled", nullable = false)
+    private boolean messageButtonEnabled = true;
+
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Post> posts = new HashSet<>();
 
@@ -149,6 +176,24 @@ public class User {
     public void setVerified(boolean verified) { this.isVerified = verified; }
     public int getKarma() { return karma; }
     public void setKarma(int karma) { this.karma = karma; }
+    public boolean isPrivateAccount() { return privateAccount; }
+    public void setPrivateAccount(boolean privateAccount) { this.privateAccount = privateAccount; }
+    public boolean isHideFollowerCount() { return hideFollowerCount; }
+    public void setHideFollowerCount(boolean hideFollowerCount) { this.hideFollowerCount = hideFollowerCount; }
+    public boolean isHideFollowingCount() { return hideFollowingCount; }
+    public void setHideFollowingCount(boolean hideFollowingCount) { this.hideFollowingCount = hideFollowingCount; }
+    public boolean isHideFollowerList() { return hideFollowerList; }
+    public void setHideFollowerList(boolean hideFollowerList) { this.hideFollowerList = hideFollowerList; }
+    public boolean isHideFollowingList() { return hideFollowingList; }
+    public void setHideFollowingList(boolean hideFollowingList) { this.hideFollowingList = hideFollowingList; }
+    public boolean isHideAddFriendButton() { return hideAddFriendButton; }
+    public void setHideAddFriendButton(boolean hideAddFriendButton) { this.hideAddFriendButton = hideAddFriendButton; }
+    public boolean isHideFollowButton() { return hideFollowButton; }
+    public void setHideFollowButton(boolean hideFollowButton) { this.hideFollowButton = hideFollowButton; }
+    public boolean isHideFromMutualList() { return hideFromMutualList; }
+    public void setHideFromMutualList(boolean hideFromMutualList) { this.hideFromMutualList = hideFromMutualList; }
+    public boolean isMessageButtonEnabled() { return messageButtonEnabled; }
+    public void setMessageButtonEnabled(boolean messageButtonEnabled) { this.messageButtonEnabled = messageButtonEnabled; }
     public Set<Post> getPosts() { return posts; }
     public void setPosts(Set<Post> posts) { this.posts = posts; }
     public Set<Comment> getComments() { return comments; }

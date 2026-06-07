@@ -29,7 +29,34 @@ Used by public profile and social-list endpoints.
 | `followingCurrentUser` | boolean | True when this user follows authenticated viewer |
 | `friend` | boolean | True when authenticated viewer is an accepted friend |
 | `friendshipStatus` | string | Current friendship status, or `null` |
+| `privateAccount` | boolean | True when profile social details are limited to owner/friends |
+| `canViewFollowerCount` | boolean | True when `followerCount` is visible to this viewer |
+| `canViewFollowingCount` | boolean | True when `followingCount` is visible to this viewer |
+| `canViewFollowerList` | boolean | True when the followers endpoint should show data to this viewer |
+| `canViewFollowingList` | boolean | True when the following endpoint should show data to this viewer |
+| `canShowAddFriendButton` | boolean | True when UI should show the add-friend button |
+| `canShowFollowButton` | boolean | True when UI should show the follow button |
+| `canShowInMutualLists` | boolean | True when this user may appear in mutual follower/following/friend lists |
+| `messageButtonEnabled` | boolean | True when UI should show/enable the message button |
 | `createdAt` | timestamp | User creation timestamp |
+
+### `UserPrivacySettingsResponse`
+
+Used by `/api/users/me/privacy`.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `userId` | UUID | User id |
+| `privateAccount` | boolean | Limit profile social details to owner/friends |
+| `hideFollowerCount` | boolean | Hide follower count from other viewers |
+| `hideFollowingCount` | boolean | Hide following count from other viewers |
+| `hideFollowerList` | boolean | Hide followers list from other viewers |
+| `hideFollowingList` | boolean | Hide following list from other viewers |
+| `hideAddFriendButton` | boolean | Hide and disable friend requests to this user |
+| `hideFollowButton` | boolean | Hide and disable follow actions to this user |
+| `hideFromMutualList` | boolean | Exclude this user from mutual-list endpoints |
+| `messageButtonEnabled` | boolean | Enable or disable the profile message button |
+| `updatedAt` | timestamp | Last settings update timestamp |
 
 ### `FriendRequestResponse`
 
@@ -96,6 +123,15 @@ curl -X GET 'http://localhost:9500/api/users/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a1
   "followingCurrentUser": false,
   "friend": false,
   "friendshipStatus": null,
+  "privateAccount": false,
+  "canViewFollowerCount": true,
+  "canViewFollowingCount": true,
+  "canViewFollowerList": true,
+  "canViewFollowingList": true,
+  "canShowAddFriendButton": true,
+  "canShowFollowButton": true,
+  "canShowInMutualLists": true,
+  "messageButtonEnabled": true,
   "createdAt": "2026-05-02T10:00:00Z"
 }
 ```
@@ -174,6 +210,48 @@ curl -X PUT 'http://localhost:9500/api/users/me' \
   "createdAt": "2026-05-02T10:00:00Z",
   "updatedAt": "2026-05-02T10:00:00Z"
 }
+```
+
+---
+
+### GET `/api/users/me/privacy`
+
+Get the authenticated user's account privacy settings.
+
+**Auth:** User
+
+**Response:** `UserPrivacySettingsResponse`
+
+```bash
+curl -X GET 'http://localhost:9500/api/users/me/privacy' \
+  -H 'Authorization: Bearer <token>'
+```
+
+---
+
+### PUT `/api/users/me/privacy`
+
+Update the authenticated user's account privacy settings. If `privateAccount` is provided, it acts as a bulk preset: `true` enables all privacy restrictions and disables the message button; `false` disables all privacy restrictions and enables the message button. Individual fields are applied only when `privateAccount` is omitted.
+
+**Auth:** User
+
+**Request body**
+
+```json
+{
+  "privateAccount": true
+}
+```
+
+**Response:** `UserPrivacySettingsResponse`
+
+```bash
+curl -X PUT 'http://localhost:9500/api/users/me/privacy' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "privateAccount": true
+}'
 ```
 
 ---
@@ -451,6 +529,22 @@ Undirected friendship relationship with request state and audit fields.
 
 Constraints/indexes include no self-friendship, canonical unique `(user_one_id, user_two_id)`, requester/addressee indexes, status index, pending-request indexes, and accepted-friend indexes.
 
+### User Privacy Columns
+
+Privacy settings are stored on `users` and default to a public account.
+
+| Column | Type | Default | Description |
+|--------|------|---------|-------------|
+| `private_account` | boolean | `false` | Limits social details to owner and accepted friends |
+| `hide_follower_count` | boolean | `false` | Masks follower count for other viewers |
+| `hide_following_count` | boolean | `false` | Masks following count for other viewers |
+| `hide_follower_list` | boolean | `false` | Returns an empty followers page for other viewers |
+| `hide_following_list` | boolean | `false` | Returns an empty following page for other viewers |
+| `hide_add_friend_button` | boolean | `false` | Hides add-friend UI and rejects friend requests |
+| `hide_follow_button` | boolean | `false` | Hides follow UI and rejects follow actions |
+| `hide_from_mutual_list` | boolean | `false` | Filters the user out of mutual-list endpoints |
+| `message_button_enabled` | boolean | `true` | Controls whether profile messaging should be enabled |
+
 ---
 
 ### POST `/api/users/{userId}/follow`
@@ -471,6 +565,7 @@ Follow a user. Refollowing reactivates the existing follow row.
 |--------|------|-------------|
 | `204` | empty | Followed |
 | `401` | error | JWT missing or invalid |
+| `403` | error | Target user disabled follow actions |
 | `404` | error | User not found |
 
 ```bash
@@ -497,7 +592,7 @@ curl -X DELETE 'http://localhost:9500/api/users/019e5a43-e0c2-7baa-9f6d-b9b9b82a
 
 ### GET `/api/users/{userId}/followers`
 
-List followers for a user.
+List followers for a user. Returns an empty page when the target user's privacy settings hide the followers list from the current viewer.
 
 **Auth:** Public
 
@@ -517,7 +612,7 @@ curl -X GET 'http://localhost:9500/api/users/019e5a43-e0c2-7baa-9f6d-b9b9b82afb1
 
 ### GET `/api/users/{userId}/following`
 
-List users followed by a user.
+List users followed by a user. Returns an empty page when the target user's privacy settings hide the following list from the current viewer.
 
 **Auth:** Public
 
@@ -545,7 +640,7 @@ curl -X GET 'http://localhost:9500/api/users/019e5a43-e0c2-7baa-9f6d-b9b9b82afb1
 
 ### GET `/api/users/{userId}/mutual/followers`
 
-List users who follow both `userId` and another comparison user.
+List users who follow both `userId` and another comparison user. Users with `hideFromMutualList=true` are filtered out.
 
 **Auth:** Public. If the request is anonymous, `withUserId` is required. If logged in and `withUserId` is omitted, the authenticated user is used as the comparison user.
 
@@ -594,7 +689,7 @@ curl -X GET 'http://localhost:9500/api/users/019e5a43-e0c2-7baa-9f6d-b9b9b82afb1
 
 ### GET `/api/users/{userId}/social-stats`
 
-Get follower, following, and friend counts.
+Get follower, following, and friend counts. Hidden follower/following counts are returned as `0` for viewers who cannot see them.
 
 **Auth:** Public
 
@@ -615,6 +710,8 @@ Get follower, following, and friend counts.
 Send a friend request.
 
 **Auth:** User
+
+Returns `403` when the target user has disabled add-friend actions.
 
 ```bash
 curl -X POST 'http://localhost:9500/api/users/019e5a43-e0c2-7baa-9f6d-b9b9b82afb14/friend-request' \

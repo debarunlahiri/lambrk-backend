@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -51,7 +52,7 @@ public class SearchService {
     @RateLimiter(name = "search")
     @CircuitBreaker(name = "userService")
     @Retry(name = "userService")
-    @Cacheable(value = "searchResults", key = "#request.query() + '-' + #request.type() + '-' + #request.page()")
+    @Cacheable(value = "searchResults", key = "#request.query() + '-' + #request.type() + '-' + #request.sort() + '-' + #request.timeFilter() + '-' + #request.page() + '-' + #request.size()")
     public SearchResponse search(SearchRequest request) {
         long startTime = System.currentTimeMillis();
         
@@ -139,7 +140,14 @@ public class SearchService {
     private List<UserResponse> searchUsers(SearchRequest request) {
         Pageable pageable = createUserPageable(request);
         
-        Page<User> users = userRepository.searchActiveUsers(request.query(), pageable);
+        UserSearchTerms terms = UserSearchTerms.from(request.query());
+        Page<User> users = userRepository.searchActiveUsers(
+            terms.query(),
+            terms.normalizedQuery(),
+            terms.firstToken(),
+            terms.lastToken(),
+            pageable
+        );
         
         return users.stream()
             .filter(user -> request.minScore() == null || user.getKarma() >= request.minScore())
@@ -215,5 +223,19 @@ public class SearchService {
             "Try: " + query + " best practices",
             "Try: " + query + " examples"
         );
+    }
+
+    private record UserSearchTerms(String query, String normalizedQuery, String firstToken, String lastToken) {
+
+        private static UserSearchTerms from(String rawQuery) {
+            String query = rawQuery == null ? "" : rawQuery.trim();
+            String normalizedQuery = query.replaceAll("\\s+", "");
+            List<String> tokens = Arrays.stream(query.split("\\s+"))
+                .filter(token -> !token.isBlank())
+                .toList();
+            String firstToken = tokens.isEmpty() ? query : tokens.get(0);
+            String lastToken = tokens.size() < 2 ? firstToken : tokens.get(tokens.size() - 1);
+            return new UserSearchTerms(query, normalizedQuery, firstToken, lastToken);
+        }
     }
 }
