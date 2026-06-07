@@ -14,9 +14,9 @@ Auth tokens are obtained from [`POST /api/auth/login`](AUTH_API.md).
 
 ## Authentication
 
-| Header | Required | Format |
-|--------|----------|--------|
-| `Authorization` | **Yes** | `Bearer <jwt>` |
+| Header          | Required | Format         |
+| --------------- | -------- | -------------- |
+| `Authorization` | **Yes**  | `Bearer <jwt>` |
 
 No request body is required for any bookmark endpoint. Only path parameters and (for listing) query parameters are used.
 
@@ -30,20 +30,20 @@ Bookmark a post. Calling this twice for the same post is safe (idempotent).
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `postId` | Path | UUID | **Yes** | UUID of the post to bookmark |
+| Parameter       | Location | Type   | Required | Description                  |
+| --------------- | -------- | ------ | -------- | ---------------------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`               |
+| `postId`        | Path     | UUID   | **Yes**  | UUID of the post to bookmark |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `204` | empty | Bookmark created or already exists |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Post not found |
+| Status | Body  | Description                        |
+| ------ | ----- | ---------------------------------- |
+| `204`  | empty | Bookmark created or already exists |
+| `401`  | error | JWT missing or invalid             |
+| `404`  | error | Post not found                     |
 
 **cURL**
 
@@ -60,19 +60,19 @@ Remove a bookmark.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `postId` | Path | UUID | **Yes** | UUID of the post to unbookmark |
+| Parameter       | Location | Type   | Required | Description                    |
+| --------------- | -------- | ------ | -------- | ------------------------------ |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`                 |
+| `postId`        | Path     | UUID   | **Yes**  | UUID of the post to unbookmark |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `204` | empty | Bookmark removed or did not exist |
-| `401` | error | JWT missing or invalid |
+| Status | Body  | Description                       |
+| ------ | ----- | --------------------------------- |
+| `204`  | empty | Bookmark removed or did not exist |
+| `401`  | error | JWT missing or invalid            |
 
 **cURL**
 
@@ -89,20 +89,20 @@ Get the current user's bookmarked posts. Returns a paginated list of `PostRespon
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `page` | Query | int | No | `0` | Page number (0-indexed) |
-| `size` | Query | int | No | `20` | Items per page |
+| Parameter       | Location | Type   | Required | Default | Description             |
+| --------------- | -------- | ------ | -------- | ------- | ----------------------- |
+| `Authorization` | Header   | string | **Yes**  | —       | `Bearer <jwt>`          |
+| `page`          | Query    | int    | No       | `0`     | Page number (0-indexed) |
+| `size`          | Query    | int    | No       | `20`    | Items per page          |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<PostResponse>` | Paginated list of bookmarked posts |
-| `401` | error | JWT missing or invalid |
+| Status | Body                 | Description                        |
+| ------ | -------------------- | ---------------------------------- |
+| `200`  | `Page<PostResponse>` | Paginated list of bookmarked posts |
+| `401`  | error                | JWT missing or invalid             |
 
 **cURL**
 
@@ -119,19 +119,19 @@ Check whether a specific post is currently bookmarked by the logged-in user.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `postId` | Path | UUID | **Yes** | UUID of the post to check |
+| Parameter       | Location | Type   | Required | Description               |
+| --------------- | -------- | ------ | -------- | ------------------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`            |
+| `postId`        | Path     | UUID   | **Yes**  | UUID of the post to check |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `{ "bookmarked": true\|false }` | Current bookmark status |
-| `401` | error | JWT missing or invalid |
+| Status | Body                            | Description             |
+| ------ | ------------------------------- | ----------------------- |
+| `200`  | `{ "bookmarked": true\|false }` | Current bookmark status |
+| `401`  | error                           | JWT missing or invalid  |
 
 **cURL**
 
@@ -148,18 +148,18 @@ Get the total number of bookmarks saved by the current user.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| Parameter       | Location | Type   | Required | Description    |
+| --------------- | -------- | ------ | -------- | -------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>` |
 
 No request body. No path or query parameters.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `{ "count": 42 }` | Total bookmark count |
-| `401` | error | JWT missing or invalid |
+| Status | Body              | Description            |
+| ------ | ----------------- | ---------------------- |
+| `200`  | `{ "count": 42 }` | Total bookmark count   |
+| `401`  | error             | JWT missing or invalid |
 
 **cURL**
 
@@ -185,6 +185,7 @@ All post-listing endpoints now include an `isBookmarked` boolean in `PostRespons
 ```
 
 **Affected endpoints**
+
 - `GET /api/feed`, `/api/feed/hot`, `/api/feed/new`, `/api/feed/top`, `/api/feed/discover`
 - `GET /api/posts`, `/api/posts/hot`, `/api/posts/new`, `/api/posts/top`
 - `GET /api/posts/media` (LoopMix)
@@ -201,14 +202,15 @@ All post-listing endpoints now include an `isBookmarked` boolean in `PostRespons
 
 **Table:** `bookmarks`
 
-| Column | Type | Constraints |
-|--------|------|-------------|
-| `id` | UUID | PK |
-| `user_id` | UUID | NOT NULL, FK → `users(id)` ON DELETE CASCADE |
-| `post_id` | UUID | NOT NULL, FK → `posts(id)` ON DELETE CASCADE |
-| `created_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT now() |
+| Column       | Type                     | Constraints                                  |
+| ------------ | ------------------------ | -------------------------------------------- |
+| `id`         | UUID                     | PK                                           |
+| `user_id`    | UUID                     | NOT NULL, FK → `users(id)` ON DELETE CASCADE |
+| `post_id`    | UUID                     | NOT NULL, FK → `posts(id)` ON DELETE CASCADE |
+| `created_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT now()                      |
 
 **Indexes**
+
 - `idx_bookmark_user` — `(user_id)`
 - `idx_bookmark_post` — `(post_id)`
 - `idx_bookmark_user_post` — UNIQUE `(user_id, post_id)`

@@ -9,5 +9,4 @@ public record UserPrivacySettingsRequest(
     Boolean hideAddFriendButton,
     Boolean hideFollowButton,
     Boolean hideFromMutualList,
-    Boolean messageButtonEnabled
-) {}
+    Boolean messageButtonEnabled) {}

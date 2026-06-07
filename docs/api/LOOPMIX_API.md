@@ -14,21 +14,21 @@ Returns only posts that have at least one media item (IMAGE or VIDEO). Sorted by
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | No | — | `Bearer <jwt>` (optional) |
-| `type` | Query | string | No | `ALL` | `ALL` (both), `IMAGE`, or `VIDEO` |
-| `page` | Query | int | No | `0` | Page number (0-indexed) |
-| `size` | Query | int | No | `20` | Items per page (max 50) |
+| Parameter       | Location | Type   | Required | Default | Description                       |
+| --------------- | -------- | ------ | -------- | ------- | --------------------------------- |
+| `Authorization` | Header   | string | No       | —       | `Bearer <jwt>` (optional)         |
+| `type`          | Query    | string | No       | `ALL`   | `ALL` (both), `IMAGE`, or `VIDEO` |
+| `page`          | Query    | int    | No       | `0`     | Page number (0-indexed)           |
+| `size`          | Query    | int    | No       | `20`    | Items per page (max 50)           |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<PostResponse>` | Paginated media posts |
-| `401` | error | JWT invalid (if provided) |
+| Status | Body                 | Description               |
+| ------ | -------------------- | ------------------------- |
+| `200`  | `Page<PostResponse>` | Paginated media posts     |
+| `401`  | error                | JWT invalid (if provided) |
 
 **cURL**
 
@@ -156,17 +156,17 @@ Records a view when a LoopMix item has been in viewport for ~2 seconds. Incremen
 **What to send**
 
 | Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `postId` | Path | UUID | **Yes** | Post UUID |
+| --------- | -------- | ---- | -------- | ----------- |
+| `postId`  | Path     | UUID | **Yes**  | Post UUID   |
 
 No request body. No headers required.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `204` | empty | View recorded |
-| `404` | error | Post not found |
+| Status | Body  | Description    |
+| ------ | ----- | -------------- |
+| `204`  | empty | View recorded  |
+| `404`  | error | Post not found |
 
 **cURL**
 
@@ -195,21 +195,21 @@ Returns related media posts (IMAGE or VIDEO) for infinite scroll when the user r
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | No | — | `Bearer <jwt>` (optional) |
-| `postId` | Path | UUID | **Yes** | — | Post UUID to find related content for |
-| `size` | Query | int | No | `10` | Number of related items to return |
+| Parameter       | Location | Type   | Required | Default | Description                           |
+| --------------- | -------- | ------ | -------- | ------- | ------------------------------------- |
+| `Authorization` | Header   | string | No       | —       | `Bearer <jwt>` (optional)             |
+| `postId`        | Path     | UUID   | **Yes**  | —       | Post UUID to find related content for |
+| `size`          | Query    | int    | No       | `10`    | Number of related items to return     |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `List<PostResponse>` | Related media posts |
-| `401` | error | JWT invalid (if provided) |
-| `404` | error | Post not found |
+| Status | Body                 | Description               |
+| ------ | -------------------- | ------------------------- |
+| `200`  | `List<PostResponse>` | Related media posts       |
+| `401`  | error                | JWT invalid (if provided) |
+| `404`  | error                | Post not found            |
 
 **cURL**
 
@@ -277,8 +277,8 @@ curl 'http://localhost:9500/api/posts/019e9e36-d777-7648-b2b4-e6f350715b72/relat
 
 ## Errors
 
-| Code | Meaning                                 |
-|------|------------------------------------------|
-| 401  | JWT missing / invalid                    |
-| 404  | Post not found (for `/related`)          |
-| 500  | Internal server error                    |
+| Code | Meaning                         |
+| ---- | ------------------------------- |
+| 401  | JWT missing / invalid           |
+| 404  | Post not found (for `/related`) |
+| 500  | Internal server error           |

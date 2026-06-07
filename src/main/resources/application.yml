@@ -57,19 +57,19 @@ spring:
         query:
           plan_cache_max_size: 512
           in_clause_parameter_padding: true
-  
+
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
     baseline-version: 0
     validate-on-migrate: true
-  
+
   cache:
     type: caffeine
     caffeine:
       spec: maximumSize=10000,expireAfterWrite=5m,recordStats
-    
+
   data:
     redis:
       host: localhost
@@ -81,7 +81,10 @@ spring:
           max-idle: 8
           min-idle: 0
           max-wait: -1ms
-  
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://lambrk:lambrk123@localhost:27017/lambrk?authSource=admin}
+      auto-index-creation: true
+
   # CORS Configuration
   cors:
     allowed-origins: "http://localhost:3000,http://localhost:4200,https://lambrk-frontend.example.com"
@@ -89,8 +92,7 @@ spring:
     allowed-headers: "Authorization,Content-Type,X-Requested-With,Accept,Origin,X-Correlation-Id,X-Total-Count,Cache-Control,Pragma"
     allow-credentials: true
     max-age: 3600
-  
-  
+
   cloud:
     stream:
       kafka:
@@ -110,7 +112,7 @@ spring:
         voteCast:
           destination: vote.cast
           content-type: application/json
-  
+
   ai:
     openai:
       api-key: ${OPENAI_API_KEY:your-openai-key}
@@ -137,8 +139,8 @@ aws:
 app:
   jwt:
     secret: ${JWT_SECRET:lambrk-backend-secret-key-for-jwt-tokens-2024-change-in-production}
-    expiration: 86400      # 24 hours in seconds
-    refresh-expiration: 604800  # 7 days in seconds
+    expiration: 86400 # 24 hours in seconds
+    refresh-expiration: 604800 # 7 days in seconds
     issuer: lambrk-backend
     audience: lambrk-frontend
   logging:
@@ -230,7 +232,7 @@ resilience4j:
         waitDurationInOpenState: 45s
         failureRateThreshold: 60
         eventConsumerBufferSize: 10
-  
+
   retry:
     instances:
       postService:
@@ -246,7 +248,7 @@ resilience4j:
         waitDuration: 500ms
         retryExceptions:
           - org.springframework.dao.DataAccessException
-  
+
   bulkhead:
     instances:
       postService:
@@ -255,7 +257,7 @@ resilience4j:
       commentService:
         maxConcurrentCalls: 20
         maxWaitDuration: 50ms
-  
+
   ratelimiter:
     instances:
       postCreation:
@@ -315,7 +317,9 @@ spring:
     enabled: false
   cache:
     type: simple
-
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://lambrk:lambrk123@localhost:27017/lambrk?authSource=admin}
 ---
 spring:
   config:
@@ -338,7 +342,6 @@ spring:
       port: 6379
   cache:
     type: caffeine
-
 ---
 spring:
   config:
@@ -356,6 +359,8 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://lambrk:lambrk123@localhost:27017/lambrk?authSource=admin}
   cloud:
     stream:
       kafka:

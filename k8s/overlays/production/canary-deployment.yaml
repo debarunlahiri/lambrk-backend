@@ -18,30 +18,30 @@ spec:
         track: canary
     spec:
       containers:
-      - name: lambrk-backend
-        image: lambrk-backend:canary
-        ports:
-        - containerPort: 9500
-          name: http
-        env:
-        - name: SPRING_PROFILES_ACTIVE
-          value: "prod"
-        resources:
-          requests:
-            memory: "1Gi"
-            cpu: "1000m"
-          limits:
-            memory: "4Gi"
-            cpu: "4000m"
-        livenessProbe:
-          httpGet:
-            path: /actuator/health/liveness
-            port: 9500
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /actuator/health/readiness
-            port: 9500
-          initialDelaySeconds: 10
-          periodSeconds: 5
+        - name: lambrk-backend
+          image: lambrk-backend:canary
+          ports:
+            - containerPort: 9500
+              name: http
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "1000m"
+            limits:
+              memory: "4Gi"
+              cpu: "4000m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 9500
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 9500
+            initialDelaySeconds: 10
+            periodSeconds: 5

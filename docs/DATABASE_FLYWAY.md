@@ -117,17 +117,17 @@ docker exec -i lambrk-postgres psql -U debarunlahiri -d lambrk < some_file.sql
 
 ## Existing Migrations
 
-| Version | Description |
-|---------|-------------|
-| V1 | Initial tables (users, communities, posts, comments, votes) |
-| V2 | Add `is_removed` to posts |
-| V3 | Add notifications, admin_actions, file_uploads, missing columns |
-| V4 | Free tier usage table |
-| V5 | API logs table |
-| V6 | Event publication table (Spring Modulith) |
-| V7 | Categories + community_categories + seed data |
-| V8 | Make post title nullable |
-| V9 | Rename upvote/downvote → like/dislike columns |
-| V10 | Add completion_date to event_publication |
-| V11 | Fix event_publication schema for Spring Modulith |
-| V12 | Make post community_id nullable |
+| Version | Description                                                     |
+| ------- | --------------------------------------------------------------- |
+| V1      | Initial tables (users, communities, posts, comments, votes)     |
+| V2      | Add `is_removed` to posts                                       |
+| V3      | Add notifications, admin_actions, file_uploads, missing columns |
+| V4      | Free tier usage table                                           |
+| V5      | API logs table                                                  |
+| V6      | Event publication table (Spring Modulith)                       |
+| V7      | Categories + community_categories + seed data                   |
+| V8      | Make post title nullable                                        |
+| V9      | Rename upvote/downvote → like/dislike columns                   |
+| V10     | Add completion_date to event_publication                        |
+| V11     | Fix event_publication schema for Spring Modulith                |
+| V12     | Make post community_id nullable                                 |

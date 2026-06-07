@@ -20,9 +20,9 @@ No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `HealthResponse` | Application health status |
+| Status | Body             | Description               |
+| ------ | ---------------- | ------------------------- |
+| `200`  | `HealthResponse` | Application health status |
 
 **cURL**
 
@@ -35,10 +35,7 @@ curl -X GET 'http://localhost:9500/actuator/health'
 ```json
 {
   "status": "UP",
-  "groups": [
-    "liveness",
-    "readiness"
-  ]
+  "groups": ["liveness", "readiness"]
 }
 ```
 
@@ -58,9 +55,9 @@ No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `InfoResponse` | Build and environment info |
+| Status | Body           | Description                |
+| ------ | -------------- | -------------------------- |
+| `200`  | `InfoResponse` | Build and environment info |
 
 **cURL**
 
@@ -94,9 +91,9 @@ No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | text/plain | Prometheus metrics |
+| Status | Body       | Description        |
+| ------ | ---------- | ------------------ |
+| `200`  | text/plain | Prometheus metrics |
 
 **cURL**
 
@@ -128,9 +125,9 @@ No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | HTML | Swagger UI page |
+| Status | Body | Description     |
+| ------ | ---- | --------------- |
+| `200`  | HTML | Swagger UI page |
 
 **cURL**
 
@@ -158,9 +155,9 @@ No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `OpenAPI` | Full OpenAPI JSON |
+| Status | Body      | Description       |
+| ------ | --------- | ----------------- |
+| `200`  | `OpenAPI` | Full OpenAPI JSON |
 
 **cURL**
 
@@ -191,18 +188,18 @@ Group-specific OpenAPI document. Groups include `public`, `auth`, `posts`, `comm
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `group` | Path | string | **Yes** | OpenAPI group name |
+| Parameter | Location | Type   | Required | Description        |
+| --------- | -------- | ------ | -------- | ------------------ |
+| `group`   | Path     | string | **Yes**  | OpenAPI group name |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `OpenAPI` | Group-specific OpenAPI JSON |
-| `404` | error | Group not found |
+| Status | Body      | Description                 |
+| ------ | --------- | --------------------------- |
+| `200`  | `OpenAPI` | Group-specific OpenAPI JSON |
+| `404`  | error     | Group not found             |
 
 **cURL**
 
@@ -237,18 +234,18 @@ List metric names.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| Parameter       | Location | Type   | Required | Description    |
+| --------------- | -------- | ------ | -------- | -------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>` |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `MetricsResponse` | Available metric names |
-| `401` | error | JWT missing or invalid |
+| Status | Body              | Description            |
+| ------ | ----------------- | ---------------------- |
+| `200`  | `MetricsResponse` | Available metric names |
+| `401`  | error             | JWT missing or invalid |
 
 **cURL**
 
@@ -261,9 +258,6 @@ curl -X GET 'http://localhost:9500/actuator/metrics' \
 
 ```json
 {
-  "names": [
-    "http.server.requests",
-    "jvm.memory.used"
-  ]
+  "names": ["http.server.requests", "jvm.memory.used"]
 }
 ```

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 #### Core Features
+
 - **User Management**: Registration, authentication, JWT tokens, refresh tokens, role-based access (USER, MODERATOR, ADMIN)
 - **Posts**: Create, read, update, delete posts with rich text support
 - **Comments**: Nested comment threads with depth tracking
@@ -17,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Communitys**: Community creation, subscription, moderation
 
 #### Advanced Search
+
 - Full-text search across posts, comments, users, communitys
 - Advanced filtering (time, community, flair, score thresholds)
 - Multiple sorting options (relevance, hot, new, top, controversial)
@@ -24,36 +26,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Structured concurrency for parallel multi-type search
 
 #### Real-Time Features
+
 - WebSocket support with STOMP protocol
 - Real-time notifications for replies, likes, mentions
 - Live post and comment updates
 - Connection management and event tracking
 
 #### Notifications
+
 - Multi-type notification system (comment replies, likes, mentions, admin actions)
 - WebSocket + Kafka real-time delivery
 - Email notifications via Spring Mail + Thymeleaf
 - Read/unread status management
 
 #### Admin & Moderation
+
 - Admin operations: ban, suspend, delete, lock, quarantine
 - Audit trail with `admin_actions` table
 - AI-powered content moderation with Spring AI
 - Soft delete functionality for posts and comments
 
 #### ML Recommendations
+
 - Personalized content recommendations using Spring AI
 - Post, community, user, and comment recommendations
 - Confidence scoring with explanation factors
 - Context-aware suggestions
 
 #### File Management
+
 - Multi-type file upload support (images, videos, avatars)
 - SHA-256 checksums for file integrity
 - Public/private visibility controls
 - MIME type validation and size limits
 
 #### Observability
+
 - Micrometer metrics with Prometheus export
 - OpenTelemetry tracing with OTLP export
 - Custom business metrics
@@ -61,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Health checks (liveness, readiness)
 
 #### Resilience
+
 - Circuit breakers (Resilience4j) for all external services
 - Rate limiting per endpoint type
 - Retry policies with exponential backoff
@@ -68,12 +77,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Time limiters for timeouts
 
 #### Caching
+
 - Caffeine L1 cache (in-process)
 - Redis L2 cache (distributed)
 - Multi-level cache strategy
 - Cache eviction on writes
 
 #### Security
+
 - JWT authentication with HS512
 - Role-based access control
 - BCrypt password hashing
@@ -82,6 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Input validation
 
 #### Infrastructure
+
 - Kubernetes deployment manifests
 - GitHub Actions CI/CD pipeline
 - Docker support (JVM and native image)
@@ -89,6 +101,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Flyway database migrations
 
 #### Documentation
+
 - 14 comprehensive API documentation files
 - Architecture documentation
 - Security policy
@@ -130,6 +143,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Metrics
 
 All endpoints emit Micrometer metrics:
+
 - HTTP request counts and durations
 - Custom business metrics (posts created, votes cast, etc.)
 - JVM metrics
@@ -172,6 +186,7 @@ All endpoints emit Micrometer metrics:
 ## [0.9.0] - 2026-01-15
 
 ### Added
+
 - Initial project setup
 - Basic CRUD operations
 - JPA entities and repositories
@@ -181,6 +196,7 @@ All endpoints emit Micrometer metrics:
 ## Future Roadmap
 
 ### [1.1.0] - Planned
+
 - Elasticsearch integration for search
 - GraphQL API endpoint
 - Mobile push notifications (Firebase)
@@ -188,6 +204,7 @@ All endpoints emit Micrometer metrics:
 - Machine learning for content ranking
 
 ### [1.2.0] - Planned
+
 - Multi-region deployment support
 - CDN integration for static assets
 - Video streaming support
@@ -195,6 +212,7 @@ All endpoints emit Micrometer metrics:
 - Polls and surveys
 
 ### [2.0.0] - Planned
+
 - Microservices architecture migration
 - Event sourcing with CQRS
 - Graph database for relationships

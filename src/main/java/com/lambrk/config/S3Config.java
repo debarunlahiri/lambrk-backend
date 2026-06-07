@@ -1,5 +1,6 @@
 package com.lambrk.config;
 
+import java.net.URI;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,75 +14,66 @@ import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
-import java.net.URI;
-
 @Configuration
 public class S3Config {
 
-    @Value("${aws.s3.region:ap-south-1}")
-    private String region;
+  @Value("${aws.s3.region:ap-south-1}")
+  private String region;
 
-    @Value("${aws.s3.bucket:lm-sm-001}")
-    private String bucketName;
+  @Value("${aws.s3.bucket:lm-sm-001}")
+  private String bucketName;
 
-    @Value("${aws.s3.endpoint:}")
-    private String endpoint;
+  @Value("${aws.s3.endpoint:}")
+  private String endpoint;
 
-    @Value("${aws.access-key:}")
-    private String accessKey;
+  @Value("${aws.access-key:}")
+  private String accessKey;
 
-    @Value("${aws.secret-key:}")
-    private String secretKey;
+  @Value("${aws.secret-key:}")
+  private String secretKey;
 
-    @Bean
-    public S3Client s3Client() {
-        S3ClientBuilder builder = S3Client.builder()
-            .region(Region.of(region))
-            .credentialsProvider(credentialsProvider());
+  @Bean
+  public S3Client s3Client() {
+    S3ClientBuilder builder =
+        S3Client.builder().region(Region.of(region)).credentialsProvider(credentialsProvider());
 
-        if (!endpoint.isEmpty()) {
-            builder.endpointOverride(URI.create(endpoint))
-                .serviceConfiguration(S3Configuration.builder()
-                    .pathStyleAccessEnabled(true)
-                    .build());
-        }
-
-        return builder.build();
+    if (!endpoint.isEmpty()) {
+      builder
+          .endpointOverride(URI.create(endpoint))
+          .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build());
     }
 
-    @Bean
-    public S3Presigner s3Presigner() {
-        S3Presigner.Builder builder = S3Presigner.builder()
-            .region(Region.of(region))
-            .credentialsProvider(credentialsProvider());
+    return builder.build();
+  }
 
-        if (!endpoint.isEmpty()) {
-            builder.endpointOverride(URI.create(endpoint));
-        }
+  @Bean
+  public S3Presigner s3Presigner() {
+    S3Presigner.Builder builder =
+        S3Presigner.builder().region(Region.of(region)).credentialsProvider(credentialsProvider());
 
-        return builder.build();
+    if (!endpoint.isEmpty()) {
+      builder.endpointOverride(URI.create(endpoint));
     }
 
-    @Bean
-    public String s3BucketName() {
-        return bucketName;
+    return builder.build();
+  }
+
+  @Bean
+  public String s3BucketName() {
+    return bucketName;
+  }
+
+  private AwsCredentialsProvider credentialsProvider() {
+    if (!accessKey.isBlank() && !secretKey.isBlank()) {
+      return StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey));
     }
 
-    private AwsCredentialsProvider credentialsProvider() {
-        if (!accessKey.isBlank() && !secretKey.isBlank()) {
-            return StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(accessKey, secretKey)
-            );
-        }
-
-        String sysKey = System.getProperty("aws.accessKeyId");
-        String sysSecret = System.getProperty("aws.secretAccessKey");
-        if (sysKey != null && !sysKey.isBlank() && sysSecret != null && !sysSecret.isBlank()) {
-            return StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(sysKey, sysSecret)
-            );
-        }
-
-        return DefaultCredentialsProvider.create();
+    String sysKey = System.getProperty("aws.accessKeyId");
+    String sysSecret = System.getProperty("aws.secretAccessKey");
+    if (sysKey != null && !sysKey.isBlank() && sysSecret != null && !sysSecret.isBlank()) {
+      return StaticCredentialsProvider.create(AwsBasicCredentials.create(sysKey, sysSecret));
     }
+
+    return DefaultCredentialsProvider.create();
+  }
 }

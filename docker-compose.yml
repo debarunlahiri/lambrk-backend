@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 
 services:
   postgres:
@@ -31,6 +31,24 @@ services:
       timeout: 5s
       retries: 5
 
+  mongo:
+    image: mongo:7-jammy
+    container_name: lambrk-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: lambrk
+      MONGO_INITDB_ROOT_PASSWORD: lambrk123
+      MONGO_INITDB_DATABASE: lambrk
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test:
+        ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
     container_name: lambrk-zookeeper
@@ -57,7 +75,11 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || kafka-topics --bootstrap-server kafka:19092 --list"]
+      test:
+        [
+          "CMD-SHELL",
+          "kafka-topics --bootstrap-server localhost:9092 --list || kafka-topics --bootstrap-server kafka:19092 --list",
+        ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -90,5 +112,6 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  mongo_data:
   prometheus_data:
   grafana_data:

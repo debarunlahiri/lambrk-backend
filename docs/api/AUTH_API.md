@@ -12,12 +12,12 @@ Register a new account and return JWT tokens.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `username` | Body | string | **Yes** | Unique username (3–50 chars) |
-| `email` | Body | string | **Yes** | Valid email address |
-| `password` | Body | string | **Yes** | Minimum 8 characters |
-| `displayName` | Body | string | No | Public display name |
+| Parameter     | Location | Type   | Required | Description                  |
+| ------------- | -------- | ------ | -------- | ---------------------------- |
+| `username`    | Body     | string | **Yes**  | Unique username (3–50 chars) |
+| `email`       | Body     | string | **Yes**  | Valid email address          |
+| `password`    | Body     | string | **Yes**  | Minimum 8 characters         |
+| `displayName` | Body     | string | No       | Public display name          |
 
 **Request body**
 
@@ -32,11 +32,11 @@ Register a new account and return JWT tokens.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `AuthResponse` | Tokens and user info |
-| `400` | error | Validation failure |
-| `409` | error | Duplicate username/email |
+| Status | Body           | Description              |
+| ------ | -------------- | ------------------------ |
+| `200`  | `AuthResponse` | Tokens and user info     |
+| `400`  | error          | Validation failure       |
+| `409`  | error          | Duplicate username/email |
 
 **cURL**
 
@@ -84,10 +84,10 @@ Authenticate with username and password.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `username` | Body | string | **Yes** | Registered username |
-| `password` | Body | string | **Yes** | Account password |
+| Parameter  | Location | Type   | Required | Description         |
+| ---------- | -------- | ------ | -------- | ------------------- |
+| `username` | Body     | string | **Yes**  | Registered username |
+| `password` | Body     | string | **Yes**  | Account password    |
 
 **Request body**
 
@@ -100,10 +100,10 @@ Authenticate with username and password.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `AuthResponse` | Tokens and user info |
-| `401` | error | Bad credentials |
+| Status | Body           | Description          |
+| ------ | -------------- | -------------------- |
+| `200`  | `AuthResponse` | Tokens and user info |
+| `401`  | error          | Bad credentials      |
 
 **cURL**
 
@@ -149,9 +149,9 @@ Refresh tokens using the raw refresh-token string.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `refreshToken` | Body | string | **Yes** | Raw JWT refresh token |
+| Parameter      | Location | Type   | Required | Description           |
+| -------------- | -------- | ------ | -------- | --------------------- |
+| `refreshToken` | Body     | string | **Yes**  | Raw JWT refresh token |
 
 **Request body**
 
@@ -161,10 +161,10 @@ eyJhbGciOi...
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `AuthResponse` | New tokens and user info |
-| `401` | error | Invalid or expired refresh token |
+| Status | Body           | Description                      |
+| ------ | -------------- | -------------------------------- |
+| `200`  | `AuthResponse` | New tokens and user info         |
+| `401`  | error          | Invalid or expired refresh token |
 
 **cURL**
 

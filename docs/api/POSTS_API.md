@@ -12,19 +12,19 @@ Create a post.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `title` | Body | string | **Yes** | Post title |
-| `content` | Body | string | No | Post body text |
-| `url` | Body | string | No | External URL (for LINK posts) |
-| `postType` | Body | string | **Yes** | `TEXT`, `LINK`, `IMAGE`, `VIDEO` |
-| `flairText` | Body | string | No | Flair label |
-| `flairCssClass` | Body | string | No | Flair CSS class |
-| `isSpoiler` | Body | boolean | No | `false` |
-| `isOver18` | Body | boolean | No | `false` |
-| `communityId` | Body | UUID | **Yes** | Target community UUID |
-| `mediaIds` | Body | array | No | Uploaded file UUIDs |
+| Parameter       | Location | Type    | Required | Description                      |
+| --------------- | -------- | ------- | -------- | -------------------------------- |
+| `Authorization` | Header   | string  | **Yes**  | `Bearer <jwt>`                   |
+| `title`         | Body     | string  | **Yes**  | Post title                       |
+| `content`       | Body     | string  | No       | Post body text                   |
+| `url`           | Body     | string  | No       | External URL (for LINK posts)    |
+| `postType`      | Body     | string  | **Yes**  | `TEXT`, `LINK`, `IMAGE`, `VIDEO` |
+| `flairText`     | Body     | string  | No       | Flair label                      |
+| `flairCssClass` | Body     | string  | No       | Flair CSS class                  |
+| `isSpoiler`     | Body     | boolean | No       | `false`                          |
+| `isOver18`      | Body     | boolean | No       | `false`                          |
+| `communityId`   | Body     | UUID    | **Yes**  | Target community UUID            |
+| `mediaIds`      | Body     | array   | No       | Uploaded file UUIDs              |
 
 **Request body**
 
@@ -45,11 +45,11 @@ Create a post.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `PostResponse` | Created post |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Community not found |
+| Status | Body           | Description            |
+| ------ | -------------- | ---------------------- |
+| `200`  | `PostResponse` | Created post           |
+| `401`  | error          | JWT missing or invalid |
+| `404`  | error          | Community not found    |
 
 **cURL**
 
@@ -189,20 +189,20 @@ Get one post.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `postId` | Path | UUID | **Yes** | UUID of the post |
+| Parameter       | Location | Type   | Required | Description      |
+| --------------- | -------- | ------ | -------- | ---------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`   |
+| `postId`        | Path     | UUID   | **Yes**  | UUID of the post |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `PostResponse` | Post details |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Post not found |
+| Status | Body           | Description            |
+| ------ | -------------- | ---------------------- |
+| `200`  | `PostResponse` | Post details           |
+| `401`  | error          | JWT missing or invalid |
+| `404`  | error          | Post not found         |
 
 **cURL**
 
@@ -311,20 +311,20 @@ Get hot posts.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `page` | Query | integer | No | `0` | Zero-based page index |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description           |
+| --------------- | -------- | ------- | -------- | ------- | --------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>`        |
+| `page`          | Query    | integer | No       | `0`     | Zero-based page index |
+| `size`          | Query    | integer | No       | `20`    | Page size             |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<PostResponse>` | Paginated hot posts |
-| `401` | error | JWT missing or invalid |
+| Status | Body                 | Description            |
+| ------ | -------------------- | ---------------------- |
+| `200`  | `Page<PostResponse>` | Paginated hot posts    |
+| `401`  | error                | JWT missing or invalid |
 
 **cURL**
 
@@ -364,20 +364,20 @@ Get newest posts.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `page` | Query | integer | No | `0` | Zero-based page index |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description           |
+| --------------- | -------- | ------- | -------- | ------- | --------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>`        |
+| `page`          | Query    | integer | No       | `0`     | Zero-based page index |
+| `size`          | Query    | integer | No       | `20`    | Page size             |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<PostResponse>` | Paginated newest posts |
-| `401` | error | JWT missing or invalid |
+| Status | Body                 | Description            |
+| ------ | -------------------- | ---------------------- |
+| `200`  | `Page<PostResponse>` | Paginated newest posts |
+| `401`  | error                | JWT missing or invalid |
 
 **cURL**
 
@@ -417,20 +417,20 @@ Get top posts.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `page` | Query | integer | No | `0` | Zero-based page index |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description           |
+| --------------- | -------- | ------- | -------- | ------- | --------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>`        |
+| `page`          | Query    | integer | No       | `0`     | Zero-based page index |
+| `size`          | Query    | integer | No       | `20`    | Page size             |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<PostResponse>` | Paginated top posts |
-| `401` | error | JWT missing or invalid |
+| Status | Body                 | Description            |
+| ------ | -------------------- | ---------------------- |
+| `200`  | `Page<PostResponse>` | Paginated top posts    |
+| `401`  | error                | JWT missing or invalid |
 
 **cURL**
 
@@ -470,22 +470,22 @@ Get posts in a community.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `communityId` | Path | UUID | **Yes** | — | Community UUID |
-| `page` | Query | integer | No | `0` | Zero-based page index |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description           |
+| --------------- | -------- | ------- | -------- | ------- | --------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>`        |
+| `communityId`   | Path     | UUID    | **Yes**  | —       | Community UUID        |
+| `page`          | Query    | integer | No       | `0`     | Zero-based page index |
+| `size`          | Query    | integer | No       | `20`    | Page size             |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<PostResponse>` | Paginated community posts |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Community not found |
+| Status | Body                 | Description               |
+| ------ | -------------------- | ------------------------- |
+| `200`  | `Page<PostResponse>` | Paginated community posts |
+| `401`  | error                | JWT missing or invalid    |
+| `404`  | error                | Community not found       |
 
 **cURL**
 
@@ -525,21 +525,21 @@ Get posts by user.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `userId` | Path | UUID | **Yes** | — | Author UUID |
-| `page` | Query | integer | No | `0` | Zero-based page index |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description           |
+| --------------- | -------- | ------- | -------- | ------- | --------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>`        |
+| `userId`        | Path     | UUID    | **Yes**  | —       | Author UUID           |
+| `page`          | Query    | integer | No       | `0`     | Zero-based page index |
+| `size`          | Query    | integer | No       | `20`    | Page size             |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<PostResponse>` | Paginated user posts |
-| `401` | error | JWT missing or invalid |
+| Status | Body                 | Description            |
+| ------ | -------------------- | ---------------------- |
+| `200`  | `Page<PostResponse>` | Paginated user posts   |
+| `401`  | error                | JWT missing or invalid |
 
 **cURL**
 
@@ -579,21 +579,21 @@ Search posts.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `query` | Query | string | **Yes** | — | Search text |
-| `page` | Query | integer | No | `0` | Zero-based page index |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description           |
+| --------------- | -------- | ------- | -------- | ------- | --------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>`        |
+| `query`         | Query    | string  | **Yes**  | —       | Search text           |
+| `page`          | Query    | integer | No       | `0`     | Zero-based page index |
+| `size`          | Query    | integer | No       | `20`    | Page size             |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<PostResponse>` | Paginated search results |
-| `401` | error | JWT missing or invalid |
+| Status | Body                 | Description              |
+| ------ | -------------------- | ------------------------ |
+| `200`  | `Page<PostResponse>` | Paginated search results |
+| `401`  | error                | JWT missing or invalid   |
 
 **cURL**
 
@@ -633,15 +633,15 @@ Update a post.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `postId` | Path | UUID | **Yes** | UUID of the post |
-| `title` | Body | string | No | Updated title |
-| `content` | Body | string | No | Updated body |
-| `url` | Body | string | No | Updated URL |
-| `postType` | Body | string | No | Post type |
-| `communityId` | Body | UUID | No | Target community |
+| Parameter       | Location | Type   | Required | Description      |
+| --------------- | -------- | ------ | -------- | ---------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`   |
+| `postId`        | Path     | UUID   | **Yes**  | UUID of the post |
+| `title`         | Body     | string | No       | Updated title    |
+| `content`       | Body     | string | No       | Updated body     |
+| `url`           | Body     | string | No       | Updated URL      |
+| `postType`      | Body     | string | No       | Post type        |
+| `communityId`   | Body     | UUID   | No       | Target community |
 
 **Request body**
 
@@ -657,12 +657,12 @@ Update a post.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `PostResponse` | Updated post |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not the author |
-| `404` | error | Post or community not found |
+| Status | Body           | Description                 |
+| ------ | -------------- | --------------------------- |
+| `200`  | `PostResponse` | Updated post                |
+| `401`  | error          | JWT missing or invalid      |
+| `403`  | error          | Not the author              |
+| `404`  | error          | Post or community not found |
 
 **cURL**
 
@@ -779,21 +779,21 @@ Delete a post.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `postId` | Path | UUID | **Yes** | UUID of the post |
+| Parameter       | Location | Type   | Required | Description      |
+| --------------- | -------- | ------ | -------- | ---------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`   |
+| `postId`        | Path     | UUID   | **Yes**  | UUID of the post |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `204` | empty | Post deleted |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not the author |
-| `404` | error | Post not found |
+| Status | Body  | Description            |
+| ------ | ----- | ---------------------- |
+| `204`  | empty | Post deleted           |
+| `401`  | error | JWT missing or invalid |
+| `403`  | error | Not the author         |
+| `404`  | error | Post not found         |
 
 **cURL**
 
@@ -816,19 +816,19 @@ List stickied posts.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `communityId` | Query | UUID | No | — | Filter by community |
+| Parameter       | Location | Type   | Required | Default | Description         |
+| --------------- | -------- | ------ | -------- | ------- | ------------------- |
+| `Authorization` | Header   | string | **Yes**  | —       | `Bearer <jwt>`      |
+| `communityId`   | Query    | UUID   | No       | —       | Filter by community |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `List<PostResponse>` | Stickied posts |
-| `401` | error | JWT missing or invalid |
+| Status | Body                 | Description            |
+| ------ | -------------------- | ---------------------- |
+| `200`  | `List<PostResponse>` | Stickied posts         |
+| `401`  | error                | JWT missing or invalid |
 
 **cURL**
 

@@ -184,38 +184,45 @@ Side Effects:
 ## Key Design Decisions
 
 ### Virtual Threads Everywhere
+
 - `spring.threads.virtual.enabled=true` — Tomcat uses virtual threads for request handling
 - `Executors.newVirtualThreadPerTaskExecutor()` for async operations
 - Avoids `synchronized` blocks to prevent carrier thread pinning
 - HikariCP pool sized for virtual threads (not 1:1 with platform threads)
 
 ### Structured Concurrency in Services
+
 - `StructuredTaskScope.ShutdownOnFailure` for parallel DB lookups
 - Clean cancellation when any subtask fails
 - Used in `PostService.createPost()` to fetch User + Community concurrently
 
 ### Record-Based Domain Model
+
 - JPA entities as Java records (immutable by default)
 - Custom canonical constructors for defaults
 - Convenience constructors for common creation patterns
 
 ### Multi-Level Caching
+
 - **L1 (Caffeine)**: In-process, 5-minute TTL, 10K max entries
 - **L2 (Redis)**: Distributed, 10-minute TTL, JSON serialization
 - Cache eviction on writes; read-through on misses
 
 ### Event-Driven Side Effects
+
 - Kafka events for post/comment/vote actions
 - Spring Cloud Stream with StreamBridge for decoupled publishing
 - Events are fire-and-forget with circuit breaker protection
 
 ### AI Content Moderation
+
 - AOP-based via `@ModerateContent` annotation
 - Parallel analysis: moderation + toxicity + spam (structured concurrency)
 - Results cached to avoid duplicate API calls
 - Graceful degradation if AI service is unavailable
 
 ### S3 Storage Architecture
+
 - AWS S3 as primary file storage with configurable fallback to local filesystem
 - Files organized by type: `avatars/`, `posts/images/`, `posts/videos/`, `communities/icons/`, etc.
 - Presigned URLs for secure temporary access to private files
@@ -224,6 +231,7 @@ Side Effects:
 - Checksum verification (SHA-256) for data integrity
 
 ### Free Tier System
+
 - Monthly usage tracking per user (storage, uploads, bandwidth)
 - Configurable limits: 5GB storage, 100 uploads/month, 100GB bandwidth/month
 - Usage stored in `free_tier_usage` table with year/month partitioning
@@ -259,6 +267,7 @@ Comment 1──* Vote
 ### Indexes
 
 Every foreign key and frequently-queried column is indexed. Composite indexes exist for:
+
 - `votes(user_id, post_id)` — unique constraint + fast lookup
 - `votes(user_id, comment_id)` — unique constraint + fast lookup
 - `file_uploads(type, uploaded_by, created_at)` — file listing queries
@@ -288,9 +297,9 @@ Register/Login → JWT access token (24h) + refresh token (7d)
 
 ### Roles
 
-| Role       | Permissions                                    |
-|------------|------------------------------------------------|
-| USER       | CRUD own posts/comments, vote, subscribe       |
-| VERIFIED   | Same as USER (badge only)                      |
-| MODERATOR  | Edit community settings, remove content        |
-| ADMIN      | All permissions, delete users, manage system   |
+| Role      | Permissions                                  |
+| --------- | -------------------------------------------- |
+| USER      | CRUD own posts/comments, vote, subscribe     |
+| VERIFIED  | Same as USER (badge only)                    |
+| MODERATOR | Edit community settings, remove content      |
+| ADMIN     | All permissions, delete users, manage system |

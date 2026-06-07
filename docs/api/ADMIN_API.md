@@ -12,16 +12,16 @@ Perform generic admin action.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` (Admin) |
-| `action` | Body | string | **Yes** | Action type (`BAN_USER`, etc.) |
-| `targetId` | Body | UUID | **Yes** | Target entity UUID |
-| `reason` | Body | string | **Yes** | Reason for action |
-| `notes` | Body | string | No | Additional notes |
-| `durationDays` | Body | integer | No | Duration if temporary |
-| `permanent` | Body | boolean | No | `false` |
-| `notifyUser` | Body | boolean | No | `true` |
+| Parameter       | Location | Type    | Required | Description                    |
+| --------------- | -------- | ------- | -------- | ------------------------------ |
+| `Authorization` | Header   | string  | **Yes**  | `Bearer <jwt>` (Admin)         |
+| `action`        | Body     | string  | **Yes**  | Action type (`BAN_USER`, etc.) |
+| `targetId`      | Body     | UUID    | **Yes**  | Target entity UUID             |
+| `reason`        | Body     | string  | **Yes**  | Reason for action              |
+| `notes`         | Body     | string  | No       | Additional notes               |
+| `durationDays`  | Body     | integer | No       | Duration if temporary          |
+| `permanent`     | Body     | boolean | No       | `false`                        |
+| `notifyUser`    | Body     | boolean | No       | `true`                         |
 
 **Request body**
 
@@ -39,11 +39,11 @@ Perform generic admin action.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `AdminActionResponse` | Performed action |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body                  | Description            |
+| ------ | --------------------- | ---------------------- |
+| `200`  | `AdminActionResponse` | Performed action       |
+| `401`  | error                 | JWT missing or invalid |
+| `403`  | error                 | Not an admin           |
 
 **cURL**
 
@@ -90,21 +90,21 @@ List admin actions.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description            |
+| --------------- | -------- | ------- | -------- | ------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` (Admin) |
+| `page`          | Query    | integer | No       | `0`     | Page number            |
+| `size`          | Query    | integer | No       | `20`    | Page size              |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<AdminActionResponse>` | Paginated actions |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body                        | Description            |
+| ------ | --------------------------- | ---------------------- |
+| `200`  | `Page<AdminActionResponse>` | Paginated actions      |
+| `401`  | error                       | JWT missing or invalid |
+| `403`  | error                       | Not an admin           |
 
 **cURL**
 
@@ -139,22 +139,22 @@ List actions by user.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `userId` | Path | UUID | **Yes** | — | User UUID |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description            |
+| --------------- | -------- | ------- | -------- | ------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` (Admin) |
+| `userId`        | Path     | UUID    | **Yes**  | —       | User UUID              |
+| `page`          | Query    | integer | No       | `0`     | Page number            |
+| `size`          | Query    | integer | No       | `20`    | Page size              |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<AdminActionResponse>` | Actions for the user |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body                        | Description            |
+| ------ | --------------------------- | ---------------------- |
+| `200`  | `Page<AdminActionResponse>` | Actions for the user   |
+| `401`  | error                       | JWT missing or invalid |
+| `403`  | error                       | Not an admin           |
 
 **cURL**
 
@@ -189,21 +189,21 @@ List active actions.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description            |
+| --------------- | -------- | ------- | -------- | ------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` (Admin) |
+| `page`          | Query    | integer | No       | `0`     | Page number            |
+| `size`          | Query    | integer | No       | `20`    | Page size              |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<AdminActionResponse>` | Active actions |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body                        | Description            |
+| ------ | --------------------------- | ---------------------- |
+| `200`  | `Page<AdminActionResponse>` | Active actions         |
+| `401`  | error                       | JWT missing or invalid |
+| `403`  | error                       | Not an admin           |
 
 **cURL**
 
@@ -238,24 +238,24 @@ Perform ban user action.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `userId` | Path | UUID | **Yes** | — | User UUID |
-| `reason` | Query | string | **Yes** | — | Ban reason |
-| `durationDays` | Query | integer | No | — | Ban duration |
-| `permanent` | Query | boolean | No | `false` | Permanent ban |
-| `notifyUser` | Query | boolean | No | `true` | Notify user |
+| Parameter       | Location | Type    | Required | Default | Description            |
+| --------------- | -------- | ------- | -------- | ------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` (Admin) |
+| `userId`        | Path     | UUID    | **Yes**  | —       | User UUID              |
+| `reason`        | Query    | string  | **Yes**  | —       | Ban reason             |
+| `durationDays`  | Query    | integer | No       | —       | Ban duration           |
+| `permanent`     | Query    | boolean | No       | `false` | Permanent ban          |
+| `notifyUser`    | Query    | boolean | No       | `true`  | Notify user            |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `AdminActionResponse` | Ban action result |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body                  | Description            |
+| ------ | --------------------- | ---------------------- |
+| `200`  | `AdminActionResponse` | Ban action result      |
+| `401`  | error                 | JWT missing or invalid |
+| `403`  | error                 | Not an admin           |
 
 **cURL**
 
@@ -292,23 +292,23 @@ Perform suspend user action.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `userId` | Path | UUID | **Yes** | — | User UUID |
-| `reason` | Query | string | **Yes** | — | Suspend reason |
-| `durationDays` | Query | integer | No | — | Suspend duration |
-| `notifyUser` | Query | boolean | No | `true` | Notify user |
+| Parameter       | Location | Type    | Required | Default | Description            |
+| --------------- | -------- | ------- | -------- | ------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` (Admin) |
+| `userId`        | Path     | UUID    | **Yes**  | —       | User UUID              |
+| `reason`        | Query    | string  | **Yes**  | —       | Suspend reason         |
+| `durationDays`  | Query    | integer | No       | —       | Suspend duration       |
+| `notifyUser`    | Query    | boolean | No       | `true`  | Notify user            |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `AdminActionResponse` | Suspend action result |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body                  | Description            |
+| ------ | --------------------- | ---------------------- |
+| `200`  | `AdminActionResponse` | Suspend action result  |
+| `401`  | error                 | JWT missing or invalid |
+| `403`  | error                 | Not an admin           |
 
 **cURL**
 
@@ -345,22 +345,22 @@ Perform delete post action.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `postId` | Path | UUID | **Yes** | — | Post UUID |
-| `reason` | Query | string | **Yes** | — | Delete reason |
-| `notifyUser` | Query | boolean | No | `true` | Notify user |
+| Parameter       | Location | Type    | Required | Default | Description            |
+| --------------- | -------- | ------- | -------- | ------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` (Admin) |
+| `postId`        | Path     | UUID    | **Yes**  | —       | Post UUID              |
+| `reason`        | Query    | string  | **Yes**  | —       | Delete reason          |
+| `notifyUser`    | Query    | boolean | No       | `true`  | Notify user            |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `AdminActionResponse` | Delete action result |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body                  | Description            |
+| ------ | --------------------- | ---------------------- |
+| `200`  | `AdminActionResponse` | Delete action result   |
+| `401`  | error                 | JWT missing or invalid |
+| `403`  | error                 | Not an admin           |
 
 **cURL**
 
@@ -397,22 +397,22 @@ Perform delete comment action.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `commentId` | Path | UUID | **Yes** | — | Comment UUID |
-| `reason` | Query | string | **Yes** | — | Delete reason |
-| `notifyUser` | Query | boolean | No | `true` | Notify user |
+| Parameter       | Location | Type    | Required | Default | Description            |
+| --------------- | -------- | ------- | -------- | ------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` (Admin) |
+| `commentId`     | Path     | UUID    | **Yes**  | —       | Comment UUID           |
+| `reason`        | Query    | string  | **Yes**  | —       | Delete reason          |
+| `notifyUser`    | Query    | boolean | No       | `true`  | Notify user            |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `AdminActionResponse` | Delete action result |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body                  | Description            |
+| ------ | --------------------- | ---------------------- |
+| `200`  | `AdminActionResponse` | Delete action result   |
+| `401`  | error                 | JWT missing or invalid |
+| `403`  | error                 | Not an admin           |
 
 **cURL**
 
@@ -449,24 +449,24 @@ Perform lock post action.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `postId` | Path | UUID | **Yes** | — | Post UUID |
-| `reason` | Query | string | **Yes** | — | Lock reason |
-| `durationDays` | Query | integer | No | — | Lock duration |
-| `permanent` | Query | boolean | No | `false` | Permanent lock |
-| `notifyUser` | Query | boolean | No | `true` | Notify user |
+| Parameter       | Location | Type    | Required | Default | Description            |
+| --------------- | -------- | ------- | -------- | ------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` (Admin) |
+| `postId`        | Path     | UUID    | **Yes**  | —       | Post UUID              |
+| `reason`        | Query    | string  | **Yes**  | —       | Lock reason            |
+| `durationDays`  | Query    | integer | No       | —       | Lock duration          |
+| `permanent`     | Query    | boolean | No       | `false` | Permanent lock         |
+| `notifyUser`    | Query    | boolean | No       | `true`  | Notify user            |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `AdminActionResponse` | Lock action result |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body                  | Description            |
+| ------ | --------------------- | ---------------------- |
+| `200`  | `AdminActionResponse` | Lock action result     |
+| `401`  | error                 | JWT missing or invalid |
+| `403`  | error                 | Not an admin           |
 
 **cURL**
 
@@ -503,22 +503,22 @@ Perform quarantine post action.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `postId` | Path | UUID | **Yes** | — | Post UUID |
-| `reason` | Query | string | **Yes** | — | Quarantine reason |
-| `notifyUser` | Query | boolean | No | `true` | Notify user |
+| Parameter       | Location | Type    | Required | Default | Description            |
+| --------------- | -------- | ------- | -------- | ------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` (Admin) |
+| `postId`        | Path     | UUID    | **Yes**  | —       | Post UUID              |
+| `reason`        | Query    | string  | **Yes**  | —       | Quarantine reason      |
+| `notifyUser`    | Query    | boolean | No       | `true`  | Notify user            |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `AdminActionResponse` | Quarantine action result |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body                  | Description              |
+| ------ | --------------------- | ------------------------ |
+| `200`  | `AdminActionResponse` | Quarantine action result |
+| `401`  | error                 | JWT missing or invalid   |
+| `403`  | error                 | Not an admin             |
 
 **cURL**
 
@@ -555,22 +555,22 @@ Perform remove moderator action.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `userId` | Path | UUID | **Yes** | — | User UUID |
-| `reason` | Query | string | **Yes** | — | Removal reason |
-| `notifyUser` | Query | boolean | No | `true` | Notify user |
+| Parameter       | Location | Type    | Required | Default | Description            |
+| --------------- | -------- | ------- | -------- | ------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` (Admin) |
+| `userId`        | Path     | UUID    | **Yes**  | —       | User UUID              |
+| `reason`        | Query    | string  | **Yes**  | —       | Removal reason         |
+| `notifyUser`    | Query    | boolean | No       | `true`  | Notify user            |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `AdminActionResponse` | Remove moderator result |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body                  | Description             |
+| ------ | --------------------- | ----------------------- |
+| `200`  | `AdminActionResponse` | Remove moderator result |
+| `401`  | error                 | JWT missing or invalid  |
+| `403`  | error                 | Not an admin            |
 
 **cURL**
 

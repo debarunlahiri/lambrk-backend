@@ -21,6 +21,7 @@ LOG_FILE="$PROJECT_DIR/setup.log"
 APP_PORT=9500
 POSTGRES_PORT=5432
 REDIS_PORT=6379
+MONGO_PORT=27017
 KAFKA_PORT=9092
 ZOOKEEPER_PORT=2181
 PROMETHEUS_PORT=9090
@@ -72,6 +73,32 @@ warn() {
 
 fail() {
     echo -e "${RED}  ✗${NC} $1"
+}
+
+compose_service_for_container() {
+    case "$1" in
+        lambrk-postgres) echo "postgres" ;;
+        lambrk-mongo) echo "mongo" ;;
+        lambrk-redis) echo "redis" ;;
+        lambrk-kafka) echo "kafka" ;;
+        *) echo "" ;;
+    esac
+}
+
+start_compose_service() {
+    local container="$1"
+    local service
+    service=$(compose_service_for_container "$container")
+
+    if [ -n "$service" ]; then
+        if [ -n "$COMPOSE_CMD" ]; then
+            $COMPOSE_CMD up -d "$service" 2>&1 | tail -3
+        else
+            $DOCKER_CMD compose up -d "$service" 2>&1 | tail -3
+        fi
+    else
+        $DOCKER_CMD start "$container" 2>&1 | tail -3
+    fi
 }
 
 header() {
@@ -154,8 +181,8 @@ check_dependencies() {
 check_and_kill_ports() {
     header "2. Checking Required Ports"
 
-    PORTS=($APP_PORT $POSTGRES_PORT $REDIS_PORT $KAFKA_PORT $ZOOKEEPER_PORT $PROMETHEUS_PORT $GRAFANA_PORT $ZIPKIN_PORT)
-    PORT_NAMES=("App" "PostgreSQL" "Redis" "Kafka" "Zookeeper" "Prometheus" "Grafana" "Zipkin")
+    PORTS=($APP_PORT $POSTGRES_PORT $REDIS_PORT $MONGO_PORT $KAFKA_PORT $ZOOKEEPER_PORT $PROMETHEUS_PORT $GRAFANA_PORT $ZIPKIN_PORT)
+    PORT_NAMES=("App" "PostgreSQL" "Redis" "MongoDB" "Kafka" "Zookeeper" "Prometheus" "Grafana" "Zipkin")
 
     for i in "${!PORTS[@]}"; do
         PORT=${PORTS[$i]}
@@ -291,11 +318,11 @@ start_services() {
 
         # Verify critical containers are running; restart individually if missing
         ALL_RUNNING=true
-        for container in lambrk-postgres lambrk-redis lambrk-kafka; do
+        for container in lambrk-postgres lambrk-mongo lambrk-redis lambrk-kafka; do
         if ! $DOCKER_CMD ps --format '{{.Names}}' 2>/dev/null | grep -q "^${container}$"; then
             ALL_RUNNING=false
-            warn "Container '$container' is not running. Attempting to start it..."
-            $DOCKER_CMD start "$container" 2>&1 | tail -3
+            warn "Container '$container' is not running. Attempting to start its Compose service..."
+            start_compose_service "$container"
             sleep 3
         fi
         done
@@ -310,10 +337,11 @@ start_services() {
         fi
     done
 
-    # Final verification
-    for container in lambrk-postgres lambrk-redis lambrk-kafka; do
+    # Final verification — critical containers
+    for container in lambrk-postgres lambrk-mongo lambrk-redis lambrk-kafka; do
         if ! $DOCKER_CMD ps --format '{{.Names}}' 2>/dev/null | grep -q "^${container}$"; then
-            fail "Container '$container' failed to start. Check: $DOCKER_CMD compose logs $container"
+            service=$(compose_service_for_container "$container")
+            fail "Container '$container' failed to start. Check: $DOCKER_CMD compose logs ${service:-$container}"
             ERRORS=$((ERRORS + 1))
             return
         fi
@@ -334,6 +362,23 @@ start_services() {
         if [ $i -eq 30 ]; then
             echo ""
             fail "PostgreSQL failed to start within 60s"
+            ERRORS=$((ERRORS + 1))
+        fi
+    done
+
+    # Wait for MongoDB
+    echo -n "  Waiting for MongoDB"
+    for i in $(seq 1 30); do
+        if $DOCKER_CMD exec lambrk-mongo mongosh --quiet --eval "db.adminCommand('ping').ok" &> /dev/null; then
+            echo ""
+            success "MongoDB is ready"
+            break
+        fi
+        echo -n "."
+        sleep 2
+        if [ $i -eq 30 ]; then
+            echo ""
+            fail "MongoDB failed to start within 60s"
             ERRORS=$((ERRORS + 1))
         fi
     done
@@ -526,6 +571,7 @@ print_summary() {
     echo -e "    App:        http://localhost:$APP_PORT"
     echo -e "    Swagger:    http://localhost:$APP_PORT/swagger-ui.html"
     echo -e "    Actuator:   http://localhost:$APP_PORT/actuator/health"
+    echo -e "    MongoDB:    mongodb://lambrk:lambrk123@localhost:$MONGO_PORT/lambrk?authSource=admin"
     echo -e "    Grafana:    http://localhost:$GRAFANA_PORT (admin/admin)"
     echo -e "    Prometheus: http://localhost:$PROMETHEUS_PORT"
     echo -e "    Zipkin:     http://localhost:$ZIPKIN_PORT"

@@ -5,11 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record VoteRequest(
-
-    @NotNull(message = "Vote type is required")
-    Vote.VoteType voteType,
-
+    @NotNull(message = "Vote type is required") Vote.VoteType voteType,
     UUID postId,
-
-    UUID commentId
-) {}
+    UUID commentId) {}

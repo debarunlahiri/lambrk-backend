@@ -12,12 +12,12 @@ Create a top-level comment on a post.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `content` | Body | string | **Yes** | Comment text (supports `@mention`) |
-| `postId` | Body | UUID | **Yes** | Target post UUID |
-| `parentCommentId` | Body | UUID | No | `null` for top-level |
+| Parameter         | Location | Type   | Required | Description                        |
+| ----------------- | -------- | ------ | -------- | ---------------------------------- |
+| `Authorization`   | Header   | string | **Yes**  | `Bearer <jwt>`                     |
+| `content`         | Body     | string | **Yes**  | Comment text (supports `@mention`) |
+| `postId`          | Body     | UUID   | **Yes**  | Target post UUID                   |
+| `parentCommentId` | Body     | UUID   | No       | `null` for top-level               |
 
 **Request body**
 
@@ -33,11 +33,11 @@ Create a top-level comment on a post.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `CommentResponse` | Created comment |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Post not found |
+| Status | Body              | Description            |
+| ------ | ----------------- | ---------------------- |
+| `200`  | `CommentResponse` | Created comment        |
+| `401`  | error             | JWT missing or invalid |
+| `404`  | error             | Post not found         |
 
 **cURL**
 
@@ -102,11 +102,11 @@ Reply to an existing comment. This sends a `COMMENT_REPLY` notification to the p
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `commentId` | Path | UUID | **Yes** | Parent comment UUID |
-| `body` | Body | string | **Yes** | Reply text (raw text) |
+| Parameter       | Location | Type   | Required | Description           |
+| --------------- | -------- | ------ | -------- | --------------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`        |
+| `commentId`     | Path     | UUID   | **Yes**  | Parent comment UUID   |
+| `body`          | Body     | string | **Yes**  | Reply text (raw text) |
 
 **Request body**
 
@@ -118,11 +118,11 @@ Thanks for the insight @johndoe!
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `CommentResponse` | Created reply |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Parent comment not found |
+| Status | Body              | Description              |
+| ------ | ----------------- | ------------------------ |
+| `200`  | `CommentResponse` | Created reply            |
+| `401`  | error             | JWT missing or invalid   |
+| `404`  | error             | Parent comment not found |
 
 **cURL**
 
@@ -183,20 +183,20 @@ Get one comment.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `commentId` | Path | UUID | **Yes** | Comment UUID |
+| Parameter       | Location | Type   | Required | Description    |
+| --------------- | -------- | ------ | -------- | -------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>` |
+| `commentId`     | Path     | UUID   | **Yes**  | Comment UUID   |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `CommentResponse` | Comment details |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Comment not found |
+| Status | Body              | Description            |
+| ------ | ----------------- | ---------------------- |
+| `200`  | `CommentResponse` | Comment details        |
+| `401`  | error             | JWT missing or invalid |
+| `404`  | error             | Comment not found      |
 
 **cURL**
 
@@ -255,22 +255,22 @@ Get top-level comments for a post, sorted by score descending. Each comment incl
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `postId` | Path | UUID | **Yes** | — | Post UUID |
-| `page` | Query | integer | No | `0` | Zero-based page index |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description           |
+| --------------- | -------- | ------- | -------- | ------- | --------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>`        |
+| `postId`        | Path     | UUID    | **Yes**  | —       | Post UUID             |
+| `page`          | Query    | integer | No       | `0`     | Zero-based page index |
+| `size`          | Query    | integer | No       | `20`    | Page size             |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<CommentResponse>` | Paginated comments with previews |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Post not found |
+| Status | Body                    | Description                      |
+| ------ | ----------------------- | -------------------------------- |
+| `200`  | `Page<CommentResponse>` | Paginated comments with previews |
+| `401`  | error                   | JWT missing or invalid           |
+| `404`  | error                   | Post not found                   |
 
 **cURL**
 
@@ -377,20 +377,20 @@ Get replies for a comment.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `commentId` | Path | UUID | **Yes** | Comment UUID |
+| Parameter       | Location | Type   | Required | Description    |
+| --------------- | -------- | ------ | -------- | -------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>` |
+| `commentId`     | Path     | UUID   | **Yes**  | Comment UUID   |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `List<CommentResponse>` | Replies list |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Comment not found |
+| Status | Body                    | Description            |
+| ------ | ----------------------- | ---------------------- |
+| `200`  | `List<CommentResponse>` | Replies list           |
+| `401`  | error                   | JWT missing or invalid |
+| `404`  | error                   | Comment not found      |
 
 **cURL**
 
@@ -415,21 +415,21 @@ Get comments by user.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `userId` | Path | UUID | **Yes** | — | User UUID |
-| `page` | Query | integer | No | `0` | Zero-based page index |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description           |
+| --------------- | -------- | ------- | -------- | ------- | --------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>`        |
+| `userId`        | Path     | UUID    | **Yes**  | —       | User UUID             |
+| `page`          | Query    | integer | No       | `0`     | Zero-based page index |
+| `size`          | Query    | integer | No       | `20`    | Page size             |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<CommentResponse>` | Paginated user comments |
-| `401` | error | JWT missing or invalid |
+| Status | Body                    | Description             |
+| ------ | ----------------------- | ----------------------- |
+| `200`  | `Page<CommentResponse>` | Paginated user comments |
+| `401`  | error                   | JWT missing or invalid  |
 
 **cURL**
 
@@ -464,11 +464,11 @@ Update comment content. Body is raw text.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `commentId` | Path | UUID | **Yes** | Comment UUID |
-| `body` | Body | string | **Yes** | Updated comment text |
+| Parameter       | Location | Type   | Required | Description          |
+| --------------- | -------- | ------ | -------- | -------------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`       |
+| `commentId`     | Path     | UUID   | **Yes**  | Comment UUID         |
+| `body`          | Body     | string | **Yes**  | Updated comment text |
 
 **Request body**
 
@@ -478,12 +478,12 @@ Updated comment text
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `CommentResponse` | Updated comment |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not the author |
-| `404` | error | Comment not found |
+| Status | Body              | Description            |
+| ------ | ----------------- | ---------------------- |
+| `200`  | `CommentResponse` | Updated comment        |
+| `401`  | error             | JWT missing or invalid |
+| `403`  | error             | Not the author         |
+| `404`  | error             | Comment not found      |
 
 **cURL**
 
@@ -544,21 +544,21 @@ Delete comment.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `commentId` | Path | UUID | **Yes** | Comment UUID |
+| Parameter       | Location | Type   | Required | Description    |
+| --------------- | -------- | ------ | -------- | -------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>` |
+| `commentId`     | Path     | UUID   | **Yes**  | Comment UUID   |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `204` | empty | Comment deleted |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not the author |
-| `404` | error | Comment not found |
+| Status | Body  | Description            |
+| ------ | ----- | ---------------------- |
+| `204`  | empty | Comment deleted        |
+| `401`  | error | JWT missing or invalid |
+| `403`  | error | Not the author         |
+| `404`  | error | Comment not found      |
 
 **cURL**
 
@@ -581,21 +581,21 @@ Search comments.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `query` | Query | string | **Yes** | — | Search text |
-| `page` | Query | integer | No | `0` | Zero-based page index |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description           |
+| --------------- | -------- | ------- | -------- | ------- | --------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>`        |
+| `query`         | Query    | string  | **Yes**  | —       | Search text           |
+| `page`          | Query    | integer | No       | `0`     | Zero-based page index |
+| `size`          | Query    | integer | No       | `20`    | Page size             |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<CommentResponse>` | Paginated search results |
-| `401` | error | JWT missing or invalid |
+| Status | Body                    | Description              |
+| ------ | ----------------------- | ------------------------ |
+| `200`  | `Page<CommentResponse>` | Paginated search results |
+| `401`  | error                   | JWT missing or invalid   |
 
 **cURL**
 

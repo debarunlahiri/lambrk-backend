@@ -6,14 +6,14 @@ All domain events are published asynchronously via **Spring Cloud Stream** with 
 
 ## Topics
 
-| Topic              | Producer          | Description                    |
-|--------------------|-------------------|--------------------------------|
-| `post.created`     | PostService       | New post published             |
-| `post.updated`     | PostService       | Existing post edited           |
-| `comment.created`  | CommentService    | New comment or reply posted    |
-| `vote.cast`        | VoteService       | New vote (not toggles/flips)   |
-| `file.uploaded`    | FileUploadService | New file uploaded              |
-| `file.deleted`     | FileUploadService | File deleted                   |
+| Topic             | Producer          | Description                  |
+| ----------------- | ----------------- | ---------------------------- |
+| `post.created`    | PostService       | New post published           |
+| `post.updated`    | PostService       | Existing post edited         |
+| `comment.created` | CommentService    | New comment or reply posted  |
+| `vote.cast`       | VoteService       | New vote (not toggles/flips) |
+| `file.uploaded`   | FileUploadService | New file uploaded            |
+| `file.deleted`    | FileUploadService | File deleted                 |
 
 ---
 
@@ -34,14 +34,14 @@ Published to `post.created` and `post.updated`.
 }
 ```
 
-| Field       | Type    | Description                          |
-|-------------|---------|--------------------------------------|
-| postId      | UUID    | ID of the post                       |
-| title       | String  | Post title                           |
-| authorId    | UUID    | ID of the author                     |
-| communityId | UUID    | ID of the community                  |
-| timestamp   | Instant | When the event occurred              |
-| eventType   | String  | `POST_CREATED` or `POST_UPDATED`     |
+| Field       | Type    | Description                      |
+| ----------- | ------- | -------------------------------- |
+| postId      | UUID    | ID of the post                   |
+| title       | String  | Post title                       |
+| authorId    | UUID    | ID of the author                 |
+| communityId | UUID    | ID of the community              |
+| timestamp   | Instant | When the event occurred          |
+| eventType   | String  | `POST_CREATED` or `POST_UPDATED` |
 
 ### CommentEvent
 
@@ -59,15 +59,15 @@ Published to `comment.created`.
 }
 ```
 
-| Field            | Type         | Description                    |
-|------------------|--------------|--------------------------------|
-| commentId        | UUID         | ID of the comment              |
-| content          | String       | Comment text                   |
-| authorId         | UUID         | ID of the author               |
-| postId           | UUID         | ID of the parent post          |
-| parentCommentId  | Long or null | ID of parent comment (replies) |
-| timestamp        | Instant      | When the event occurred        |
-| eventType        | String       | `COMMENT_CREATED`              |
+| Field           | Type         | Description                    |
+| --------------- | ------------ | ------------------------------ |
+| commentId       | UUID         | ID of the comment              |
+| content         | String       | Comment text                   |
+| authorId        | UUID         | ID of the author               |
+| postId          | UUID         | ID of the parent post          |
+| parentCommentId | Long or null | ID of parent comment (replies) |
+| timestamp       | Instant      | When the event occurred        |
+| eventType       | String       | `COMMENT_CREATED`              |
 
 ### VoteEvent
 
@@ -85,15 +85,15 @@ Published to `vote.cast`.
 }
 ```
 
-| Field     | Type         | Description                       |
-|-----------|--------------|-----------------------------------|
-| voteId    | UUID         | ID of the vote                    |
-| voteType  | String       | `LIKE` or `DISLIKE`            |
-| userId    | UUID         | ID of the voter                   |
-| postId    | UUID or null | Post ID (if post vote)            |
-| commentId | UUID or null | Comment ID (if comment vote)      |
-| timestamp | Instant      | When the event occurred           |
-| eventType | String       | `VOTE_CAST`                       |
+| Field     | Type         | Description                  |
+| --------- | ------------ | ---------------------------- |
+| voteId    | UUID         | ID of the vote               |
+| voteType  | String       | `LIKE` or `DISLIKE`          |
+| userId    | UUID         | ID of the voter              |
+| postId    | UUID or null | Post ID (if post vote)       |
+| commentId | UUID or null | Comment ID (if comment vote) |
+| timestamp | Instant      | When the event occurred      |
+| eventType | String       | `VOTE_CAST`                  |
 
 ### FileUploadEvent
 
@@ -111,15 +111,15 @@ Published to `file.uploaded` and `file.deleted`.
 }
 ```
 
-| Field     | Type    | Description                          |
-|-----------|---------|--------------------------------------|
-| fileId    | UUID    | ID of the file                       |
-| fileName  | String  | Unique file name                     |
+| Field     | Type    | Description                                                                          |
+| --------- | ------- | ------------------------------------------------------------------------------------ |
+| fileId    | UUID    | ID of the file                                                                       |
+| fileName  | String  | Unique file name                                                                     |
 | fileType  | String  | `AVATAR`, `POST_IMAGE`, `POST_VIDEO`, `COMMUNITY_ICON`, `COMMUNITY_HEADER`, `BANNER` |
-| fileSize  | Long    | File size in bytes                   |
-| userId    | UUID    | ID of the uploader                   |
-| timestamp | Instant | When the event occurred              |
-| eventType | String  | `FILE_UPLOADED` or `FILE_DELETED`    |
+| fileSize  | Long    | File size in bytes                                                                   |
+| userId    | UUID    | ID of the uploader                                                                   |
+| timestamp | Instant | When the event occurred                                                              |
+| eventType | String  | `FILE_UPLOADED` or `FILE_DELETED`                                                    |
 
 ---
 
@@ -184,12 +184,12 @@ public Consumer<KafkaEventService.PostEvent> postCreatedConsumer() {
 
 ### Potential Consumers
 
-| Consumer              | Listens To        | Purpose                          |
-|-----------------------|-------------------|----------------------------------|
-| NotificationService   | comment.created   | Notify post author of new reply  |
-| SearchIndexer         | post.created/updated | Update search index           |
-| AnalyticsService      | vote.cast, file.uploaded/deleted | Track engagement and storage metrics |
-| RecommendationEngine  | All topics        | Update user preference model     |
-| AuditLogger           | All topics        | Compliance audit trail           |
-| StorageMonitor        | file.uploaded/deleted | Track S3 storage usage and costs |
-| FreeTierNotifier      | file.uploaded     | Alert users approaching free tier limits |
+| Consumer             | Listens To                       | Purpose                                  |
+| -------------------- | -------------------------------- | ---------------------------------------- |
+| NotificationService  | comment.created                  | Notify post author of new reply          |
+| SearchIndexer        | post.created/updated             | Update search index                      |
+| AnalyticsService     | vote.cast, file.uploaded/deleted | Track engagement and storage metrics     |
+| RecommendationEngine | All topics                       | Update user preference model             |
+| AuditLogger          | All topics                       | Compliance audit trail                   |
+| StorageMonitor       | file.uploaded/deleted            | Track S3 storage usage and costs         |
+| FreeTierNotifier     | file.uploaded                    | Alert users approaching free tier limits |

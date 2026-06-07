@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ModerateContent {
-    String contentType() default "text";
-    boolean enabled() default true;
+  String contentType() default "text";
+
+  boolean enabled() default true;
 }

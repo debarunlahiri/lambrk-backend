@@ -1,7 +1,6 @@
 package com.lambrk.dto;
 
 import com.lambrk.domain.FileUpload;
-
 import java.util.UUID;
 
 public record MediaResponse(
@@ -11,18 +10,16 @@ public record MediaResponse(
     String type,
     String mimeType,
     long fileSize,
-    String altText
-) {
+    String altText) {
 
-    public static MediaResponse from(FileUpload file) {
-        return new MediaResponse(
-            file.getId(),
-            com.lambrk.util.CdnUrlResolver.resolve(file.getFileUrl()),
-            com.lambrk.util.CdnUrlResolver.resolve(file.getThumbnailUrl()),
-            file.getType().name(),
-            file.getMimeType(),
-            file.getFileSize(),
-            file.getAltText()
-        );
-    }
+  public static MediaResponse from(FileUpload file) {
+    return new MediaResponse(
+        file.getId(),
+        com.lambrk.util.CdnUrlResolver.resolve(file.getFileUrl()),
+        com.lambrk.util.CdnUrlResolver.resolve(file.getThumbnailUrl()),
+        file.getType().name(),
+        file.getMimeType(),
+        file.getFileSize(),
+        file.getAltText());
+  }
 }

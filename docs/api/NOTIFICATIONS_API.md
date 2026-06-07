@@ -3,6 +3,7 @@
 Base path: `/api/notifications`. JWT required.
 
 > **Auto-generated notifications:** Some notifications are created automatically by the system and do not need to be sent manually:
+>
 > - `COMMENT_REPLY` — sent when someone replies to your comment via `POST /api/comments/{commentId}/reply`.
 > - `COMMENT_MENTION` — sent when someone tags you with `@username` in a comment or reply.
 > - `USER_FOLLOW` — sent when another user follows you.
@@ -11,20 +12,20 @@ Base path: `/api/notifications`. JWT required.
 
 ## Notification Types
 
-| Type | Created by | Recipient | Related user | Action URL |
-|------|------------|-----------|--------------|------------|
-| `COMMENT_REPLY` | Reply creation | Parent comment author or post author | Reply author | `/posts/{postId}#comment-{commentId}` |
-| `POST_LIKE` | Post like | Post author | Voter | `/posts/{postId}` |
-| `COMMENT_LIKE` | Comment like | Comment author | Voter | Comment/post deeplink |
-| `POST_MENTION` | Post mention | Mentioned user | Mention author | Post deeplink |
-| `COMMENT_MENTION` | Comment mention | Mentioned user | Mention author | Comment deeplink |
-| `USER_FOLLOW` | `POST /api/users/{userId}/follow` | Followed user | Follower | `/users/{followerUsername}` |
-| `FRIEND_REQUEST` | `POST /api/users/{userId}/friend-request` | Request addressee | Requester | `/users/{requesterUsername}` |
-| `FRIEND_REQUEST_ACCEPTED` | `POST /api/users/{userId}/friend-request/accept` | Original requester | User who accepted | `/users/{acceptedByUsername}` |
-| `COMMUNITY_INVITE` | Community workflows | Invited user | Inviter | Community deeplink |
-| `MODERATOR_ACTION` | Moderation workflows | Affected user | Moderator | Moderation target |
-| `SYSTEM_ANNOUNCEMENT` | System workflows | Target user | None | Optional |
-| `CONTENT_MODERATION` | Moderation workflows | Affected user | Moderator/system | Moderation target |
+| Type                      | Created by                                       | Recipient                            | Related user      | Action URL                            |
+| ------------------------- | ------------------------------------------------ | ------------------------------------ | ----------------- | ------------------------------------- |
+| `COMMENT_REPLY`           | Reply creation                                   | Parent comment author or post author | Reply author      | `/posts/{postId}#comment-{commentId}` |
+| `POST_LIKE`               | Post like                                        | Post author                          | Voter             | `/posts/{postId}`                     |
+| `COMMENT_LIKE`            | Comment like                                     | Comment author                       | Voter             | Comment/post deeplink                 |
+| `POST_MENTION`            | Post mention                                     | Mentioned user                       | Mention author    | Post deeplink                         |
+| `COMMENT_MENTION`         | Comment mention                                  | Mentioned user                       | Mention author    | Comment deeplink                      |
+| `USER_FOLLOW`             | `POST /api/users/{userId}/follow`                | Followed user                        | Follower          | `/users/{followerUsername}`           |
+| `FRIEND_REQUEST`          | `POST /api/users/{userId}/friend-request`        | Request addressee                    | Requester         | `/users/{requesterUsername}`          |
+| `FRIEND_REQUEST_ACCEPTED` | `POST /api/users/{userId}/friend-request/accept` | Original requester                   | User who accepted | `/users/{acceptedByUsername}`         |
+| `COMMUNITY_INVITE`        | Community workflows                              | Invited user                         | Inviter           | Community deeplink                    |
+| `MODERATOR_ACTION`        | Moderation workflows                             | Affected user                        | Moderator         | Moderation target                     |
+| `SYSTEM_ANNOUNCEMENT`     | System workflows                                 | Target user                          | None              | Optional                              |
+| `CONTENT_MODERATION`      | Moderation workflows                             | Affected user                        | Moderator/system  | Moderation target                     |
 
 ---
 
@@ -36,19 +37,19 @@ Create notification.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `type` | Body | string | **Yes** | Notification type. See Notification Types above. |
-| `recipientId` | Body | UUID | **Yes** | Target user UUID |
-| `title` | Body | string | **Yes** | Notification title |
-| `message` | Body | string | **Yes** | Notification body |
-| `relatedPostId` | Body | UUID | No | Linked post UUID |
-| `relatedCommentId` | Body | UUID | No | Linked comment UUID |
-| `relatedUserId` | Body | UUID | No | Linked user UUID |
-| `actionUrl` | Body | string | No | Deeplink URL |
-| `actionText` | Body | string | No | Button label |
-| `isRead` | Body | boolean | No | `false` |
+| Parameter          | Location | Type    | Required | Description                                      |
+| ------------------ | -------- | ------- | -------- | ------------------------------------------------ |
+| `Authorization`    | Header   | string  | **Yes**  | `Bearer <jwt>`                                   |
+| `type`             | Body     | string  | **Yes**  | Notification type. See Notification Types above. |
+| `recipientId`      | Body     | UUID    | **Yes**  | Target user UUID                                 |
+| `title`            | Body     | string  | **Yes**  | Notification title                               |
+| `message`          | Body     | string  | **Yes**  | Notification body                                |
+| `relatedPostId`    | Body     | UUID    | No       | Linked post UUID                                 |
+| `relatedCommentId` | Body     | UUID    | No       | Linked comment UUID                              |
+| `relatedUserId`    | Body     | UUID    | No       | Linked user UUID                                 |
+| `actionUrl`        | Body     | string  | No       | Deeplink URL                                     |
+| `actionText`       | Body     | string  | No       | Button label                                     |
+| `isRead`           | Body     | boolean | No       | `false`                                          |
 
 **Request body**
 
@@ -69,10 +70,10 @@ Create notification.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `NotificationResponse` | Created notification |
-| `401` | error | JWT missing or invalid |
+| Status | Body                   | Description            |
+| ------ | ---------------------- | ---------------------- |
+| `200`  | `NotificationResponse` | Created notification   |
+| `401`  | error                  | JWT missing or invalid |
 
 **cURL**
 
@@ -127,20 +128,20 @@ Get notifications.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description    |
+| --------------- | -------- | ------- | -------- | ------- | -------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` |
+| `page`          | Query    | integer | No       | `0`     | Page number    |
+| `size`          | Query    | integer | No       | `20`    | Page size      |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<NotificationResponse>` | Paginated notifications |
-| `401` | error | JWT missing or invalid |
+| Status | Body                         | Description             |
+| ------ | ---------------------------- | ----------------------- |
+| `200`  | `Page<NotificationResponse>` | Paginated notifications |
+| `401`  | error                        | JWT missing or invalid  |
 
 **cURL**
 
@@ -175,20 +176,20 @@ Get unread notifications.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description    |
+| --------------- | -------- | ------- | -------- | ------- | -------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` |
+| `page`          | Query    | integer | No       | `0`     | Page number    |
+| `size`          | Query    | integer | No       | `20`    | Page size      |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<NotificationResponse>` | Unread notifications |
-| `401` | error | JWT missing or invalid |
+| Status | Body                         | Description            |
+| ------ | ---------------------------- | ---------------------- |
+| `200`  | `Page<NotificationResponse>` | Unread notifications   |
+| `401`  | error                        | JWT missing or invalid |
 
 **cURL**
 
@@ -223,20 +224,20 @@ Mark one notification read.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `notificationId` | Path | UUID | **Yes** | Notification UUID |
+| Parameter        | Location | Type   | Required | Description       |
+| ---------------- | -------- | ------ | -------- | ----------------- |
+| `Authorization`  | Header   | string | **Yes**  | `Bearer <jwt>`    |
+| `notificationId` | Path     | UUID   | **Yes**  | Notification UUID |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | empty | Marked as read |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Notification not found |
+| Status | Body  | Description            |
+| ------ | ----- | ---------------------- |
+| `200`  | empty | Marked as read         |
+| `401`  | error | JWT missing or invalid |
+| `404`  | error | Notification not found |
 
 **cURL**
 
@@ -259,18 +260,18 @@ Mark all notifications read.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| Parameter       | Location | Type   | Required | Description    |
+| --------------- | -------- | ------ | -------- | -------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>` |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | empty | All marked as read |
-| `401` | error | JWT missing or invalid |
+| Status | Body  | Description            |
+| ------ | ----- | ---------------------- |
+| `200`  | empty | All marked as read     |
+| `401`  | error | JWT missing or invalid |
 
 **cURL**
 
@@ -293,20 +294,20 @@ Delete notification.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `notificationId` | Path | UUID | **Yes** | Notification UUID |
+| Parameter        | Location | Type   | Required | Description       |
+| ---------------- | -------- | ------ | -------- | ----------------- |
+| `Authorization`  | Header   | string | **Yes**  | `Bearer <jwt>`    |
+| `notificationId` | Path     | UUID   | **Yes**  | Notification UUID |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `204` | empty | Notification deleted |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Notification not found |
+| Status | Body  | Description            |
+| ------ | ----- | ---------------------- |
+| `204`  | empty | Notification deleted   |
+| `401`  | error | JWT missing or invalid |
+| `404`  | error | Notification not found |
 
 **cURL**
 
@@ -329,18 +330,18 @@ Delete all notifications.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| Parameter       | Location | Type   | Required | Description    |
+| --------------- | -------- | ------ | -------- | -------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>` |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `204` | empty | All notifications deleted |
-| `401` | error | JWT missing or invalid |
+| Status | Body  | Description               |
+| ------ | ----- | ------------------------- |
+| `204`  | empty | All notifications deleted |
+| `401`  | error | JWT missing or invalid    |
 
 **cURL**
 
@@ -363,18 +364,18 @@ Get unread count.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| Parameter       | Location | Type   | Required | Description    |
+| --------------- | -------- | ------ | -------- | -------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>` |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | integer | Unread notification count |
-| `401` | error | JWT missing or invalid |
+| Status | Body    | Description               |
+| ------ | ------- | ------------------------- |
+| `200`  | integer | Unread notification count |
+| `401`  | error   | JWT missing or invalid    |
 
 **cURL**
 
@@ -399,21 +400,21 @@ Get notifications by type. Current implementation returns an empty page.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `type` | Path | string | **Yes** | — | Notification type |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description       |
+| --------------- | -------- | ------- | -------- | ------- | ----------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>`    |
+| `type`          | Path     | string  | **Yes**  | —       | Notification type |
+| `page`          | Query    | integer | No       | `0`     | Page number       |
+| `size`          | Query    | integer | No       | `20`    | Page size         |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<NotificationResponse>` | Notifications of the given type |
-| `401` | error | JWT missing or invalid |
+| Status | Body                         | Description                     |
+| ------ | ---------------------------- | ------------------------------- |
+| `200`  | `Page<NotificationResponse>` | Notifications of the given type |
+| `401`  | error                        | JWT missing or invalid          |
 
 **cURL**
 

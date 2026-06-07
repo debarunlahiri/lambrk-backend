@@ -12,17 +12,17 @@ Create a community.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `name` | Body | string | **Yes** | Unique URL-friendly name |
-| `title` | Body | string | **Yes** | Display title |
-| `description` | Body | string | No | Community description |
-| `sidebarText` | Body | string | No | Sidebar rules/content |
-| `isPublic` | Body | boolean | No | `true` |
-| `isRestricted` | Body | boolean | No | `false` |
-| `isOver18` | Body | boolean | No | `false` |
-| `categoryIds` | Body | array | No | List of category UUIDs |
+| Parameter       | Location | Type    | Required | Description              |
+| --------------- | -------- | ------- | -------- | ------------------------ |
+| `Authorization` | Header   | string  | **Yes**  | `Bearer <jwt>`           |
+| `name`          | Body     | string  | **Yes**  | Unique URL-friendly name |
+| `title`         | Body     | string  | **Yes**  | Display title            |
+| `description`   | Body     | string  | No       | Community description    |
+| `sidebarText`   | Body     | string  | No       | Sidebar rules/content    |
+| `isPublic`      | Body     | boolean | No       | `true`                   |
+| `isRestricted`  | Body     | boolean | No       | `false`                  |
+| `isOver18`      | Body     | boolean | No       | `false`                  |
+| `categoryIds`   | Body     | array   | No       | List of category UUIDs   |
 
 **Request body**
 
@@ -41,11 +41,11 @@ Create a community.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `CommunityResponse` | Created community |
-| `401` | error | JWT missing or invalid |
-| `409` | error | Duplicate community name |
+| Status | Body                | Description              |
+| ------ | ------------------- | ------------------------ |
+| `200`  | `CommunityResponse` | Created community        |
+| `401`  | error               | JWT missing or invalid   |
+| `409`  | error               | Duplicate community name |
 
 **cURL**
 
@@ -126,20 +126,20 @@ List public communities.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `page` | Query | integer | No | `0` | Zero-based page index |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description           |
+| --------------- | -------- | ------- | -------- | ------- | --------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>`        |
+| `page`          | Query    | integer | No       | `0`     | Zero-based page index |
+| `size`          | Query    | integer | No       | `20`    | Page size             |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<CommunityResponse>` | Paginated communities |
-| `401` | error | JWT missing or invalid |
+| Status | Body                      | Description            |
+| ------ | ------------------------- | ---------------------- |
+| `200`  | `Page<CommunityResponse>` | Paginated communities  |
+| `401`  | error                     | JWT missing or invalid |
 
 **cURL**
 
@@ -174,20 +174,20 @@ Get community by id.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `communityId` | Path | UUID | **Yes** | UUID of the community |
+| Parameter       | Location | Type   | Required | Description           |
+| --------------- | -------- | ------ | -------- | --------------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`        |
+| `communityId`   | Path     | UUID   | **Yes**  | UUID of the community |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `CommunityResponse` | Community details |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Community not found |
+| Status | Body                | Description            |
+| ------ | ------------------- | ---------------------- |
+| `200`  | `CommunityResponse` | Community details      |
+| `401`  | error               | JWT missing or invalid |
+| `404`  | error               | Community not found    |
 
 **cURL**
 
@@ -257,20 +257,20 @@ Get community by name.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `name` | Path | string | **Yes** | Community name (URL slug) |
+| Parameter       | Location | Type   | Required | Description               |
+| --------------- | -------- | ------ | -------- | ------------------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`            |
+| `name`          | Path     | string | **Yes**  | Community name (URL slug) |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `CommunityResponse` | Community details |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Community not found |
+| Status | Body                | Description            |
+| ------ | ------------------- | ---------------------- |
+| `200`  | `CommunityResponse` | Community details      |
+| `401`  | error               | JWT missing or invalid |
+| `404`  | error               | Community not found    |
 
 **cURL**
 
@@ -340,20 +340,20 @@ List trending communities.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `page` | Query | integer | No | `0` | Zero-based page index |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description           |
+| --------------- | -------- | ------- | -------- | ------- | --------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>`        |
+| `page`          | Query    | integer | No       | `0`     | Zero-based page index |
+| `size`          | Query    | integer | No       | `20`    | Page size             |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<CommunityResponse>` | Paginated trending communities |
-| `401` | error | JWT missing or invalid |
+| Status | Body                      | Description                    |
+| ------ | ------------------------- | ------------------------------ |
+| `200`  | `Page<CommunityResponse>` | Paginated trending communities |
+| `401`  | error                     | JWT missing or invalid         |
 
 **cURL**
 
@@ -388,21 +388,21 @@ Search communities.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `query` | Query | string | **Yes** | — | Search text |
-| `page` | Query | integer | No | `0` | Zero-based page index |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description           |
+| --------------- | -------- | ------- | -------- | ------- | --------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>`        |
+| `query`         | Query    | string  | **Yes**  | —       | Search text           |
+| `page`          | Query    | integer | No       | `0`     | Zero-based page index |
+| `size`          | Query    | integer | No       | `20`    | Page size             |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<CommunityResponse>` | Paginated search results |
-| `401` | error | JWT missing or invalid |
+| Status | Body                      | Description              |
+| ------ | ------------------------- | ------------------------ |
+| `200`  | `Page<CommunityResponse>` | Paginated search results |
+| `401`  | error                     | JWT missing or invalid   |
 
 **cURL**
 
@@ -437,18 +437,18 @@ Update community.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `communityId` | Path | UUID | **Yes** | UUID of the community |
-| `name` | Body | string | No | Community name |
-| `title` | Body | string | No | Display title |
-| `description` | Body | string | No | Description |
-| `sidebarText` | Body | string | No | Sidebar content |
-| `isPublic` | Body | boolean | No | Visibility flag |
-| `isRestricted` | Body | boolean | No | Restriction flag |
-| `isOver18` | Body | boolean | No | NSFW flag |
-| `categoryIds` | Body | array | No | List of category UUIDs |
+| Parameter       | Location | Type    | Required | Description            |
+| --------------- | -------- | ------- | -------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | `Bearer <jwt>`         |
+| `communityId`   | Path     | UUID    | **Yes**  | UUID of the community  |
+| `name`          | Body     | string  | No       | Community name         |
+| `title`         | Body     | string  | No       | Display title          |
+| `description`   | Body     | string  | No       | Description            |
+| `sidebarText`   | Body     | string  | No       | Sidebar content        |
+| `isPublic`      | Body     | boolean | No       | Visibility flag        |
+| `isRestricted`  | Body     | boolean | No       | Restriction flag       |
+| `isOver18`      | Body     | boolean | No       | NSFW flag              |
+| `categoryIds`   | Body     | array   | No       | List of category UUIDs |
 
 **Request body**
 
@@ -467,12 +467,12 @@ Update community.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `CommunityResponse` | Updated community |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not a moderator/admin |
-| `404` | error | Community not found |
+| Status | Body                | Description            |
+| ------ | ------------------- | ---------------------- |
+| `200`  | `CommunityResponse` | Updated community      |
+| `401`  | error               | JWT missing or invalid |
+| `403`  | error               | Not a moderator/admin  |
+| `404`  | error               | Community not found    |
 
 **cURL**
 
@@ -553,20 +553,20 @@ Subscribe current user. Returns the updated community with `isUserSubscribed: tr
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `communityId` | Path | UUID | **Yes** | UUID of the community |
+| Parameter       | Location | Type   | Required | Description           |
+| --------------- | -------- | ------ | -------- | --------------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`        |
+| `communityId`   | Path     | UUID   | **Yes**  | UUID of the community |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `CommunityResponse` | Updated community |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Community not found |
+| Status | Body                | Description            |
+| ------ | ------------------- | ---------------------- |
+| `200`  | `CommunityResponse` | Updated community      |
+| `401`  | error               | JWT missing or invalid |
+| `404`  | error               | Community not found    |
 
 **cURL**
 
@@ -622,20 +622,20 @@ Unsubscribe current user. Returns the updated community with `isUserSubscribed: 
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `communityId` | Path | UUID | **Yes** | UUID of the community |
+| Parameter       | Location | Type   | Required | Description           |
+| --------------- | -------- | ------ | -------- | --------------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`        |
+| `communityId`   | Path     | UUID   | **Yes**  | UUID of the community |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `CommunityResponse` | Updated community |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Community not found |
+| Status | Body                | Description            |
+| ------ | ------------------- | ---------------------- |
+| `200`  | `CommunityResponse` | Updated community      |
+| `401`  | error               | JWT missing or invalid |
+| `404`  | error               | Community not found    |
 
 **cURL**
 
@@ -691,18 +691,18 @@ Get current user subscriptions.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| Parameter       | Location | Type   | Required | Description    |
+| --------------- | -------- | ------ | -------- | -------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>` |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `List<CommunityResponse>` | Subscribed communities |
-| `401` | error | JWT missing or invalid |
+| Status | Body                      | Description            |
+| ------ | ------------------------- | ---------------------- |
+| `200`  | `List<CommunityResponse>` | Subscribed communities |
+| `401`  | error                     | JWT missing or invalid |
 
 **cURL**
 

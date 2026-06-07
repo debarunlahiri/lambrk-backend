@@ -12,20 +12,21 @@ Upload files with metadata. Supports bulk upload (up to 20 files, 5MB each).
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `files` | Body | multipart | **Yes** | — | Up to 20 files |
-| `type` | Body | string | **Yes** | — | `POST_IMAGE`, `POST_VIDEO`, `AVATAR`, `COMMUNITY_BANNER`, `COMMUNITY_ICON`, `PROFILE_IMAGE`, `COVER_IMAGE` |
-| `fileName` | Body | string | No | — | Custom filename |
-| `description` | Body | string | No | — | File description |
-| `isPublic` | Body | boolean | No | `true` | Public visibility |
-| `isNSFW` | Body | boolean | No | `false` | NSFW flag |
-| `altText` | Body | string | No | — | Accessibility alt text |
+| Parameter       | Location | Type      | Required | Default | Description                                                                                                |
+| --------------- | -------- | --------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------- |
+| `Authorization` | Header   | string    | **Yes**  | —       | `Bearer <jwt>`                                                                                             |
+| `files`         | Body     | multipart | **Yes**  | —       | Up to 20 files                                                                                             |
+| `type`          | Body     | string    | **Yes**  | —       | `POST_IMAGE`, `POST_VIDEO`, `AVATAR`, `COMMUNITY_BANNER`, `COMMUNITY_ICON`, `PROFILE_IMAGE`, `COVER_IMAGE` |
+| `fileName`      | Body     | string    | No       | —       | Custom filename                                                                                            |
+| `description`   | Body     | string    | No       | —       | File description                                                                                           |
+| `isPublic`      | Body     | boolean   | No       | `true`  | Public visibility                                                                                          |
+| `isNSFW`        | Body     | boolean   | No       | `false` | NSFW flag                                                                                                  |
+| `altText`       | Body     | string    | No       | —       | Accessibility alt text                                                                                     |
 
 **Request body**
 
 `multipart/form-data` fields:
+
 - `files` (required, up to 20 files)
 - `type` (required: `POST_IMAGE`, `POST_VIDEO`, `AVATAR`, `COMMUNITY_BANNER`, `COMMUNITY_ICON`, `PROFILE_IMAGE`, `COVER_IMAGE`)
 - `fileName` (optional)
@@ -36,19 +37,19 @@ Upload files with metadata. Supports bulk upload (up to 20 files, 5MB each).
 
 **S3 folder structure**
 
-| Type | Main path | Thumbnail path |
-| --- | --- | --- |
-| `POST_IMAGE` | `lambrk/posts/media/image/main/{photo_id}.ext` | `lambrk/posts/media/image/thumb/{photo_id}.jpg` |
+| Type            | Main path                                                             | Thumbnail path                                                         |
+| --------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `POST_IMAGE`    | `lambrk/posts/media/image/main/{photo_id}.ext`                        | `lambrk/posts/media/image/thumb/{photo_id}.jpg`                        |
 | `PROFILE_IMAGE` | `lambrk/profile/profile_img/{user_id}/{photo_id}/main/{photo_id}.ext` | `lambrk/profile/profile_img/{user_id}/{photo_id}/thumb/{photo_id}.jpg` |
-| `COVER_IMAGE` | `lambrk/profile/cover_img/{user_id}/{photo_id}/main/{photo_id}.ext` | `lambrk/profile/cover_img/{user_id}/{photo_id}/thumb/{photo_id}.jpg` |
+| `COVER_IMAGE`   | `lambrk/profile/cover_img/{user_id}/{photo_id}/main/{photo_id}.ext`   | `lambrk/profile/cover_img/{user_id}/{photo_id}/thumb/{photo_id}.jpg`   |
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `List<FileResponse>` | Uploaded file metadata |
-| `401` | error | JWT missing or invalid |
-| `400` | error | Validation or size limit exceeded |
+| Status | Body                 | Description                       |
+| ------ | -------------------- | --------------------------------- |
+| `200`  | `List<FileResponse>` | Uploaded file metadata            |
+| `401`  | error                | JWT missing or invalid            |
+| `400`  | error                | Validation or size limit exceeded |
 
 **cURL — Post images**
 
@@ -116,20 +117,20 @@ Get file metadata.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `fileId` | Path | UUID | **Yes** | File UUID |
+| Parameter       | Location | Type   | Required | Description    |
+| --------------- | -------- | ------ | -------- | -------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>` |
+| `fileId`        | Path     | UUID   | **Yes**  | File UUID      |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `FileResponse` | File metadata |
-| `401` | error | JWT missing or invalid |
-| `404` | error | File not found |
+| Status | Body           | Description            |
+| ------ | -------------- | ---------------------- |
+| `200`  | `FileResponse` | File metadata          |
+| `401`  | error          | JWT missing or invalid |
+| `404`  | error          | File not found         |
 
 **cURL**
 
@@ -170,20 +171,20 @@ Download file content.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `fileId` | Path | UUID | **Yes** | File UUID |
+| Parameter       | Location | Type   | Required | Description    |
+| --------------- | -------- | ------ | -------- | -------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>` |
+| `fileId`        | Path     | UUID   | **Yes**  | File UUID      |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | binary | File content with `Content-Disposition` |
-| `401` | error | JWT missing or invalid |
-| `404` | error | File not found |
+| Status | Body   | Description                             |
+| ------ | ------ | --------------------------------------- |
+| `200`  | binary | File content with `Content-Disposition` |
+| `401`  | error  | JWT missing or invalid                  |
+| `404`  | error  | File not found                          |
 
 **cURL**
 
@@ -206,20 +207,20 @@ Get current user files.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description    |
+| --------------- | -------- | ------- | -------- | ------- | -------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` |
+| `page`          | Query    | integer | No       | `0`     | Page number    |
+| `size`          | Query    | integer | No       | `20`    | Page size      |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<FileResponse>` | Paginated user files |
-| `401` | error | JWT missing or invalid |
+| Status | Body                 | Description            |
+| ------ | -------------------- | ---------------------- |
+| `200`  | `Page<FileResponse>` | Paginated user files   |
+| `401`  | error                | JWT missing or invalid |
 
 **cURL**
 
@@ -254,21 +255,21 @@ Get files by type.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `type` | Path | string | **Yes** | — | File type |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description    |
+| --------------- | -------- | ------- | -------- | ------- | -------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` |
+| `type`          | Path     | string  | **Yes**  | —       | File type      |
+| `page`          | Query    | integer | No       | `0`     | Page number    |
+| `size`          | Query    | integer | No       | `20`    | Page size      |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<FileResponse>` | Paginated files of the type |
-| `401` | error | JWT missing or invalid |
+| Status | Body                 | Description                 |
+| ------ | -------------------- | --------------------------- |
+| `200`  | `Page<FileResponse>` | Paginated files of the type |
+| `401`  | error                | JWT missing or invalid      |
 
 **cURL**
 
@@ -303,20 +304,20 @@ Get public post image files.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description    |
+| --------------- | -------- | ------- | -------- | ------- | -------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` |
+| `page`          | Query    | integer | No       | `0`     | Page number    |
+| `size`          | Query    | integer | No       | `20`    | Page size      |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<FileResponse>` | Public files |
-| `401` | error | JWT missing or invalid |
+| Status | Body                 | Description            |
+| ------ | -------------------- | ---------------------- |
+| `200`  | `Page<FileResponse>` | Public files           |
+| `401`  | error                | JWT missing or invalid |
 
 **cURL**
 
@@ -351,16 +352,16 @@ Update file metadata.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `fileId` | Path | UUID | **Yes** | File UUID |
-| `type` | Body | string | No | File type |
-| `fileName` | Body | string | No | Filename |
-| `description` | Body | string | No | Description |
-| `isPublic` | Body | boolean | No | Visibility |
-| `isNSFW` | Body | boolean | No | NSFW flag |
-| `altText` | Body | string | No | Alt text |
+| Parameter       | Location | Type    | Required | Description    |
+| --------------- | -------- | ------- | -------- | -------------- |
+| `Authorization` | Header   | string  | **Yes**  | `Bearer <jwt>` |
+| `fileId`        | Path     | UUID    | **Yes**  | File UUID      |
+| `type`          | Body     | string  | No       | File type      |
+| `fileName`      | Body     | string  | No       | Filename       |
+| `description`   | Body     | string  | No       | Description    |
+| `isPublic`      | Body     | boolean | No       | Visibility     |
+| `isNSFW`        | Body     | boolean | No       | NSFW flag      |
+| `altText`       | Body     | string  | No       | Alt text       |
 
 **Request body**
 
@@ -377,12 +378,12 @@ Update file metadata.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `FileResponse` | Updated file metadata |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not the owner |
-| `404` | error | File not found |
+| Status | Body           | Description            |
+| ------ | -------------- | ---------------------- |
+| `200`  | `FileResponse` | Updated file metadata  |
+| `401`  | error          | JWT missing or invalid |
+| `403`  | error          | Not the owner          |
+| `404`  | error          | File not found         |
 
 **cURL**
 
@@ -432,21 +433,21 @@ Delete file.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `fileId` | Path | UUID | **Yes** | File UUID |
+| Parameter       | Location | Type   | Required | Description    |
+| --------------- | -------- | ------ | -------- | -------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>` |
+| `fileId`        | Path     | UUID   | **Yes**  | File UUID      |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `204` | empty | File deleted |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not the owner |
-| `404` | error | File not found |
+| Status | Body  | Description            |
+| ------ | ----- | ---------------------- |
+| `204`  | empty | File deleted           |
+| `401`  | error | JWT missing or invalid |
+| `403`  | error | Not the owner          |
+| `404`  | error | File not found         |
 
 **cURL**
 
@@ -469,18 +470,18 @@ Get placeholder file stats.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| Parameter       | Location | Type   | Required | Description    |
+| --------------- | -------- | ------ | -------- | -------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>` |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `FileStats` | File statistics |
-| `401` | error | JWT missing or invalid |
+| Status | Body        | Description            |
+| ------ | ----------- | ---------------------- |
+| `200`  | `FileStats` | File statistics        |
+| `401`  | error       | JWT missing or invalid |
 
 **cURL**
 
@@ -492,7 +493,13 @@ curl -X GET 'http://localhost:9500/api/files/stats' \
 **Response**
 
 ```json
-{"totalFiles":0,"totalSize":0,"imageCount":0,"videoCount":0,"avatarCount":0}
+{
+  "totalFiles": 0,
+  "totalSize": 0,
+  "imageCount": 0,
+  "videoCount": 0,
+  "avatarCount": 0
+}
 ```
 
 ---
@@ -505,20 +512,20 @@ Search files. Current implementation returns an empty list.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `query` | Query | string | **Yes** | — | Search text |
-| `limit` | Query | integer | No | `20` | Max results |
+| Parameter       | Location | Type    | Required | Default | Description    |
+| --------------- | -------- | ------- | -------- | ------- | -------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` |
+| `query`         | Query    | string  | **Yes**  | —       | Search text    |
+| `limit`         | Query    | integer | No       | `20`    | Max results    |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `List<FileResponse>` | Search results |
-| `401` | error | JWT missing or invalid |
+| Status | Body                 | Description            |
+| ------ | -------------------- | ---------------------- |
+| `200`  | `List<FileResponse>` | Search results         |
+| `401`  | error                | JWT missing or invalid |
 
 **cURL**
 
@@ -543,19 +550,19 @@ Get recent files. Current implementation returns an empty list.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `limit` | Query | integer | No | `10` | Max results |
+| Parameter       | Location | Type    | Required | Default | Description    |
+| --------------- | -------- | ------- | -------- | ------- | -------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` |
+| `limit`         | Query    | integer | No       | `10`    | Max results    |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `List<FileResponse>` | Recent files |
-| `401` | error | JWT missing or invalid |
+| Status | Body                 | Description            |
+| ------ | -------------------- | ---------------------- |
+| `200`  | `List<FileResponse>` | Recent files           |
+| `401`  | error                | JWT missing or invalid |
 
 **cURL**
 

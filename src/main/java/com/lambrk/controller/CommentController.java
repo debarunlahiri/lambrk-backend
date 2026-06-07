@@ -1,5 +1,6 @@
 package com.lambrk.controller;
 
+import com.lambrk.config.UserPrincipal;
 import com.lambrk.dto.CommentCreateRequest;
 import com.lambrk.dto.CommentResponse;
 import com.lambrk.service.CommentService;
@@ -8,6 +9,8 @@ import io.micrometer.core.annotation.Timed;
 import io.micrometer.tracing.annotation.NewSpan;
 import io.micrometer.tracing.annotation.SpanTag;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,119 +19,115 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.lambrk.config.UserPrincipal;
-
-import java.util.List;
-import java.util.UUID;
-
 @RestController
 @RequestMapping("/api/comments")
 public class CommentController {
 
-    private final CommentService commentService;
+  private final CommentService commentService;
 
-    public CommentController(CommentService commentService) {
-        this.commentService = commentService;
-    }
+  public CommentController(CommentService commentService) {
+    this.commentService = commentService;
+  }
 
-    @PostMapping
-    @NewSpan("create-comment")
-    @Counted(value = "comments.created")
-    @Timed(value = "comments.create.duration")
-    public ResponseEntity<CommentResponse> createComment(
-            @Valid @RequestBody CommentCreateRequest request,
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        UUID authorId = getUserId(userDetails);
-        return ResponseEntity.ok(commentService.createComment(request, authorId));
-    }
+  @PostMapping
+  @NewSpan("create-comment")
+  @Counted(value = "comments.created")
+  @Timed(value = "comments.create.duration")
+  public ResponseEntity<CommentResponse> createComment(
+      @Valid @RequestBody CommentCreateRequest request,
+      @AuthenticationPrincipal UserPrincipal userDetails) {
+    UUID authorId = getUserId(userDetails);
+    return ResponseEntity.ok(commentService.createComment(request, authorId));
+  }
 
-    @PostMapping("/{commentId}/reply")
-    @NewSpan("create-reply")
-    @Counted(value = "comments.replies.created")
-    @Timed(value = "comments.reply.duration")
-    public ResponseEntity<CommentResponse> createReply(
-            @PathVariable @SpanTag UUID commentId,
-            @RequestBody String content,
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        UUID authorId = getUserId(userDetails);
-        return ResponseEntity.ok(commentService.createReply(commentId, content, authorId));
-    }
+  @PostMapping("/{commentId}/reply")
+  @NewSpan("create-reply")
+  @Counted(value = "comments.replies.created")
+  @Timed(value = "comments.reply.duration")
+  public ResponseEntity<CommentResponse> createReply(
+      @PathVariable @SpanTag UUID commentId,
+      @RequestBody String content,
+      @AuthenticationPrincipal UserPrincipal userDetails) {
+    UUID authorId = getUserId(userDetails);
+    return ResponseEntity.ok(commentService.createReply(commentId, content, authorId));
+  }
 
-    @GetMapping("/{commentId}")
-    @NewSpan("get-comment")
-    @Timed(value = "comments.get.duration")
-    public ResponseEntity<CommentResponse> getComment(
-            @PathVariable @SpanTag UUID commentId,
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        return ResponseEntity.ok(commentService.getComment(commentId, getUserId(userDetails)));
-    }
+  @GetMapping("/{commentId}")
+  @NewSpan("get-comment")
+  @Timed(value = "comments.get.duration")
+  public ResponseEntity<CommentResponse> getComment(
+      @PathVariable @SpanTag UUID commentId, @AuthenticationPrincipal UserPrincipal userDetails) {
+    return ResponseEntity.ok(commentService.getComment(commentId, getUserId(userDetails)));
+  }
 
-    @GetMapping("/post/{postId}")
-    @NewSpan("get-post-comments")
-    @Timed(value = "comments.post.duration")
-    public ResponseEntity<Page<CommentResponse>> getCommentsByPost(
-            @PathVariable @SpanTag UUID postId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "score"));
-        return ResponseEntity.ok(commentService.getCommentsByPost(postId, pageable, getUserId(userDetails)));
-    }
+  @GetMapping("/post/{postId}")
+  @NewSpan("get-post-comments")
+  @Timed(value = "comments.post.duration")
+  public ResponseEntity<Page<CommentResponse>> getCommentsByPost(
+      @PathVariable @SpanTag UUID postId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @AuthenticationPrincipal UserPrincipal userDetails) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "score"));
+    return ResponseEntity.ok(
+        commentService.getCommentsByPost(postId, pageable, getUserId(userDetails)));
+  }
 
-    @GetMapping("/{commentId}/replies")
-    @NewSpan("get-comment-replies")
-    @Timed(value = "comments.replies.duration")
-    public ResponseEntity<List<CommentResponse>> getReplies(
-            @PathVariable @SpanTag UUID commentId,
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        return ResponseEntity.ok(commentService.getReplies(commentId, getUserId(userDetails)));
-    }
+  @GetMapping("/{commentId}/replies")
+  @NewSpan("get-comment-replies")
+  @Timed(value = "comments.replies.duration")
+  public ResponseEntity<List<CommentResponse>> getReplies(
+      @PathVariable @SpanTag UUID commentId, @AuthenticationPrincipal UserPrincipal userDetails) {
+    return ResponseEntity.ok(commentService.getReplies(commentId, getUserId(userDetails)));
+  }
 
-    @GetMapping("/user/{userId}")
-    @NewSpan("get-user-comments")
-    @Timed(value = "comments.user.duration")
-    public ResponseEntity<Page<CommentResponse>> getCommentsByUser(
-            @PathVariable @SpanTag UUID userId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return ResponseEntity.ok(commentService.getCommentsByUser(userId, pageable, getUserId(userDetails)));
-    }
+  @GetMapping("/user/{userId}")
+  @NewSpan("get-user-comments")
+  @Timed(value = "comments.user.duration")
+  public ResponseEntity<Page<CommentResponse>> getCommentsByUser(
+      @PathVariable @SpanTag UUID userId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @AuthenticationPrincipal UserPrincipal userDetails) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+    return ResponseEntity.ok(
+        commentService.getCommentsByUser(userId, pageable, getUserId(userDetails)));
+  }
 
-    @PutMapping("/{commentId}")
-    @NewSpan("update-comment")
-    @Timed(value = "comments.update.duration")
-    public ResponseEntity<CommentResponse> updateComment(
-            @PathVariable @SpanTag UUID commentId,
-            @RequestBody String newContent,
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        return ResponseEntity.ok(commentService.updateComment(commentId, newContent, getUserId(userDetails)));
-    }
+  @PutMapping("/{commentId}")
+  @NewSpan("update-comment")
+  @Timed(value = "comments.update.duration")
+  public ResponseEntity<CommentResponse> updateComment(
+      @PathVariable @SpanTag UUID commentId,
+      @RequestBody String newContent,
+      @AuthenticationPrincipal UserPrincipal userDetails) {
+    return ResponseEntity.ok(
+        commentService.updateComment(commentId, newContent, getUserId(userDetails)));
+  }
 
-    @DeleteMapping("/{commentId}")
-    @NewSpan("delete-comment")
-    @Timed(value = "comments.delete.duration")
-    public ResponseEntity<Void> deleteComment(
-            @PathVariable @SpanTag UUID commentId,
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        commentService.deleteComment(commentId, getUserId(userDetails));
-        return ResponseEntity.noContent().build();
-    }
+  @DeleteMapping("/{commentId}")
+  @NewSpan("delete-comment")
+  @Timed(value = "comments.delete.duration")
+  public ResponseEntity<Void> deleteComment(
+      @PathVariable @SpanTag UUID commentId, @AuthenticationPrincipal UserPrincipal userDetails) {
+    commentService.deleteComment(commentId, getUserId(userDetails));
+    return ResponseEntity.noContent().build();
+  }
 
-    @GetMapping("/search")
-    @NewSpan("search-comments")
-    @Timed(value = "comments.search.duration")
-    public ResponseEntity<Page<CommentResponse>> searchComments(
-            @RequestParam @SpanTag String query,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "score"));
-        return ResponseEntity.ok(commentService.searchComments(query, pageable, getUserId(userDetails)));
-    }
+  @GetMapping("/search")
+  @NewSpan("search-comments")
+  @Timed(value = "comments.search.duration")
+  public ResponseEntity<Page<CommentResponse>> searchComments(
+      @RequestParam @SpanTag String query,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @AuthenticationPrincipal UserPrincipal userDetails) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "score"));
+    return ResponseEntity.ok(
+        commentService.searchComments(query, pageable, getUserId(userDetails)));
+  }
 
-    private UUID getUserId(UserPrincipal userPrincipal) {
-        return userPrincipal != null ? userPrincipal.getUserId() : null;
-    }
+  private UUID getUserId(UserPrincipal userPrincipal) {
+    return userPrincipal != null ? userPrincipal.getUserId() : null;
+  }
 }

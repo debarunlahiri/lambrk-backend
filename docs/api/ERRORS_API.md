@@ -52,19 +52,19 @@ curl -X POST 'http://localhost:9500/api/auth/register' \
 
 ## Error Types
 
-| HTTP | Title | Type suffix | Trigger |
-| --- | --- | --- | --- |
-| 400 | Validation Error | `/errors/validation` | Bean validation failure. |
-| 401 | Authentication Failed | `/errors/bad-credentials` | Bad credentials. |
-| 403 | Access Denied | `/errors/access-denied` | Missing role or denied access. |
-| 403 | Unauthorized Action | `/errors/unauthorized-action` | Domain permission failure. |
-| 404 | Resource Not Found | `/errors/not-found` | Missing entity. |
-| 409 | Duplicate Resource | `/errors/duplicate` | Unique/conflict condition. |
-| 422 | Content Moderation Violation | `/errors/content-moderation` | Moderation rejection. |
-| 429 | Rate Limit Exceeded | `/errors/rate-limit` | Resilience4j rate limiter. |
-| 429 | Bulkhead Full | `/errors/bulkhead` | Too many concurrent requests. |
-| 503 | Service Unavailable | `/errors/circuit-breaker` | Circuit breaker open. |
-| 500 | Internal Server Error | `/errors/internal` | Unhandled exception. |
+| HTTP | Title                        | Type suffix                   | Trigger                        |
+| ---- | ---------------------------- | ----------------------------- | ------------------------------ |
+| 400  | Validation Error             | `/errors/validation`          | Bean validation failure.       |
+| 401  | Authentication Failed        | `/errors/bad-credentials`     | Bad credentials.               |
+| 403  | Access Denied                | `/errors/access-denied`       | Missing role or denied access. |
+| 403  | Unauthorized Action          | `/errors/unauthorized-action` | Domain permission failure.     |
+| 404  | Resource Not Found           | `/errors/not-found`           | Missing entity.                |
+| 409  | Duplicate Resource           | `/errors/duplicate`           | Unique/conflict condition.     |
+| 422  | Content Moderation Violation | `/errors/content-moderation`  | Moderation rejection.          |
+| 429  | Rate Limit Exceeded          | `/errors/rate-limit`          | Resilience4j rate limiter.     |
+| 429  | Bulkhead Full                | `/errors/bulkhead`            | Too many concurrent requests.  |
+| 503  | Service Unavailable          | `/errors/circuit-breaker`     | Circuit breaker open.          |
+| 500  | Internal Server Error        | `/errors/internal`            | Unhandled exception.           |
 
 ## Feed Map Error
 

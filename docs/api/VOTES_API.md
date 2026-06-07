@@ -12,12 +12,12 @@ Vote on a post.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `voteType` | Body | string | **Yes** | `LIKE` or `DISLIKE` |
-| `postId` | Body | UUID | **Yes** | Post UUID |
-| `commentId` | Body | UUID | No | `null` for post votes |
+| Parameter       | Location | Type   | Required | Description           |
+| --------------- | -------- | ------ | -------- | --------------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`        |
+| `voteType`      | Body     | string | **Yes**  | `LIKE` or `DISLIKE`   |
+| `postId`        | Body     | UUID   | **Yes**  | Post UUID             |
+| `commentId`     | Body     | UUID   | No       | `null` for post votes |
 
 **Request body**
 
@@ -31,11 +31,11 @@ Vote on a post.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | empty | Vote recorded |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Post not found |
+| Status | Body  | Description            |
+| ------ | ----- | ---------------------- |
+| `200`  | empty | Vote recorded          |
+| `401`  | error | JWT missing or invalid |
+| `404`  | error | Post not found         |
 
 **cURL**
 
@@ -64,12 +64,12 @@ Vote on a comment.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `voteType` | Body | string | **Yes** | `LIKE` or `DISLIKE` |
-| `postId` | Body | UUID | No | `null` for comment votes |
-| `commentId` | Body | UUID | **Yes** | Comment UUID |
+| Parameter       | Location | Type   | Required | Description              |
+| --------------- | -------- | ------ | -------- | ------------------------ |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`           |
+| `voteType`      | Body     | string | **Yes**  | `LIKE` or `DISLIKE`      |
+| `postId`        | Body     | UUID   | No       | `null` for comment votes |
+| `commentId`     | Body     | UUID   | **Yes**  | Comment UUID             |
 
 **Request body**
 
@@ -83,11 +83,11 @@ Vote on a comment.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | empty | Vote recorded |
-| `401` | error | JWT missing or invalid |
-| `404` | error | Comment not found |
+| Status | Body  | Description            |
+| ------ | ----- | ---------------------- |
+| `200`  | empty | Vote recorded          |
+| `401`  | error | JWT missing or invalid |
+| `404`  | error | Comment not found      |
 
 **cURL**
 

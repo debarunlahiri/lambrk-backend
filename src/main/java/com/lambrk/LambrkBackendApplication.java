@@ -14,8 +14,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableConfigurationProperties
 public class LambrkBackendApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(LambrkBackendApplication.class, args);
-    }
-
+  public static void main(String[] args) {
+    SpringApplication.run(LambrkBackendApplication.class, args);
+  }
 }

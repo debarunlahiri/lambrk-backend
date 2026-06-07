@@ -4,6 +4,10 @@ Base path: `/api/search`. JWT required.
 
 ---
 
+User result arrays in `SearchResponse.users` use `SocialUserResponse`, so authenticated viewers receive fields such as `followedByCurrentUser`, `friend`, `friendshipStatus`, `canShowFollowButton`, and `canShowAddFriendButton`.
+
+---
+
 ### POST `/api/search`
 
 Advanced search.
@@ -12,22 +16,22 @@ Advanced search.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `query` | Body | string | **Yes** | — | Search text |
-| `type` | Body | string | No | `ALL` | `ALL`, `POSTS`, `COMMENTS`, `USERS`, `COMMUNITIES` |
-| `sort` | Body | string | No | `RELEVANCE` | Sort order |
-| `timeFilter` | Body | string | No | `ALL` | Time filter |
-| `communities` | Body | array | No | `[]` | Filter by community UUIDs |
-| `flairs` | Body | array | No | `[]` | Filter by flair names |
-| `includeNSFW` | Body | boolean | No | `false` | Include NSFW |
-| `includeOver18` | Body | boolean | No | `false` | Include Over18 |
-| `minScore` | Body | integer | No | `null` | Minimum score |
-| `minComments` | Body | integer | No | `null` | Minimum comments |
-| `minVotes` | Body | integer | No | `null` | Minimum votes |
-| `page` | Body | integer | No | `0` | Page number |
-| `size` | Body | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default     | Description                                        |
+| --------------- | -------- | ------- | -------- | ----------- | -------------------------------------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —           | `Bearer <jwt>`                                     |
+| `query`         | Body     | string  | **Yes**  | —           | Search text                                        |
+| `type`          | Body     | string  | No       | `ALL`       | `ALL`, `POSTS`, `COMMENTS`, `USERS`, `COMMUNITIES` |
+| `sort`          | Body     | string  | No       | `RELEVANCE` | Sort order                                         |
+| `timeFilter`    | Body     | string  | No       | `ALL`       | Time filter                                        |
+| `communities`   | Body     | array   | No       | `[]`        | Filter by community UUIDs                          |
+| `flairs`        | Body     | array   | No       | `[]`        | Filter by flair names                              |
+| `includeNSFW`   | Body     | boolean | No       | `false`     | Include NSFW                                       |
+| `includeOver18` | Body     | boolean | No       | `false`     | Include Over18                                     |
+| `minScore`      | Body     | integer | No       | `null`      | Minimum score                                      |
+| `minComments`   | Body     | integer | No       | `null`      | Minimum comments                                   |
+| `minVotes`      | Body     | integer | No       | `null`      | Minimum votes                                      |
+| `page`          | Body     | integer | No       | `0`         | Page number                                        |
+| `size`          | Body     | integer | No       | `20`        | Page size                                          |
 
 **Request body**
 
@@ -51,10 +55,10 @@ Advanced search.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `SearchResponse` | Unified search results |
-| `401` | error | JWT missing or invalid |
+| Status | Body             | Description            |
+| ------ | ---------------- | ---------------------- |
+| `200`  | `SearchResponse` | Unified search results |
+| `401`  | error            | JWT missing or invalid |
 
 **cURL**
 
@@ -112,22 +116,22 @@ Search posts.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `query` | Query | string | **Yes** | — | Search text |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `20` | Page size |
-| `sort` | Query | string | No | `RELEVANCE` | Sort order |
+| Parameter       | Location | Type    | Required | Default     | Description    |
+| --------------- | -------- | ------- | -------- | ----------- | -------------- |
+| `Authorization` | Header   | string  | **Yes**  | —           | `Bearer <jwt>` |
+| `query`         | Query    | string  | **Yes**  | —           | Search text    |
+| `page`          | Query    | integer | No       | `0`         | Page number    |
+| `size`          | Query    | integer | No       | `20`        | Page size      |
+| `sort`          | Query    | string  | No       | `RELEVANCE` | Sort order     |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `SearchResponse` | Post search results |
-| `401` | error | JWT missing or invalid |
+| Status | Body             | Description            |
+| ------ | ---------------- | ---------------------- |
+| `200`  | `SearchResponse` | Post search results    |
+| `401`  | error            | JWT missing or invalid |
 
 **cURL**
 
@@ -169,22 +173,22 @@ Search comments.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `query` | Query | string | **Yes** | — | Search text |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `20` | Page size |
-| `sort` | Query | string | No | `RELEVANCE` | Sort order |
+| Parameter       | Location | Type    | Required | Default     | Description    |
+| --------------- | -------- | ------- | -------- | ----------- | -------------- |
+| `Authorization` | Header   | string  | **Yes**  | —           | `Bearer <jwt>` |
+| `query`         | Query    | string  | **Yes**  | —           | Search text    |
+| `page`          | Query    | integer | No       | `0`         | Page number    |
+| `size`          | Query    | integer | No       | `20`        | Page size      |
+| `sort`          | Query    | string  | No       | `RELEVANCE` | Sort order     |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `SearchResponse` | Comment search results |
-| `401` | error | JWT missing or invalid |
+| Status | Body             | Description            |
+| ------ | ---------------- | ---------------------- |
+| `200`  | `SearchResponse` | Comment search results |
+| `401`  | error            | JWT missing or invalid |
 
 **cURL**
 
@@ -226,22 +230,22 @@ Search users.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `query` | Query | string | **Yes** | — | Search text |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `20` | Page size |
-| `sort` | Query | string | No | `RELEVANCE` | Sort order |
+| Parameter       | Location | Type    | Required | Default     | Description    |
+| --------------- | -------- | ------- | -------- | ----------- | -------------- |
+| `Authorization` | Header   | string  | **Yes**  | —           | `Bearer <jwt>` |
+| `query`         | Query    | string  | **Yes**  | —           | Search text    |
+| `page`          | Query    | integer | No       | `0`         | Page number    |
+| `size`          | Query    | integer | No       | `20`        | Page size      |
+| `sort`          | Query    | string  | No       | `RELEVANCE` | Sort order     |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `SearchResponse` | User search results |
-| `401` | error | JWT missing or invalid |
+| Status | Body             | Description            |
+| ------ | ---------------- | ---------------------- |
+| `200`  | `SearchResponse` | User search results    |
+| `401`  | error            | JWT missing or invalid |
 
 **cURL**
 
@@ -283,22 +287,22 @@ Search communities.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `query` | Query | string | **Yes** | — | Search text |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `20` | Page size |
-| `sort` | Query | string | No | `RELEVANCE` | Sort order |
+| Parameter       | Location | Type    | Required | Default     | Description    |
+| --------------- | -------- | ------- | -------- | ----------- | -------------- |
+| `Authorization` | Header   | string  | **Yes**  | —           | `Bearer <jwt>` |
+| `query`         | Query    | string  | **Yes**  | —           | Search text    |
+| `page`          | Query    | integer | No       | `0`         | Page number    |
+| `size`          | Query    | integer | No       | `20`        | Page size      |
+| `sort`          | Query    | string  | No       | `RELEVANCE` | Sort order     |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `SearchResponse` | Community search results |
-| `401` | error | JWT missing or invalid |
+| Status | Body             | Description              |
+| ------ | ---------------- | ------------------------ |
+| `200`  | `SearchResponse` | Community search results |
+| `401`  | error            | JWT missing or invalid   |
 
 **cURL**
 
@@ -340,22 +344,22 @@ Search all.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `query` | Query | string | **Yes** | — | Search text |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `20` | Page size |
-| `sort` | Query | string | No | `RELEVANCE` | Sort order |
+| Parameter       | Location | Type    | Required | Default     | Description    |
+| --------------- | -------- | ------- | -------- | ----------- | -------------- |
+| `Authorization` | Header   | string  | **Yes**  | —           | `Bearer <jwt>` |
+| `query`         | Query    | string  | **Yes**  | —           | Search text    |
+| `page`          | Query    | integer | No       | `0`         | Page number    |
+| `size`          | Query    | integer | No       | `20`        | Page size      |
+| `sort`          | Query    | string  | No       | `RELEVANCE` | Sort order     |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `SearchResponse` | Unified search results |
-| `401` | error | JWT missing or invalid |
+| Status | Body             | Description            |
+| ------ | ---------------- | ---------------------- |
+| `200`  | `SearchResponse` | Unified search results |
+| `401`  | error            | JWT missing or invalid |
 
 **cURL**
 
@@ -397,20 +401,20 @@ Get search suggestions.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `query` | Query | string | **Yes** | — | Prefix/query |
-| `type` | Query | string | No | `posts` | `posts`, `communities`, `users` |
+| Parameter       | Location | Type   | Required | Default | Description                     |
+| --------------- | -------- | ------ | -------- | ------- | ------------------------------- |
+| `Authorization` | Header   | string | **Yes**  | —       | `Bearer <jwt>`                  |
+| `query`         | Query    | string | **Yes**  | —       | Prefix/query                    |
+| `type`          | Query    | string | No       | `posts` | `posts`, `communities`, `users` |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `List<string>` | Suggestion strings |
-| `401` | error | JWT missing or invalid |
+| Status | Body           | Description            |
+| ------ | -------------- | ---------------------- |
+| `200`  | `List<string>` | Suggestion strings     |
+| `401`  | error          | JWT missing or invalid |
 
 **cURL**
 
@@ -422,12 +426,7 @@ curl -X GET 'http://localhost:9500/api/search/suggestions?query=spring&type=post
 **Response**
 
 ```json
-[
-  "spring tutorial",
-  "spring guide",
-  "spring examples",
-  "spring best practices"
-]
+["spring tutorial", "spring guide", "spring examples", "spring best practices"]
 ```
 
 ---
@@ -440,20 +439,20 @@ Get trending search response.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter       | Location | Type    | Required | Default | Description    |
+| --------------- | -------- | ------- | -------- | ------- | -------------- |
+| `Authorization` | Header   | string  | **Yes**  | —       | `Bearer <jwt>` |
+| `page`          | Query    | integer | No       | `0`     | Page number    |
+| `size`          | Query    | integer | No       | `20`    | Page size      |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `SearchResponse` | Trending results |
-| `401` | error | JWT missing or invalid |
+| Status | Body             | Description            |
+| ------ | ---------------- | ---------------------- |
+| `200`  | `SearchResponse` | Trending results       |
+| `401`  | error            | JWT missing or invalid |
 
 **cURL**
 

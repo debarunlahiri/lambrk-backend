@@ -10,68 +10,68 @@ Base path: `/api/users`. JWT required unless noted.
 
 Used by public profile and social-list endpoints.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | User id |
-| `username` | string | Public username |
-| `displayName` | string | Public display name |
-| `bio` | string | Public bio |
-| `avatarUrl` | string | CDN-resolved avatar URL |
-| `headerImageUrl` | string | CDN-resolved profile header URL |
-| `location` | string | Public location |
-| `website` | string | Public website |
-| `isVerified` | boolean | Verification status |
-| `karma` | integer | Karma from other users' votes |
-| `followerCount` | integer | Active followers |
-| `followingCount` | integer | Active following count |
-| `friendCount` | integer | Accepted friend count |
-| `followedByCurrentUser` | boolean | True when authenticated viewer follows this user |
-| `followingCurrentUser` | boolean | True when this user follows authenticated viewer |
-| `friend` | boolean | True when authenticated viewer is an accepted friend |
-| `friendshipStatus` | string | Current friendship status, or `null` |
-| `privateAccount` | boolean | True when profile social details are limited to owner/friends |
-| `canViewFollowerCount` | boolean | True when `followerCount` is visible to this viewer |
-| `canViewFollowingCount` | boolean | True when `followingCount` is visible to this viewer |
-| `canViewFollowerList` | boolean | True when the followers endpoint should show data to this viewer |
-| `canViewFollowingList` | boolean | True when the following endpoint should show data to this viewer |
-| `canShowAddFriendButton` | boolean | True when UI should show the add-friend button |
-| `canShowFollowButton` | boolean | True when UI should show the follow button |
-| `canShowInMutualLists` | boolean | True when this user may appear in mutual follower/following/friend lists |
-| `messageButtonEnabled` | boolean | True when UI should show/enable the message button |
-| `createdAt` | timestamp | User creation timestamp |
+| Field                    | Type      | Description                                                              |
+| ------------------------ | --------- | ------------------------------------------------------------------------ |
+| `id`                     | UUID      | User id                                                                  |
+| `username`               | string    | Public username                                                          |
+| `displayName`            | string    | Public display name                                                      |
+| `bio`                    | string    | Public bio                                                               |
+| `avatarUrl`              | string    | CDN-resolved avatar URL                                                  |
+| `headerImageUrl`         | string    | CDN-resolved profile header URL                                          |
+| `location`               | string    | Public location                                                          |
+| `website`                | string    | Public website                                                           |
+| `isVerified`             | boolean   | Verification status                                                      |
+| `karma`                  | integer   | Karma from other users' votes                                            |
+| `followerCount`          | integer   | Active followers                                                         |
+| `followingCount`         | integer   | Active following count                                                   |
+| `friendCount`            | integer   | Accepted friend count                                                    |
+| `followedByCurrentUser`  | boolean   | True when authenticated viewer follows this user                         |
+| `followingCurrentUser`   | boolean   | True when this user follows authenticated viewer                         |
+| `friend`                 | boolean   | True when authenticated viewer is an accepted friend                     |
+| `friendshipStatus`       | string    | Current friendship status, or `null`                                     |
+| `privateAccount`         | boolean   | True when profile social details are limited to owner/friends            |
+| `canViewFollowerCount`   | boolean   | True when `followerCount` is visible to this viewer                      |
+| `canViewFollowingCount`  | boolean   | True when `followingCount` is visible to this viewer                     |
+| `canViewFollowerList`    | boolean   | True when the followers endpoint should show data to this viewer         |
+| `canViewFollowingList`   | boolean   | True when the following endpoint should show data to this viewer         |
+| `canShowAddFriendButton` | boolean   | True when UI should show the add-friend button                           |
+| `canShowFollowButton`    | boolean   | True when UI should show the follow button                               |
+| `canShowInMutualLists`   | boolean   | True when this user may appear in mutual follower/following/friend lists |
+| `messageButtonEnabled`   | boolean   | True when UI should show/enable the message button                       |
+| `createdAt`              | timestamp | User creation timestamp                                                  |
 
 ### `UserPrivacySettingsResponse`
 
 Used by `/api/users/me/privacy`.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `userId` | UUID | User id |
-| `privateAccount` | boolean | Limit profile social details to owner/friends |
-| `hideFollowerCount` | boolean | Hide follower count from other viewers |
-| `hideFollowingCount` | boolean | Hide following count from other viewers |
-| `hideFollowerList` | boolean | Hide followers list from other viewers |
-| `hideFollowingList` | boolean | Hide following list from other viewers |
-| `hideAddFriendButton` | boolean | Hide and disable friend requests to this user |
-| `hideFollowButton` | boolean | Hide and disable follow actions to this user |
-| `hideFromMutualList` | boolean | Exclude this user from mutual-list endpoints |
-| `messageButtonEnabled` | boolean | Enable or disable the profile message button |
-| `updatedAt` | timestamp | Last settings update timestamp |
+| Field                  | Type      | Description                                   |
+| ---------------------- | --------- | --------------------------------------------- |
+| `userId`               | UUID      | User id                                       |
+| `privateAccount`       | boolean   | Limit profile social details to owner/friends |
+| `hideFollowerCount`    | boolean   | Hide follower count from other viewers        |
+| `hideFollowingCount`   | boolean   | Hide following count from other viewers       |
+| `hideFollowerList`     | boolean   | Hide followers list from other viewers        |
+| `hideFollowingList`    | boolean   | Hide following list from other viewers        |
+| `hideAddFriendButton`  | boolean   | Hide and disable friend requests to this user |
+| `hideFollowButton`     | boolean   | Hide and disable follow actions to this user  |
+| `hideFromMutualList`   | boolean   | Exclude this user from mutual-list endpoints  |
+| `messageButtonEnabled` | boolean   | Enable or disable the profile message button  |
+| `updatedAt`            | timestamp | Last settings update timestamp                |
 
 ### `FriendRequestResponse`
 
 Used by friend request actions and request-list endpoints.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | Friendship row id |
-| `requester` | `UserResponse` | User who sent the request |
-| `addressee` | `UserResponse` | User who should respond |
-| `status` | string | `PENDING`, `ACCEPTED`, `DECLINED`, `CANCELLED`, `REMOVED`, or `BLOCKED` |
-| `source` | string | Optional source such as `profile` or `search` |
-| `requestMessage` | string | Optional message, max 280 chars |
-| `createdAt` | timestamp | Request creation timestamp |
-| `respondedAt` | timestamp | Response/cancel timestamp, or `null` |
+| Field            | Type           | Description                                                             |
+| ---------------- | -------------- | ----------------------------------------------------------------------- |
+| `id`             | UUID           | Friendship row id                                                       |
+| `requester`      | `UserResponse` | User who sent the request                                               |
+| `addressee`      | `UserResponse` | User who should respond                                                 |
+| `status`         | string         | `PENDING`, `ACCEPTED`, `DECLINED`, `CANCELLED`, `REMOVED`, or `BLOCKED` |
+| `source`         | string         | Optional source such as `profile` or `search`                           |
+| `requestMessage` | string         | Optional message, max 280 chars                                         |
+| `createdAt`      | timestamp      | Request creation timestamp                                              |
+| `respondedAt`    | timestamp      | Response/cancel timestamp, or `null`                                    |
 
 ---
 
@@ -83,18 +83,18 @@ Get a user by id.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `userId` | Path | UUID | **Yes** | UUID of the user |
+| Parameter | Location | Type | Required | Description      |
+| --------- | -------- | ---- | -------- | ---------------- |
+| `userId`  | Path     | UUID | **Yes**  | UUID of the user |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `SocialUserResponse` | User profile details with social counts |
-| `404` | error | User not found |
+| Status | Body                 | Description                             |
+| ------ | -------------------- | --------------------------------------- |
+| `200`  | `SocialUserResponse` | User profile details with social counts |
+| `404`  | error                | User not found                          |
 
 **cURL**
 
@@ -146,15 +146,15 @@ Update current user's profile. All fields are optional — only provided fields 
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `displayName` | Body | string | No | Public display name |
-| `bio` | Body | string | No | Short bio text |
-| `location` | Body | string | No | User location |
-| `website` | Body | string | No | Personal website URL |
-| `avatarUrl` | Body | string | No | Profile image URL |
-| `headerImageUrl` | Body | string | No | Cover/banner image URL |
+| Parameter        | Location | Type   | Required | Description            |
+| ---------------- | -------- | ------ | -------- | ---------------------- |
+| `Authorization`  | Header   | string | **Yes**  | `Bearer <jwt>`         |
+| `displayName`    | Body     | string | No       | Public display name    |
+| `bio`            | Body     | string | No       | Short bio text         |
+| `location`       | Body     | string | No       | User location          |
+| `website`        | Body     | string | No       | Personal website URL   |
+| `avatarUrl`      | Body     | string | No       | Profile image URL      |
+| `headerImageUrl` | Body     | string | No       | Cover/banner image URL |
 
 **Request body**
 
@@ -171,10 +171,10 @@ Update current user's profile. All fields are optional — only provided fields 
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `UserResponse` | Updated profile |
-| `401` | error | JWT missing or invalid |
+| Status | Body           | Description            |
+| ------ | -------------- | ---------------------- |
+| `200`  | `UserResponse` | Updated profile        |
+| `401`  | error          | JWT missing or invalid |
 
 **cURL**
 
@@ -264,18 +264,18 @@ Get a user by username.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `username` | Path | string | **Yes** | Username to lookup |
+| Parameter  | Location | Type   | Required | Description        |
+| ---------- | -------- | ------ | -------- | ------------------ |
+| `username` | Path     | string | **Yes**  | Username to lookup |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `SocialUserResponse` | User profile details with social counts |
-| `404` | error | User not found |
+| Status | Body                 | Description                             |
+| ------ | -------------------- | --------------------------------------- |
+| `200`  | `SocialUserResponse` | User profile details with social counts |
+| `404`  | error                | User not found                          |
 
 **cURL**
 
@@ -318,18 +318,18 @@ Get the authenticated user.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
+| Parameter       | Location | Type   | Required | Description    |
+| --------------- | -------- | ------ | -------- | -------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>` |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `UserResponse` | Current user profile |
-| `401` | error | JWT missing or invalid |
+| Status | Body           | Description            |
+| ------ | -------------- | ---------------------- |
+| `200`  | `UserResponse` | Current user profile   |
+| `401`  | error          | JWT missing or invalid |
 
 **cURL**
 
@@ -365,18 +365,18 @@ List top users by karma.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `page` | Query | integer | No | `0` | Zero-based page index |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter | Location | Type    | Required | Default | Description           |
+| --------- | -------- | ------- | -------- | ------- | --------------------- |
+| `page`    | Query    | integer | No       | `0`     | Zero-based page index |
+| `size`    | Query    | integer | No       | `20`    | Page size             |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<UserResponse>` | Paginated list of users |
+| Status | Body                       | Description                                                      |
+| ------ | -------------------------- | ---------------------------------------------------------------- |
+| `200`  | `Page<SocialUserResponse>` | Paginated list of users with viewer-specific follow/friend state |
 
 **cURL**
 
@@ -410,19 +410,19 @@ Search active users.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `query` | Query | string | **Yes** | — | Search text |
-| `page` | Query | integer | No | `0` | Zero-based page index |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter | Location | Type    | Required | Default | Description           |
+| --------- | -------- | ------- | -------- | ------- | --------------------- |
+| `query`   | Query    | string  | **Yes**  | —       | Search text           |
+| `page`    | Query    | integer | No       | `0`     | Zero-based page index |
+| `size`    | Query    | integer | No       | `20`    | Page size             |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<UserResponse>` | Paginated search results |
+| Status | Body                       | Description                                                       |
+| ------ | -------------------------- | ----------------------------------------------------------------- |
+| `200`  | `Page<SocialUserResponse>` | Paginated search results with viewer-specific follow/friend state |
 
 **cURL**
 
@@ -456,20 +456,20 @@ Delete a user.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `userId` | Path | UUID | **Yes** | UUID of the user to delete |
+| Parameter       | Location | Type   | Required | Description                |
+| --------------- | -------- | ------ | -------- | -------------------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`             |
+| `userId`        | Path     | UUID   | **Yes**  | UUID of the user to delete |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `204` | empty | User deleted |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body  | Description            |
+| ------ | ----- | ---------------------- |
+| `204`  | empty | User deleted           |
+| `401`  | error | JWT missing or invalid |
+| `403`  | error | Not an admin           |
 
 **cURL**
 
@@ -490,18 +490,18 @@ curl -X DELETE 'http://localhost:9500/api/users/b0eebc99-9c0b-4ef8-bb6d-6bb9bd38
 
 Directional follow relationship. One row exists per follower/following pair and is reused when a user unfollows/refollows.
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Follow row id |
-| `follower_id` | UUID | User who follows |
-| `following_id` | UUID | User being followed |
-| `status` | string | `ACTIVE` or `REMOVED` |
-| `notification_enabled` | boolean | Whether follower wants notifications |
-| `source` | string | Optional source such as `profile`, `search`, `suggested` |
-| `last_interaction_at` | timestamp | Last follow/unfollow interaction |
-| `created_at` | timestamp | First follow row creation time |
-| `updated_at` | timestamp | Last row update time |
-| `removed_at` | timestamp | When the follow was removed |
+| Column                 | Type      | Description                                              |
+| ---------------------- | --------- | -------------------------------------------------------- |
+| `id`                   | UUID      | Follow row id                                            |
+| `follower_id`          | UUID      | User who follows                                         |
+| `following_id`         | UUID      | User being followed                                      |
+| `status`               | string    | `ACTIVE` or `REMOVED`                                    |
+| `notification_enabled` | boolean   | Whether follower wants notifications                     |
+| `source`               | string    | Optional source such as `profile`, `search`, `suggested` |
+| `last_interaction_at`  | timestamp | Last follow/unfollow interaction                         |
+| `created_at`           | timestamp | First follow row creation time                           |
+| `updated_at`           | timestamp | Last row update time                                     |
+| `removed_at`           | timestamp | When the follow was removed                              |
 
 Constraints/indexes include no self-follow, unique `(follower_id, following_id)`, follower/following indexes, status index, and partial active-list indexes.
 
@@ -509,23 +509,23 @@ Constraints/indexes include no self-follow, unique `(follower_id, following_id)`
 
 Undirected friendship relationship with request state and audit fields.
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Friendship row id |
-| `user_one_id` | UUID | Canonical first user in the pair |
-| `user_two_id` | UUID | Canonical second user in the pair |
-| `requester_id` | UUID | User who sent the current/latest request |
-| `addressee_id` | UUID | User who should respond to the current request |
-| `last_action_user_id` | UUID | User who last changed the friendship state |
-| `status` | string | `PENDING`, `ACCEPTED`, `DECLINED`, `CANCELLED`, `REMOVED`, `BLOCKED` |
-| `source` | string | Optional source such as `profile`, `search`, `suggested` |
-| `request_message` | string | Optional request message, max 280 chars |
-| `accepted_at` | timestamp | When the request was accepted |
-| `responded_at` | timestamp | When request was accepted/declined/cancelled |
-| `removed_at` | timestamp | When an accepted friendship was removed |
-| `blocked_at` | timestamp | Reserved for blocking workflows |
-| `created_at` | timestamp | First friendship row creation time |
-| `updated_at` | timestamp | Last row update time |
+| Column                | Type      | Description                                                          |
+| --------------------- | --------- | -------------------------------------------------------------------- |
+| `id`                  | UUID      | Friendship row id                                                    |
+| `user_one_id`         | UUID      | Canonical first user in the pair                                     |
+| `user_two_id`         | UUID      | Canonical second user in the pair                                    |
+| `requester_id`        | UUID      | User who sent the current/latest request                             |
+| `addressee_id`        | UUID      | User who should respond to the current request                       |
+| `last_action_user_id` | UUID      | User who last changed the friendship state                           |
+| `status`              | string    | `PENDING`, `ACCEPTED`, `DECLINED`, `CANCELLED`, `REMOVED`, `BLOCKED` |
+| `source`              | string    | Optional source such as `profile`, `search`, `suggested`             |
+| `request_message`     | string    | Optional request message, max 280 chars                              |
+| `accepted_at`         | timestamp | When the request was accepted                                        |
+| `responded_at`        | timestamp | When request was accepted/declined/cancelled                         |
+| `removed_at`          | timestamp | When an accepted friendship was removed                              |
+| `blocked_at`          | timestamp | Reserved for blocking workflows                                      |
+| `created_at`          | timestamp | First friendship row creation time                                   |
+| `updated_at`          | timestamp | Last row update time                                                 |
 
 Constraints/indexes include no self-friendship, canonical unique `(user_one_id, user_two_id)`, requester/addressee indexes, status index, pending-request indexes, and accepted-friend indexes.
 
@@ -533,17 +533,17 @@ Constraints/indexes include no self-friendship, canonical unique `(user_one_id, 
 
 Privacy settings are stored on `users` and default to a public account.
 
-| Column | Type | Default | Description |
-|--------|------|---------|-------------|
-| `private_account` | boolean | `false` | Limits social details to owner and accepted friends |
-| `hide_follower_count` | boolean | `false` | Masks follower count for other viewers |
-| `hide_following_count` | boolean | `false` | Masks following count for other viewers |
-| `hide_follower_list` | boolean | `false` | Returns an empty followers page for other viewers |
-| `hide_following_list` | boolean | `false` | Returns an empty following page for other viewers |
-| `hide_add_friend_button` | boolean | `false` | Hides add-friend UI and rejects friend requests |
-| `hide_follow_button` | boolean | `false` | Hides follow UI and rejects follow actions |
-| `hide_from_mutual_list` | boolean | `false` | Filters the user out of mutual-list endpoints |
-| `message_button_enabled` | boolean | `true` | Controls whether profile messaging should be enabled |
+| Column                   | Type    | Default | Description                                          |
+| ------------------------ | ------- | ------- | ---------------------------------------------------- |
+| `private_account`        | boolean | `false` | Limits social details to owner and accepted friends  |
+| `hide_follower_count`    | boolean | `false` | Masks follower count for other viewers               |
+| `hide_following_count`   | boolean | `false` | Masks following count for other viewers              |
+| `hide_follower_list`     | boolean | `false` | Returns an empty followers page for other viewers    |
+| `hide_following_list`    | boolean | `false` | Returns an empty following page for other viewers    |
+| `hide_add_friend_button` | boolean | `false` | Hides add-friend UI and rejects friend requests      |
+| `hide_follow_button`     | boolean | `false` | Hides follow UI and rejects follow actions           |
+| `hide_from_mutual_list`  | boolean | `false` | Filters the user out of mutual-list endpoints        |
+| `message_button_enabled` | boolean | `true`  | Controls whether profile messaging should be enabled |
 
 ---
 
@@ -553,20 +553,20 @@ Follow a user. Refollowing reactivates the existing follow row.
 
 **Auth:** User
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| `Authorization` | Header | string | **Yes** | `Bearer <jwt>` |
-| `userId` | Path | UUID | **Yes** | User to follow |
-| `source` | Query | string | No | Optional follow source |
+| Parameter       | Location | Type   | Required | Description            |
+| --------------- | -------- | ------ | -------- | ---------------------- |
+| `Authorization` | Header   | string | **Yes**  | `Bearer <jwt>`         |
+| `userId`        | Path     | UUID   | **Yes**  | User to follow         |
+| `source`        | Query    | string | No       | Optional follow source |
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `204` | empty | Followed |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Target user disabled follow actions |
-| `404` | error | User not found |
+| Status | Body  | Description                         |
+| ------ | ----- | ----------------------------------- |
+| `204`  | empty | Followed                            |
+| `401`  | error | JWT missing or invalid              |
+| `403`  | error | Target user disabled follow actions |
+| `404`  | error | User not found                      |
 
 ```bash
 curl -X POST 'http://localhost:9500/api/users/019e5a43-e0c2-7baa-9f6d-b9b9b82afb14/follow?source=profile' \
@@ -596,11 +596,11 @@ List followers for a user. Returns an empty page when the target user's privacy 
 
 **Auth:** Public
 
-| Parameter | Location | Type | Required | Default |
-|-----------|----------|------|----------|---------|
-| `userId` | Path | UUID | **Yes** | — |
-| `page` | Query | integer | No | `0` |
-| `size` | Query | integer | No | `20` |
+| Parameter | Location | Type    | Required | Default |
+| --------- | -------- | ------- | -------- | ------- |
+| `userId`  | Path     | UUID    | **Yes**  | —       |
+| `page`    | Query    | integer | No       | `0`     |
+| `size`    | Query    | integer | No       | `20`    |
 
 **Response:** `Page<SocialUserResponse>`
 
@@ -644,12 +644,12 @@ List users who follow both `userId` and another comparison user. Users with `hid
 
 **Auth:** Public. If the request is anonymous, `withUserId` is required. If logged in and `withUserId` is omitted, the authenticated user is used as the comparison user.
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `userId` | Path | UUID | **Yes** | — | First user |
-| `withUserId` | Query | UUID | No | current user | User to compare against |
-| `page` | Query | integer | No | `0` | Zero-based page index |
-| `size` | Query | integer | No | `20` | Page size |
+| Parameter    | Location | Type    | Required | Default      | Description             |
+| ------------ | -------- | ------- | -------- | ------------ | ----------------------- |
+| `userId`     | Path     | UUID    | **Yes**  | —            | First user              |
+| `withUserId` | Query    | UUID    | No       | current user | User to compare against |
+| `page`       | Query    | integer | No       | `0`          | Zero-based page index   |
+| `size`       | Query    | integer | No       | `20`         | Page size               |
 
 **Response:** `Page<SocialUserResponse>`
 

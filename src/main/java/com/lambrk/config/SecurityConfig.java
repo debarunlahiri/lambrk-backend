@@ -1,5 +1,7 @@
 package com.lambrk.config;
 
+import java.util.Arrays;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -20,97 +22,141 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.List;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfig {
 
-    private static final String ROLE_ADMIN = "ADMIN";
-    private static final String ROLE_MODERATOR = "MODERATOR";
+  private static final String ROLE_ADMIN = "ADMIN";
+  private static final String ROLE_MODERATOR = "MODERATOR";
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
+  public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+  }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(AbstractHttpConfigurer::disable)
-            .formLogin(AbstractHttpConfigurer::disable)
-            .httpBasic(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // Public endpoints
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers("/health", "/actuator/health").permitAll()
-                .requestMatchers("/actuator/prometheus").permitAll()
-                .requestMatchers("/actuator/info").permitAll()
-                .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                // Feed endpoints — public (personalized for logged-in, trending for anonymous)
-                .requestMatchers("/api/feed/**").permitAll()
-                // Search and public discovery endpoints
-                .requestMatchers("/api/search/**").permitAll()
-                .requestMatchers("/api/posts/hot", "/api/posts/new", "/api/posts/top", "/api/posts/search").permitAll()
-                .requestMatchers("/api/communities/trending", "/api/communities/search").permitAll()
-                .requestMatchers("/api/users/me").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/users/search", "/api/users/top", "/api/users/username/*", "/api/users/*").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/users/*/followers", "/api/users/*/following", "/api/users/*/friends", "/api/users/*/social-stats").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/users/*/mutual/followers", "/api/users/*/mutual/following", "/api/users/*/mutual/friends").permitAll()
-                // LoopMix / Reels endpoints — public discovery
-                .requestMatchers("/api/posts/media").permitAll()
-                .requestMatchers("/api/posts/*/view").permitAll()
-                .requestMatchers("/api/posts/*/related").permitAll()
-                // WebSocket endpoints
-                .requestMatchers("/ws/**").permitAll()
-                // Admin endpoints
-                .requestMatchers("/api/admin/**").hasRole(ROLE_ADMIN)
-                .requestMatchers("/api/logs/**").hasRole(ROLE_ADMIN)
-                // Moderator endpoints
-                .requestMatchers("/api/moderator/**").hasAnyRole(ROLE_MODERATOR, ROLE_ADMIN)
-                // All other endpoints require authentication
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http.csrf(AbstractHttpConfigurer::disable)
+        .formLogin(AbstractHttpConfigurer::disable)
+        .httpBasic(AbstractHttpConfigurer::disable)
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            auth ->
+                auth
+                    // Public endpoints
+                    .requestMatchers("/api/auth/**")
+                    .permitAll()
+                    .requestMatchers("/api/public/**")
+                    .permitAll()
+                    .requestMatchers("/health", "/actuator/health")
+                    .permitAll()
+                    .requestMatchers("/actuator/prometheus")
+                    .permitAll()
+                    .requestMatchers("/actuator/info")
+                    .permitAll()
+                    .requestMatchers("/h2-console/**")
+                    .permitAll()
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
+                    .permitAll()
+                    // Feed endpoints — public (personalized for logged-in, trending for anonymous)
+                    .requestMatchers("/api/feed/**")
+                    .permitAll()
+                    // Search and public discovery endpoints
+                    .requestMatchers("/api/search/**")
+                    .permitAll()
+                    .requestMatchers(
+                        "/api/posts/hot", "/api/posts/new", "/api/posts/top", "/api/posts/search")
+                    .permitAll()
+                    .requestMatchers("/api/communities/trending", "/api/communities/search")
+                    .permitAll()
+                    .requestMatchers("/api/users/me")
+                    .authenticated()
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/users/search",
+                        "/api/users/top",
+                        "/api/users/username/*",
+                        "/api/users/*")
+                    .permitAll()
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/users/*/followers",
+                        "/api/users/*/following",
+                        "/api/users/*/friends",
+                        "/api/users/*/social-stats")
+                    .permitAll()
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/users/*/mutual/followers",
+                        "/api/users/*/mutual/following",
+                        "/api/users/*/mutual/friends")
+                    .permitAll()
+                    // LoopMix / Reels endpoints — public discovery
+                    .requestMatchers("/api/posts/media")
+                    .permitAll()
+                    .requestMatchers("/api/posts/*/view")
+                    .permitAll()
+                    .requestMatchers("/api/posts/*/related")
+                    .permitAll()
+                    // WebSocket endpoints
+                    .requestMatchers("/ws/**")
+                    .permitAll()
+                    // Admin endpoints
+                    .requestMatchers("/api/admin/**")
+                    .hasRole(ROLE_ADMIN)
+                    .requestMatchers("/api/logs/**")
+                    .hasRole(ROLE_ADMIN)
+                    // Moderator endpoints
+                    .requestMatchers("/api/moderator/**")
+                    .hasAnyRole(ROLE_MODERATOR, ROLE_ADMIN)
+                    // All other endpoints require authentication
+                    .anyRequest()
+                    .authenticated())
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+    return http.build();
+  }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "https://*.example.com"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"));
-        configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin",
-            "X-Correlation-Id", "X-Total-Count", "Cache-Control", "Pragma"
-        ));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "https://*.example.com"));
+    configuration.setAllowedMethods(
+        Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"));
+    configuration.setAllowedHeaders(
+        Arrays.asList(
+            "Authorization",
+            "Content-Type",
+            "X-Requested-With",
+            "Accept",
+            "Origin",
+            "X-Correlation-Id",
+            "X-Total-Count",
+            "Cache-Control",
+            "Pragma"));
+    configuration.setAllowCredentials(true);
+    configuration.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
+  }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
-    }
-    
-    @Bean
-    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder);
-        authProvider.setHideUserNotFoundExceptions(false);
-        return new ProviderManager(authProvider);
-    }
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder(12);
+  }
 
+  @Bean
+  public AuthenticationManager authenticationManager(
+      UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+    authProvider.setUserDetailsService(userDetailsService);
+    authProvider.setPasswordEncoder(passwordEncoder);
+    authProvider.setHideUserNotFoundExceptions(false);
+    return new ProviderManager(authProvider);
+  }
 }

@@ -110,13 +110,13 @@ We conduct regular security assessments:
 
 ### Rate Limiting
 
-| Endpoint | Limit | Window |
-|----------|-------|--------|
-| Authentication | 10 | 1 min |
-| Post Creation | 100 | 1 min |
-| Comment Creation | 500 | 1 min |
-| Search | 50 | 1 min |
-| Voting | 1000 | 1 min |
+| Endpoint         | Limit | Window |
+| ---------------- | ----- | ------ |
+| Authentication   | 10    | 1 min  |
+| Post Creation    | 100   | 1 min  |
+| Comment Creation | 500   | 1 min  |
+| Search           | 50    | 1 min  |
+| Voting           | 1000  | 1 min  |
 
 ### Data Retention
 
@@ -141,4 +141,4 @@ We conduct regular security assessments:
 
 We thank the following security researchers for responsibly disclosing vulnerabilities:
 
-*This section will be updated with acknowledgments as reports are received.*
+_This section will be updated with acknowledgments as reports are received._

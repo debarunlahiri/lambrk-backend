@@ -21,6 +21,7 @@ LOG_FILE="$PROJECT_DIR/app.log"
 APP_PORT=9500
 POSTGRES_PORT=5432
 REDIS_PORT=6379
+MONGO_PORT=27017
 
 # Docker command (may be overridden to use sudo)
 DOCKER_CMD="docker"
@@ -49,6 +50,28 @@ log() { echo -e "${BLUE}[$(date '+%H:%M:%S')]${NC} $1"; }
 success() { echo -e "${GREEN}  ✓${NC} $1"; }
 warn() { echo -e "${YELLOW}  ⚠${NC} $1"; }
 fail() { echo -e "${RED}  ✗${NC} $1"; }
+
+compose_service_for_container() {
+    case "$1" in
+        lambrk-postgres) echo "postgres" ;;
+        lambrk-mongo) echo "mongo" ;;
+        lambrk-redis) echo "redis" ;;
+        lambrk-kafka) echo "kafka" ;;
+        *) echo "" ;;
+    esac
+}
+
+start_compose_service() {
+    local container="$1"
+    local service
+    service=$(compose_service_for_container "$container")
+
+    if [ -n "$service" ]; then
+        $DOCKER_CMD compose up -d "$service" 2>&1 | tail -3
+    else
+        $DOCKER_CMD start "$container" 2>&1 | tail -3
+    fi
+}
 
 # ============================================================
 # Kill app port if occupied by non-Docker process
@@ -153,13 +176,14 @@ ensure_services() {
     fi
 
     # Verify critical containers are running; attempt restart if missing
-    for container in lambrk-postgres lambrk-redis; do
+    for container in lambrk-postgres lambrk-mongo lambrk-redis; do
         if ! $DOCKER_CMD ps --format '{{.Names}}' 2>/dev/null | grep -q "^${container}$"; then
-            warn "Container '$container' is not running. Attempting to start it..."
-            $DOCKER_CMD start "$container" 2>&1 | tail -3
+            warn "Container '$container' is not running. Attempting to start its Compose service..."
+            start_compose_service "$container"
             sleep 3
             if ! $DOCKER_CMD ps --format '{{.Names}}' 2>/dev/null | grep -q "^${container}$"; then
-                fail "Container '$container' failed to start. Check: $DOCKER_CMD compose logs $container"
+                service=$(compose_service_for_container "$container")
+                fail "Container '$container' failed to start. Check: $DOCKER_CMD compose logs ${service:-$container}"
                 exit 1
             fi
         fi
@@ -195,6 +219,22 @@ ensure_services() {
         if [ $i -eq 10 ]; then
             echo ""
             warn "Redis not ready (app will retry)"
+        fi
+    done
+
+    # Wait for MongoDB
+    echo -n "  Checking MongoDB"
+    for i in $(seq 1 20); do
+        if $DOCKER_CMD exec lambrk-mongo mongosh --quiet --eval "db.adminCommand('ping').ok" &> /dev/null; then
+            echo ""
+            success "MongoDB ready"
+            break
+        fi
+        echo -n "."
+        sleep 2
+        if [ $i -eq 20 ]; then
+            echo ""
+            warn "MongoDB not ready (app will retry)"
         fi
     done
 }

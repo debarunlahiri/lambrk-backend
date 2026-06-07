@@ -1,25 +1,32 @@
 package com.lambrk.repository;
 
 import com.lambrk.domain.FreeTierUsage;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-import java.util.UUID;
-
 @Repository
 public interface FreeTierUsageRepository extends JpaRepository<FreeTierUsage, UUID> {
 
-    Optional<FreeTierUsage> findByUserIdAndPeriodYearAndPeriodMonth(UUID userId, int year, int month);
+  Optional<FreeTierUsage> findByUserIdAndPeriodYearAndPeriodMonth(UUID userId, int year, int month);
 
-    @Query("SELECT ftu FROM FreeTierUsage ftu WHERE ftu.userId = :userId AND ftu.periodYear = :year AND ftu.periodMonth = :month AND ftu.isFreeTier = true")
-    Optional<FreeTierUsage> findFreeTierUsageByUserAndPeriod(@Param("userId") UUID userId, @Param("year") int year, @Param("month") int month);
+  @Query(
+      "SELECT ftu FROM FreeTierUsage ftu WHERE ftu.userId = :userId AND ftu.periodYear = :year AND"
+          + " ftu.periodMonth = :month AND ftu.isFreeTier = true")
+  Optional<FreeTierUsage> findFreeTierUsageByUserAndPeriod(
+      @Param("userId") UUID userId, @Param("year") int year, @Param("month") int month);
 
-    @Query("SELECT SUM(ftu.storageBytesUsed) FROM FreeTierUsage ftu WHERE ftu.userId = :userId AND ftu.isFreeTier = true")
-    Long getTotalStorageUsedByUser(@Param("userId") UUID userId);
+  @Query(
+      "SELECT SUM(ftu.storageBytesUsed) FROM FreeTierUsage ftu WHERE ftu.userId = :userId AND"
+          + " ftu.isFreeTier = true")
+  Long getTotalStorageUsedByUser(@Param("userId") UUID userId);
 
-    @Query("SELECT SUM(ftu.bandwidthBytes) FROM FreeTierUsage ftu WHERE ftu.userId = :userId AND ftu.periodYear = :year AND ftu.periodMonth = :month")
-    Long getMonthlyBandwidthByUser(@Param("userId") UUID userId, @Param("year") int year, @Param("month") int month);
+  @Query(
+      "SELECT SUM(ftu.bandwidthBytes) FROM FreeTierUsage ftu WHERE ftu.userId = :userId AND"
+          + " ftu.periodYear = :year AND ftu.periodMonth = :month")
+  Long getMonthlyBandwidthByUser(
+      @Param("userId") UUID userId, @Param("year") int year, @Param("month") int month);
 }

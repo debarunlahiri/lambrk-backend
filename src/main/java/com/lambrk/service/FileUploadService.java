@@ -6,8 +6,23 @@ import com.lambrk.dto.FileUploadRequest;
 import com.lambrk.dto.FileUploadResponse;
 import com.lambrk.repository.FileUploadRepository;
 import com.lambrk.repository.UserRepository;
+import com.lambrk.util.UuidV7Generator;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import javax.imageio.ImageIO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -18,261 +33,261 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.lambrk.util.UuidV7Generator;
-
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-
 @Service
 @Transactional
 @Profile("!test")
 public class FileUploadService {
 
-    private static final String ERROR_FILE_EMPTY = "File is empty";
-    private static final String ERROR_FILE_TOO_LARGE = "File size exceeds maximum allowed size: %d bytes";
-    private static final String ERROR_FILE_TYPE_NOT_ALLOWED = "File type not allowed: %s";
-    private static final String ERROR_FILE_NAME_REQUIRED = "File name is required";
-    private static final String ERROR_USER_NOT_FOUND = "User not found: %s";
-    private static final String ERROR_FILE_NOT_FOUND = "File not found: %s";
-    private static final String ERROR_ACCESS_DENIED = "Access denied to file: %s";
-    private static final String ERROR_UPLOAD_FAILED = "Failed to upload file";
-    private static final String ERROR_CHECKSUM_FAILED = "Failed to calculate checksum";
-    private static final String SHA_256 = "SHA-256";
-    private static final String FILE_URL_PREFIX = "/api/files/";
-    private static final String THUMBNAIL_URL_PREFIX = "/api/files/thumbnails/";
-    private static final int CHECKSUM_STRING_LENGTH = 2;
+  private static final String ERROR_FILE_EMPTY = "File is empty";
+  private static final String ERROR_FILE_TOO_LARGE =
+      "File size exceeds maximum allowed size: %d bytes";
+  private static final String ERROR_FILE_TYPE_NOT_ALLOWED = "File type not allowed: %s";
+  private static final String ERROR_FILE_NAME_REQUIRED = "File name is required";
+  private static final String ERROR_USER_NOT_FOUND = "User not found: %s";
+  private static final String ERROR_FILE_NOT_FOUND = "File not found: %s";
+  private static final String ERROR_ACCESS_DENIED = "Access denied to file: %s";
+  private static final String ERROR_UPLOAD_FAILED = "Failed to upload file";
+  private static final String ERROR_CHECKSUM_FAILED = "Failed to calculate checksum";
+  private static final String SHA_256 = "SHA-256";
+  private static final String FILE_URL_PREFIX = "/api/files/";
+  private static final String THUMBNAIL_URL_PREFIX = "/api/files/thumbnails/";
+  private static final int CHECKSUM_STRING_LENGTH = 2;
 
-    private final FileUploadRepository fileUploadRepository;
-    private final UserRepository userRepository;
-    private final CustomMetrics customMetrics;
-    private final S3StorageService s3StorageService;
-    private final FreeTierLimitService freeTierLimitService;
-    private final String uploadDirectory;
-    private final long maxFileSize;
-    private final List<String> allowedTypes;
-    private final boolean s3Enabled;
+  private final FileUploadRepository fileUploadRepository;
+  private final UserRepository userRepository;
+  private final CustomMetrics customMetrics;
+  private final S3StorageService s3StorageService;
+  private final FreeTierLimitService freeTierLimitService;
+  private final String uploadDirectory;
+  private final long maxFileSize;
+  private final List<String> allowedTypes;
+  private final boolean s3Enabled;
 
-    public FileUploadService(
-            FileUploadRepository fileUploadRepository,
-            UserRepository userRepository,
-            CustomMetrics customMetrics,
-            S3StorageService s3StorageService,
-            FreeTierLimitService freeTierLimitService,
-            @Value("${app.upload.directory:uploads}") String uploadDirectory,
-            @Value("${app.upload.max-file-size:62914560}") long maxFileSize,
-            @Value("${app.upload.allowed-types:image/jpeg,image/png,image/gif,video/mp4}") List<String> allowedTypes,
-            @Value("${aws.s3.enabled:true}") boolean s3Enabled) {
-        this.fileUploadRepository = fileUploadRepository;
-        this.userRepository = userRepository;
-        this.customMetrics = customMetrics;
-        this.s3StorageService = s3StorageService;
-        this.freeTierLimitService = freeTierLimitService;
-        this.uploadDirectory = uploadDirectory;
-        this.maxFileSize = maxFileSize;
-        this.allowedTypes = allowedTypes;
-        this.s3Enabled = s3Enabled;
+  public FileUploadService(
+      FileUploadRepository fileUploadRepository,
+      UserRepository userRepository,
+      CustomMetrics customMetrics,
+      S3StorageService s3StorageService,
+      FreeTierLimitService freeTierLimitService,
+      @Value("${app.upload.directory:uploads}") String uploadDirectory,
+      @Value("${app.upload.max-file-size:62914560}") long maxFileSize,
+      @Value("${app.upload.allowed-types:image/jpeg,image/png,image/gif,video/mp4}")
+          List<String> allowedTypes,
+      @Value("${aws.s3.enabled:true}") boolean s3Enabled) {
+    this.fileUploadRepository = fileUploadRepository;
+    this.userRepository = userRepository;
+    this.customMetrics = customMetrics;
+    this.s3StorageService = s3StorageService;
+    this.freeTierLimitService = freeTierLimitService;
+    this.uploadDirectory = uploadDirectory;
+    this.maxFileSize = maxFileSize;
+    this.allowedTypes = allowedTypes;
+    this.s3Enabled = s3Enabled;
 
-        ensureLocalDirectoryExists();
+    ensureLocalDirectoryExists();
+  }
+
+  private void ensureLocalDirectoryExists() {
+    if (!s3Enabled) {
+      try {
+        Files.createDirectories(Paths.get(uploadDirectory));
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to create upload directory", e);
+      }
+    }
+  }
+
+  @CacheEvict(value = "fileUploads", allEntries = true)
+  @CircuitBreaker(name = "userService")
+  @Retry(name = "userService")
+  public FileUploadResponse uploadFile(MultipartFile file, FileUploadRequest request, UUID userId) {
+    return uploadFiles(List.of(file), request, userId).get(0);
+  }
+
+  @CacheEvict(value = "fileUploads", allEntries = true)
+  @CircuitBreaker(name = "userService")
+  @Retry(name = "userService")
+  public List<FileUploadResponse> uploadFiles(
+      List<MultipartFile> files, FileUploadRequest request, UUID userId) {
+    if (files.size() > 20) {
+      throw new IllegalArgumentException("Maximum 20 files allowed per upload");
     }
 
-    private void ensureLocalDirectoryExists() {
-        if (!s3Enabled) {
-            try {
-                Files.createDirectories(Paths.get(uploadDirectory));
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to create upload directory", e);
-            }
-        }
-    }
+    long totalSize = files.stream().mapToLong(MultipartFile::getSize).sum();
+    freeTierLimitService.checkUploadAllowed(userId, totalSize);
 
-    @CacheEvict(value = "fileUploads", allEntries = true)
-    @CircuitBreaker(name = "userService")
-    @Retry(name = "userService")
-    public FileUploadResponse uploadFile(MultipartFile file, FileUploadRequest request, UUID userId) {
-        return uploadFiles(List.of(file), request, userId).get(0);
-    }
-
-    @CacheEvict(value = "fileUploads", allEntries = true)
-    @CircuitBreaker(name = "userService")
-    @Retry(name = "userService")
-    public List<FileUploadResponse> uploadFiles(List<MultipartFile> files, FileUploadRequest request, UUID userId) {
-        if (files.size() > 20) {
-            throw new IllegalArgumentException("Maximum 20 files allowed per upload");
-        }
-
-        long totalSize = files.stream().mapToLong(MultipartFile::getSize).sum();
-        freeTierLimitService.checkUploadAllowed(userId, totalSize);
-
-        User user = userRepository.findById(userId)
+    User user =
+        userRepository
+            .findById(userId)
             .orElseThrow(() -> new RuntimeException(String.format(ERROR_USER_NOT_FOUND, userId)));
 
-        return files.stream().map(file -> uploadSingleFile(file, request, user)).toList();
-    }
+    return files.stream().map(file -> uploadSingleFile(file, request, user)).toList();
+  }
 
-    private FileUploadResponse uploadSingleFile(MultipartFile file, FileUploadRequest request, User user) {
-        validateFile(file, request);
+  private FileUploadResponse uploadSingleFile(
+      MultipartFile file, FileUploadRequest request, User user) {
+    validateFile(file, request);
 
-        try {
-            String originalFilename = file.getOriginalFilename();
-            String extension = getFileExtension(originalFilename);
-            String uniqueFilename = UuidV7Generator.generate().toString() + extension;
-            String checksum;
-            String thumbKey = null;
+    try {
+      String originalFilename = file.getOriginalFilename();
+      String extension = getFileExtension(originalFilename);
+      String uniqueFilename = UuidV7Generator.generate().toString() + extension;
+      String checksum;
+      String thumbKey = null;
 
-            if (s3Enabled) {
-                if (isProfileOrCoverType(request.type())) {
-                    UUID photoId = UuidV7Generator.generate();
-                    String basePath = getProfileCoverBasePath(request.type(), user.getId(), photoId);
-                    String mainKey = basePath + "main/" + photoId + extension;
-                    byte[] fileBytes = file.getBytes();
-                    s3StorageService.uploadBytes(fileBytes, mainKey, file.getContentType());
-                    uniqueFilename = mainKey;
-                    checksum = calculateChecksum(fileBytes);
+      if (s3Enabled) {
+        if (isProfileOrCoverType(request.type())) {
+          UUID photoId = UuidV7Generator.generate();
+          String basePath = getProfileCoverBasePath(request.type(), user.getId(), photoId);
+          String mainKey = basePath + "main/" + photoId + extension;
+          byte[] fileBytes = file.getBytes();
+          s3StorageService.uploadBytes(fileBytes, mainKey, file.getContentType());
+          uniqueFilename = mainKey;
+          checksum = calculateChecksum(fileBytes);
 
-                    if (isImageType(request.type())) {
-                        try {
-                            byte[] thumbnailBytes = generateThumbnail(fileBytes);
-                            thumbKey = basePath + "thumb/" + photoId + ".jpg";
-                            s3StorageService.uploadBytes(thumbnailBytes, thumbKey, "image/jpeg");
-                        } catch (Exception e) {
-                            System.err.println("Thumbnail generation failed: " + e.getMessage());
-                        }
-                    }
-                } else {
-                    String directory = getDirectoryForType(request.type());
-                    String s3Key = s3StorageService.uploadFile(file, directory);
-                    uniqueFilename = s3Key;
-                    checksum = calculateChecksum(file);
-
-                    if (isImageType(request.type())) {
-                        try {
-                            byte[] thumbnailBytes = generateThumbnail(file);
-                            thumbKey = "lambrk/posts/media/image/thumb/" + UuidV7Generator.generate() + ".jpg";
-                            s3StorageService.uploadBytes(thumbnailBytes, thumbKey, "image/jpeg");
-                        } catch (Exception e) {
-                            System.err.println("Thumbnail generation failed: " + e.getMessage());
-                        }
-                    }
-                }
-            } else {
-                Path filePath = Paths.get(uploadDirectory, uniqueFilename);
-                Files.copy(file.getInputStream(), filePath);
-                checksum = calculateChecksum(filePath);
-            }
-
-            // Store just the S3 key; full URL is resolved at fetch time
-            String fileUrlKey = s3Enabled ? uniqueFilename : getFileUrl(uniqueFilename);
-            String thumbUrlKey = s3Enabled ? thumbKey : (thumbKey != null ? thumbKey : getThumbnailUrl(uniqueFilename));
-
-            FileUpload fileUpload = new FileUpload(
-                FileUpload.FileUploadType.valueOf(request.type().name()),
-                uniqueFilename,
-                originalFilename,
-                fileUrlKey,
-                thumbUrlKey,
-                file.getSize(),
-                file.getContentType(),
-                request.description(),
-                request.isPublic(),
-                request.isNSFW(),
-                request.altText(),
-                user,
-                Instant.now(),
-                Instant.now(),
-                checksum
-            );
-
-            FileUpload saved = fileUploadRepository.save(fileUpload);
-            freeTierLimitService.recordUpload(user.getId(), file.getSize());
-            customMetrics.recordFileUpload(request.type().name());
-
-            return toResponse(saved);
-
-        } catch (IOException e) {
-            throw new RuntimeException(ERROR_UPLOAD_FAILED, e);
-        }
-    }
-
-    @Cacheable(value = "fileUploads", key = "#fileId")
-    public FileUploadResponse getFile(UUID fileId, UUID userId) {
-        FileUpload fileUpload = fileUploadRepository.findById(fileId)
-            .orElseThrow(() -> new RuntimeException(String.format(ERROR_FILE_NOT_FOUND, fileId)));
-        
-        // Check if user has access to this file
-        if (!fileUpload.isPublic() && !fileUpload.getUploadedBy().getId().equals(userId)) {
-            throw new RuntimeException(String.format(ERROR_ACCESS_DENIED, fileId));
-        }
-        
-        return toResponse(fileUpload);
-    }
-
-    @Cacheable(value = "fileUploads", key = "#userId + '-' + #page")
-    public Page<FileUploadResponse> getUserFiles(UUID userId, Pageable pageable) {
-        Page<FileUpload> files = fileUploadRepository.findByUploadedByOrderByCreatedAtDesc(userId, pageable);
-        return files.map(f -> toResponse(f));
-    }
-
-    @Cacheable(value = "fileUploads", key = "#type + '-' + #page")
-    public Page<FileUploadResponse> getFilesByType(FileUploadRequest.FileType type, Pageable pageable) {
-        FileUpload.FileUploadType entityType = FileUpload.FileUploadType.valueOf(type.name());
-        Page<FileUpload> files = fileUploadRepository.findByTypeAndIsPublicOrderByCreatedAtDesc(entityType, true, pageable);
-        return files.map(f -> toResponse(f));
-    }
-
-    @CacheEvict(value = "fileUploads", allEntries = true)
-    public void deleteFile(UUID fileId, UUID userId) {
-        FileUpload fileUpload = fileUploadRepository.findById(fileId)
-            .orElseThrow(() -> new RuntimeException(String.format(ERROR_FILE_NOT_FOUND, fileId)));
-
-        if (!fileUpload.getUploadedBy().getId().equals(userId)) {
-            throw new RuntimeException(String.format(ERROR_ACCESS_DENIED, fileId));
-        }
-
-        // Delete from S3 or local storage
-        if (s3Enabled) {
-            s3StorageService.deleteFile(fileUpload.getFileName());
-        } else {
+          if (isImageType(request.type())) {
             try {
-                Path filePath = Paths.get(uploadDirectory, fileUpload.getFileName());
-                Files.deleteIfExists(filePath);
-
-                Path thumbnailPath = Paths.get(uploadDirectory, "thumbnails", fileUpload.getFileName());
-                Files.deleteIfExists(thumbnailPath);
-            } catch (IOException e) {
-                System.err.println("Failed to delete file from disk: " + e.getMessage());
+              byte[] thumbnailBytes = generateThumbnail(fileBytes);
+              thumbKey = basePath + "thumb/" + photoId + ".jpg";
+              s3StorageService.uploadBytes(thumbnailBytes, thumbKey, "image/jpeg");
+            } catch (Exception e) {
+              System.err.println("Thumbnail generation failed: " + e.getMessage());
             }
+          }
+        } else {
+          String directory = getDirectoryForType(request.type());
+          String s3Key = s3StorageService.uploadFile(file, directory);
+          uniqueFilename = s3Key;
+          checksum = calculateChecksum(file);
+
+          if (isImageType(request.type())) {
+            try {
+              byte[] thumbnailBytes = generateThumbnail(file);
+              thumbKey = "lambrk/posts/media/image/thumb/" + UuidV7Generator.generate() + ".jpg";
+              s3StorageService.uploadBytes(thumbnailBytes, thumbKey, "image/jpeg");
+            } catch (Exception e) {
+              System.err.println("Thumbnail generation failed: " + e.getMessage());
+            }
+          }
         }
+      } else {
+        Path filePath = Paths.get(uploadDirectory, uniqueFilename);
+        Files.copy(file.getInputStream(), filePath);
+        checksum = calculateChecksum(filePath);
+      }
 
-        // Record file deletion for free tier tracking
-        freeTierLimitService.recordFileDeletion(userId, fileUpload.getFileSize());
+      // Store just the S3 key; full URL is resolved at fetch time
+      String fileUrlKey = s3Enabled ? uniqueFilename : getFileUrl(uniqueFilename);
+      String thumbUrlKey =
+          s3Enabled ? thumbKey : (thumbKey != null ? thumbKey : getThumbnailUrl(uniqueFilename));
 
-        // Delete database record
-        fileUploadRepository.delete(fileUpload);
+      FileUpload fileUpload =
+          new FileUpload(
+              FileUpload.FileUploadType.valueOf(request.type().name()),
+              uniqueFilename,
+              originalFilename,
+              fileUrlKey,
+              thumbUrlKey,
+              file.getSize(),
+              file.getContentType(),
+              request.description(),
+              request.isPublic(),
+              request.isNSFW(),
+              request.altText(),
+              user,
+              Instant.now(),
+              Instant.now(),
+              checksum);
+
+      FileUpload saved = fileUploadRepository.save(fileUpload);
+      freeTierLimitService.recordUpload(user.getId(), file.getSize());
+      customMetrics.recordFileUpload(request.type().name());
+
+      return toResponse(saved);
+
+    } catch (IOException e) {
+      throw new RuntimeException(ERROR_UPLOAD_FAILED, e);
+    }
+  }
+
+  @Cacheable(value = "fileUploads", key = "#fileId")
+  public FileUploadResponse getFile(UUID fileId, UUID userId) {
+    FileUpload fileUpload =
+        fileUploadRepository
+            .findById(fileId)
+            .orElseThrow(() -> new RuntimeException(String.format(ERROR_FILE_NOT_FOUND, fileId)));
+
+    // Check if user has access to this file
+    if (!fileUpload.isPublic() && !fileUpload.getUploadedBy().getId().equals(userId)) {
+      throw new RuntimeException(String.format(ERROR_ACCESS_DENIED, fileId));
     }
 
-    @CacheEvict(value = "fileUploads", allEntries = true)
-    public FileUploadResponse updateFileMetadata(UUID fileId, FileUploadRequest request, UUID userId) {
-        FileUpload fileUpload = fileUploadRepository.findById(fileId)
+    return toResponse(fileUpload);
+  }
+
+  @Cacheable(value = "fileUploads", key = "#userId + '-' + #page")
+  public Page<FileUploadResponse> getUserFiles(UUID userId, Pageable pageable) {
+    Page<FileUpload> files =
+        fileUploadRepository.findByUploadedByOrderByCreatedAtDesc(userId, pageable);
+    return files.map(f -> toResponse(f));
+  }
+
+  @Cacheable(value = "fileUploads", key = "#type + '-' + #page")
+  public Page<FileUploadResponse> getFilesByType(
+      FileUploadRequest.FileType type, Pageable pageable) {
+    FileUpload.FileUploadType entityType = FileUpload.FileUploadType.valueOf(type.name());
+    Page<FileUpload> files =
+        fileUploadRepository.findByTypeAndIsPublicOrderByCreatedAtDesc(entityType, true, pageable);
+    return files.map(f -> toResponse(f));
+  }
+
+  @CacheEvict(value = "fileUploads", allEntries = true)
+  public void deleteFile(UUID fileId, UUID userId) {
+    FileUpload fileUpload =
+        fileUploadRepository
+            .findById(fileId)
             .orElseThrow(() -> new RuntimeException(String.format(ERROR_FILE_NOT_FOUND, fileId)));
-        
-        if (!fileUpload.getUploadedBy().getId().equals(userId)) {
-            throw new RuntimeException(String.format(ERROR_ACCESS_DENIED, fileId));
-        }
-        
-        FileUpload updated = new FileUpload(
+
+    if (!fileUpload.getUploadedBy().getId().equals(userId)) {
+      throw new RuntimeException(String.format(ERROR_ACCESS_DENIED, fileId));
+    }
+
+    // Delete from S3 or local storage
+    if (s3Enabled) {
+      s3StorageService.deleteFile(fileUpload.getFileName());
+    } else {
+      try {
+        Path filePath = Paths.get(uploadDirectory, fileUpload.getFileName());
+        Files.deleteIfExists(filePath);
+
+        Path thumbnailPath = Paths.get(uploadDirectory, "thumbnails", fileUpload.getFileName());
+        Files.deleteIfExists(thumbnailPath);
+      } catch (IOException e) {
+        System.err.println("Failed to delete file from disk: " + e.getMessage());
+      }
+    }
+
+    // Record file deletion for free tier tracking
+    freeTierLimitService.recordFileDeletion(userId, fileUpload.getFileSize());
+
+    // Delete database record
+    fileUploadRepository.delete(fileUpload);
+  }
+
+  @CacheEvict(value = "fileUploads", allEntries = true)
+  public FileUploadResponse updateFileMetadata(
+      UUID fileId, FileUploadRequest request, UUID userId) {
+    FileUpload fileUpload =
+        fileUploadRepository
+            .findById(fileId)
+            .orElseThrow(() -> new RuntimeException(String.format(ERROR_FILE_NOT_FOUND, fileId)));
+
+    if (!fileUpload.getUploadedBy().getId().equals(userId)) {
+      throw new RuntimeException(String.format(ERROR_ACCESS_DENIED, fileId));
+    }
+
+    FileUpload updated =
+        new FileUpload(
             fileUpload.getId(),
             fileUpload.getFileName(),
             fileUpload.getOriginalFileName(),
@@ -288,194 +303,198 @@ public class FileUploadService {
             fileUpload.getUploadedBy(),
             fileUpload.getUploadedAt(),
             Instant.now(),
-            fileUpload.getChecksum()
-        );
-        
-        FileUpload saved = fileUploadRepository.save(updated);
-        return FileUploadResponse.from(saved);
-    }
+            fileUpload.getChecksum());
 
-    public byte[] getFileContent(String filename, UUID userId) throws IOException {
-        FileUpload fileUpload = fileUploadRepository.findByFileName(filename)
+    FileUpload saved = fileUploadRepository.save(updated);
+    return FileUploadResponse.from(saved);
+  }
+
+  public byte[] getFileContent(String filename, UUID userId) throws IOException {
+    FileUpload fileUpload =
+        fileUploadRepository
+            .findByFileName(filename)
             .orElseThrow(() -> new RuntimeException(String.format(ERROR_FILE_NOT_FOUND, filename)));
 
-        if (!fileUpload.isPublic() && !fileUpload.getUploadedBy().getId().equals(userId)) {
-            throw new RuntimeException(String.format(ERROR_ACCESS_DENIED, filename));
-        }
-
-        byte[] content;
-        if (s3Enabled) {
-            content = s3StorageService.downloadFile(fileUpload.getFileName());
-        } else {
-            Path filePath = Paths.get(uploadDirectory, filename);
-            content = Files.readAllBytes(filePath);
-        }
-
-        // Record bandwidth usage for free tier tracking
-        freeTierLimitService.recordBandwidthUsage(userId, content.length);
-
-        return content;
+    if (!fileUpload.isPublic() && !fileUpload.getUploadedBy().getId().equals(userId)) {
+      throw new RuntimeException(String.format(ERROR_ACCESS_DENIED, filename));
     }
 
-    private void validateFile(MultipartFile file, FileUploadRequest request) {
-        if (file.isEmpty()) {
-            throw new IllegalArgumentException(ERROR_FILE_EMPTY);
-        }
-
-        if (file.getSize() > maxFileSize) {
-            throw new IllegalArgumentException(String.format(ERROR_FILE_TOO_LARGE, maxFileSize));
-        }
-
-        String contentType = file.getContentType();
-        if (!allowedTypes.contains(contentType)) {
-            throw new IllegalArgumentException(String.format(ERROR_FILE_TYPE_NOT_ALLOWED, contentType));
-        }
-
-        if (file.getOriginalFilename() == null || file.getOriginalFilename().isBlank()) {
-            throw new IllegalArgumentException(ERROR_FILE_NAME_REQUIRED);
-        }
+    byte[] content;
+    if (s3Enabled) {
+      content = s3StorageService.downloadFile(fileUpload.getFileName());
+    } else {
+      Path filePath = Paths.get(uploadDirectory, filename);
+      content = Files.readAllBytes(filePath);
     }
 
-    private String getFileExtension(String filename) {
-        if (filename == null || filename.isBlank()) {
-            return "";
-        }
-        int lastDotIndex = filename.lastIndexOf('.');
-        return (lastDotIndex == -1 || lastDotIndex == filename.length() - 1) 
-            ? "" 
-            : filename.substring(lastDotIndex);
+    // Record bandwidth usage for free tier tracking
+    freeTierLimitService.recordBandwidthUsage(userId, content.length);
+
+    return content;
+  }
+
+  private void validateFile(MultipartFile file, FileUploadRequest request) {
+    if (file.isEmpty()) {
+      throw new IllegalArgumentException(ERROR_FILE_EMPTY);
     }
 
-    private String getFileUrl(String filename) {
-        return FILE_URL_PREFIX + filename;
+    if (file.getSize() > maxFileSize) {
+      throw new IllegalArgumentException(String.format(ERROR_FILE_TOO_LARGE, maxFileSize));
     }
 
-    private String getThumbnailUrl(String filename) {
-        return THUMBNAIL_URL_PREFIX + filename;
+    String contentType = file.getContentType();
+    if (!allowedTypes.contains(contentType)) {
+      throw new IllegalArgumentException(String.format(ERROR_FILE_TYPE_NOT_ALLOWED, contentType));
     }
 
-    /**
-     * Resolves a stored URL value to a full public URL.
-     * Backward-compatible: if the stored value is already a full URL, returns it as-is.
-     * Otherwise prepends the appropriate base URL (CDN or S3).
-     */
-    private String resolveUrl(String storedValue) {
-        if (storedValue == null || storedValue.isBlank()) {
-            return null;
-        }
-        // Backward compat: already a full URL
-        if (storedValue.startsWith("http://") || storedValue.startsWith("https://")) {
-            return storedValue;
-        }
-        // Local storage path
-        if (!s3Enabled) {
-            return getFileUrl(storedValue);
-        }
-        // S3/CDN: prepend base URL
-        return s3StorageService.getPublicUrl(storedValue);
+    if (file.getOriginalFilename() == null || file.getOriginalFilename().isBlank()) {
+      throw new IllegalArgumentException(ERROR_FILE_NAME_REQUIRED);
     }
+  }
 
-    private FileUploadResponse toResponse(FileUpload fileUpload) {
-        String resolvedFileUrl = resolveUrl(fileUpload.getFileUrl());
-        String resolvedThumbUrl = resolveUrl(fileUpload.getThumbnailUrl());
-        return FileUploadResponse.from(fileUpload, resolvedFileUrl, resolvedThumbUrl);
+  private String getFileExtension(String filename) {
+    if (filename == null || filename.isBlank()) {
+      return "";
     }
+    int lastDotIndex = filename.lastIndexOf('.');
+    return (lastDotIndex == -1 || lastDotIndex == filename.length() - 1)
+        ? ""
+        : filename.substring(lastDotIndex);
+  }
 
-    private String calculateChecksum(byte[] fileBytes) {
-        try {
-            MessageDigest md = MessageDigest.getInstance(SHA_256);
-            byte[] hashBytes = md.digest(fileBytes);
-            return bytesToHex(hashBytes);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(ERROR_CHECKSUM_FAILED, e);
-        }
+  private String getFileUrl(String filename) {
+    return FILE_URL_PREFIX + filename;
+  }
+
+  private String getThumbnailUrl(String filename) {
+    return THUMBNAIL_URL_PREFIX + filename;
+  }
+
+  /**
+   * Resolves a stored URL value to a full public URL. Backward-compatible: if the stored value is
+   * already a full URL, returns it as-is. Otherwise prepends the appropriate base URL (CDN or S3).
+   */
+  private String resolveUrl(String storedValue) {
+    if (storedValue == null || storedValue.isBlank()) {
+      return null;
     }
-
-    private String calculateChecksum(Path filePath) {
-        try {
-            return calculateChecksum(Files.readAllBytes(filePath));
-        } catch (IOException e) {
-            throw new RuntimeException(ERROR_CHECKSUM_FAILED, e);
-        }
+    // Backward compat: already a full URL
+    if (storedValue.startsWith("http://") || storedValue.startsWith("https://")) {
+      return storedValue;
     }
-
-    private String calculateChecksum(MultipartFile file) {
-        try {
-            return calculateChecksum(file.getBytes());
-        } catch (IOException e) {
-            throw new RuntimeException(ERROR_CHECKSUM_FAILED, e);
-        }
+    // Local storage path
+    if (!s3Enabled) {
+      return getFileUrl(storedValue);
     }
+    // S3/CDN: prepend base URL
+    return s3StorageService.getPublicUrl(storedValue);
+  }
 
-    private String bytesToHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%0" + CHECKSUM_STRING_LENGTH + "x", b));
-        }
-        return sb.toString();
+  private FileUploadResponse toResponse(FileUpload fileUpload) {
+    String resolvedFileUrl = resolveUrl(fileUpload.getFileUrl());
+    String resolvedThumbUrl = resolveUrl(fileUpload.getThumbnailUrl());
+    return FileUploadResponse.from(fileUpload, resolvedFileUrl, resolvedThumbUrl);
+  }
+
+  private String calculateChecksum(byte[] fileBytes) {
+    try {
+      MessageDigest md = MessageDigest.getInstance(SHA_256);
+      byte[] hashBytes = md.digest(fileBytes);
+      return bytesToHex(hashBytes);
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException(ERROR_CHECKSUM_FAILED, e);
     }
+  }
 
-    private String getDirectoryForType(FileUploadRequest.FileType type) {
-        return switch (type) {
-            case AVATAR -> "lambrk/posts/media/image/main";
-            case POST_IMAGE -> "lambrk/posts/media/image/main";
-            case POST_VIDEO -> "lambrk/posts/media/video";
-            case COMMUNITY_ICON -> "lambrk/posts/media/image/main";
-            case COMMUNITY_HEADER -> "lambrk/posts/media/image/main";
-            case BANNER -> "lambrk/posts/media/image/main";
-            case PROFILE_IMAGE -> "lambrk/profile/profile_img";
-            case COVER_IMAGE -> "lambrk/profile/cover_img";
+  private String calculateChecksum(Path filePath) {
+    try {
+      return calculateChecksum(Files.readAllBytes(filePath));
+    } catch (IOException e) {
+      throw new RuntimeException(ERROR_CHECKSUM_FAILED, e);
+    }
+  }
+
+  private String calculateChecksum(MultipartFile file) {
+    try {
+      return calculateChecksum(file.getBytes());
+    } catch (IOException e) {
+      throw new RuntimeException(ERROR_CHECKSUM_FAILED, e);
+    }
+  }
+
+  private String bytesToHex(byte[] bytes) {
+    StringBuilder sb = new StringBuilder();
+    for (byte b : bytes) {
+      sb.append(String.format("%0" + CHECKSUM_STRING_LENGTH + "x", b));
+    }
+    return sb.toString();
+  }
+
+  private String getDirectoryForType(FileUploadRequest.FileType type) {
+    return switch (type) {
+      case AVATAR -> "lambrk/posts/media/image/main";
+      case POST_IMAGE -> "lambrk/posts/media/image/main";
+      case POST_VIDEO -> "lambrk/posts/media/video";
+      case COMMUNITY_ICON -> "lambrk/posts/media/image/main";
+      case COMMUNITY_HEADER -> "lambrk/posts/media/image/main";
+      case BANNER -> "lambrk/posts/media/image/main";
+      case PROFILE_IMAGE -> "lambrk/profile/profile_img";
+      case COVER_IMAGE -> "lambrk/profile/cover_img";
+    };
+  }
+
+  private String getProfileCoverBasePath(
+      FileUploadRequest.FileType type, UUID userId, UUID photoId) {
+    String folder =
+        switch (type) {
+          case PROFILE_IMAGE -> "profile_img";
+          case COVER_IMAGE -> "cover_img";
+          default -> "profile_img";
         };
+    return "lambrk/profile/" + folder + "/" + userId + "/" + photoId + "/";
+  }
+
+  private boolean isProfileOrCoverType(FileUploadRequest.FileType type) {
+    return type == FileUploadRequest.FileType.PROFILE_IMAGE
+        || type == FileUploadRequest.FileType.COVER_IMAGE;
+  }
+
+  public FreeTierLimitService.FreeTierStatus getUserFreeTierStatus(UUID userId) {
+    return freeTierLimitService.getUserStatus(userId);
+  }
+
+  private boolean isImageType(FileUploadRequest.FileType type) {
+    return type == FileUploadRequest.FileType.POST_IMAGE
+        || type == FileUploadRequest.FileType.AVATAR
+        || type == FileUploadRequest.FileType.COMMUNITY_ICON
+        || type == FileUploadRequest.FileType.COMMUNITY_HEADER
+        || type == FileUploadRequest.FileType.BANNER
+        || type == FileUploadRequest.FileType.PROFILE_IMAGE
+        || type == FileUploadRequest.FileType.COVER_IMAGE;
+  }
+
+  private byte[] generateThumbnail(MultipartFile file) throws IOException {
+    return generateThumbnail(file.getBytes());
+  }
+
+  private byte[] generateThumbnail(byte[] imageBytes) throws IOException {
+    BufferedImage original = ImageIO.read(new ByteArrayInputStream(imageBytes));
+    if (original == null) {
+      throw new IOException("Cannot read image");
     }
 
-    private String getProfileCoverBasePath(FileUploadRequest.FileType type, UUID userId, UUID photoId) {
-        String folder = switch (type) {
-            case PROFILE_IMAGE -> "profile_img";
-            case COVER_IMAGE -> "cover_img";
-            default -> "profile_img";
-        };
-        return "lambrk/profile/" + folder + "/" + userId + "/" + photoId + "/";
-    }
+    int thumbWidth = 300;
+    int thumbHeight = (int) ((double) original.getHeight() / original.getWidth() * thumbWidth);
+    BufferedImage thumbnail =
+        new BufferedImage(thumbWidth, thumbHeight, BufferedImage.TYPE_INT_RGB);
+    Graphics2D g = thumbnail.createGraphics();
+    g.setRenderingHint(
+        RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+    g.drawImage(original, 0, 0, thumbWidth, thumbHeight, null);
+    g.dispose();
 
-    private boolean isProfileOrCoverType(FileUploadRequest.FileType type) {
-        return type == FileUploadRequest.FileType.PROFILE_IMAGE
-            || type == FileUploadRequest.FileType.COVER_IMAGE;
-    }
-
-    public FreeTierLimitService.FreeTierStatus getUserFreeTierStatus(UUID userId) {
-        return freeTierLimitService.getUserStatus(userId);
-    }
-
-    private boolean isImageType(FileUploadRequest.FileType type) {
-        return type == FileUploadRequest.FileType.POST_IMAGE
-            || type == FileUploadRequest.FileType.AVATAR
-            || type == FileUploadRequest.FileType.COMMUNITY_ICON
-            || type == FileUploadRequest.FileType.COMMUNITY_HEADER
-            || type == FileUploadRequest.FileType.BANNER
-            || type == FileUploadRequest.FileType.PROFILE_IMAGE
-            || type == FileUploadRequest.FileType.COVER_IMAGE;
-    }
-
-    private byte[] generateThumbnail(MultipartFile file) throws IOException {
-        return generateThumbnail(file.getBytes());
-    }
-
-    private byte[] generateThumbnail(byte[] imageBytes) throws IOException {
-        BufferedImage original = ImageIO.read(new ByteArrayInputStream(imageBytes));
-        if (original == null) {
-            throw new IOException("Cannot read image");
-        }
-
-        int thumbWidth = 300;
-        int thumbHeight = (int) ((double) original.getHeight() / original.getWidth() * thumbWidth);
-        BufferedImage thumbnail = new BufferedImage(thumbWidth, thumbHeight, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = thumbnail.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.drawImage(original, 0, 0, thumbWidth, thumbHeight, null);
-        g.dispose();
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(thumbnail, "jpg", baos);
-        return baos.toByteArray();
-    }
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    ImageIO.write(thumbnail, "jpg", baos);
+    return baos.toByteArray();
+  }
 }

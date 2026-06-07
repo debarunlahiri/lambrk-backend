@@ -12,22 +12,22 @@ Get all logs.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `50` | Page size |
-| `sort` | Query | string | No | `timestamp,DESC` | Sort criteria |
+| Parameter       | Location | Type    | Required | Default          | Description            |
+| --------------- | -------- | ------- | -------- | ---------------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —                | `Bearer <jwt>` (Admin) |
+| `page`          | Query    | integer | No       | `0`              | Page number            |
+| `size`          | Query    | integer | No       | `50`             | Page size              |
+| `sort`          | Query    | string  | No       | `timestamp,DESC` | Sort criteria          |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<LogEntry>` | All logs |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body             | Description            |
+| ------ | ---------------- | ---------------------- |
+| `200`  | `Page<LogEntry>` | All logs               |
+| `401`  | error            | JWT missing or invalid |
+| `403`  | error            | Not an admin           |
 
 **cURL**
 
@@ -62,23 +62,23 @@ Get logs by user.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `userId` | Path | UUID | **Yes** | — | User UUID |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `50` | Page size |
-| `sort` | Query | string | No | `timestamp,DESC` | Sort criteria |
+| Parameter       | Location | Type    | Required | Default          | Description            |
+| --------------- | -------- | ------- | -------- | ---------------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —                | `Bearer <jwt>` (Admin) |
+| `userId`        | Path     | UUID    | **Yes**  | —                | User UUID              |
+| `page`          | Query    | integer | No       | `0`              | Page number            |
+| `size`          | Query    | integer | No       | `50`             | Page size              |
+| `sort`          | Query    | string  | No       | `timestamp,DESC` | Sort criteria          |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<LogEntry>` | Logs for the user |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body             | Description            |
+| ------ | ---------------- | ---------------------- |
+| `200`  | `Page<LogEntry>` | Logs for the user      |
+| `401`  | error            | JWT missing or invalid |
+| `403`  | error            | Not an admin           |
 
 **cURL**
 
@@ -113,23 +113,23 @@ Get logs by endpoint path.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `path` | Query | string | **Yes** | — | Endpoint path pattern |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `50` | Page size |
-| `sort` | Query | string | No | `timestamp,DESC` | Sort criteria |
+| Parameter       | Location | Type    | Required | Default          | Description            |
+| --------------- | -------- | ------- | -------- | ---------------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —                | `Bearer <jwt>` (Admin) |
+| `path`          | Query    | string  | **Yes**  | —                | Endpoint path pattern  |
+| `page`          | Query    | integer | No       | `0`              | Page number            |
+| `size`          | Query    | integer | No       | `50`             | Page size              |
+| `sort`          | Query    | string  | No       | `timestamp,DESC` | Sort criteria          |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<LogEntry>` | Logs for the endpoint |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body             | Description            |
+| ------ | ---------------- | ---------------------- |
+| `200`  | `Page<LogEntry>` | Logs for the endpoint  |
+| `401`  | error            | JWT missing or invalid |
+| `403`  | error            | Not an admin           |
 
 **cURL**
 
@@ -164,23 +164,23 @@ Get logs by method.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `method` | Path | string | **Yes** | — | HTTP method (`GET`, `POST`, etc.) |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `50` | Page size |
-| `sort` | Query | string | No | `timestamp,DESC` | Sort criteria |
+| Parameter       | Location | Type    | Required | Default          | Description                       |
+| --------------- | -------- | ------- | -------- | ---------------- | --------------------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —                | `Bearer <jwt>` (Admin)            |
+| `method`        | Path     | string  | **Yes**  | —                | HTTP method (`GET`, `POST`, etc.) |
+| `page`          | Query    | integer | No       | `0`              | Page number                       |
+| `size`          | Query    | integer | No       | `50`             | Page size                         |
+| `sort`          | Query    | string  | No       | `timestamp,DESC` | Sort criteria                     |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<LogEntry>` | Logs for the method |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body             | Description            |
+| ------ | ---------------- | ---------------------- |
+| `200`  | `Page<LogEntry>` | Logs for the method    |
+| `401`  | error            | JWT missing or invalid |
+| `403`  | error            | Not an admin           |
 
 **cURL**
 
@@ -215,23 +215,23 @@ Get logs by status code.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `statusCode` | Path | integer | **Yes** | — | HTTP status code |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `50` | Page size |
-| `sort` | Query | string | No | `timestamp,DESC` | Sort criteria |
+| Parameter       | Location | Type    | Required | Default          | Description            |
+| --------------- | -------- | ------- | -------- | ---------------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —                | `Bearer <jwt>` (Admin) |
+| `statusCode`    | Path     | integer | **Yes**  | —                | HTTP status code       |
+| `page`          | Query    | integer | No       | `0`              | Page number            |
+| `size`          | Query    | integer | No       | `50`             | Page size              |
+| `sort`          | Query    | string  | No       | `timestamp,DESC` | Sort criteria          |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<LogEntry>` | Logs for the status code |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body             | Description              |
+| ------ | ---------------- | ------------------------ |
+| `200`  | `Page<LogEntry>` | Logs for the status code |
+| `401`  | error            | JWT missing or invalid   |
+| `403`  | error            | Not an admin             |
 
 **cURL**
 
@@ -266,22 +266,22 @@ Get error logs.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `50` | Page size |
-| `sort` | Query | string | No | `timestamp,DESC` | Sort criteria |
+| Parameter       | Location | Type    | Required | Default          | Description            |
+| --------------- | -------- | ------- | -------- | ---------------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —                | `Bearer <jwt>` (Admin) |
+| `page`          | Query    | integer | No       | `0`              | Page number            |
+| `size`          | Query    | integer | No       | `50`             | Page size              |
+| `sort`          | Query    | string  | No       | `timestamp,DESC` | Sort criteria          |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<LogEntry>` | Error logs |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body             | Description            |
+| ------ | ---------------- | ---------------------- |
+| `200`  | `Page<LogEntry>` | Error logs             |
+| `401`  | error            | JWT missing or invalid |
+| `403`  | error            | Not an admin           |
 
 **cURL**
 
@@ -316,22 +316,22 @@ Get exception logs.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `50` | Page size |
-| `sort` | Query | string | No | `timestamp,DESC` | Sort criteria |
+| Parameter       | Location | Type    | Required | Default          | Description            |
+| --------------- | -------- | ------- | -------- | ---------------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —                | `Bearer <jwt>` (Admin) |
+| `page`          | Query    | integer | No       | `0`              | Page number            |
+| `size`          | Query    | integer | No       | `50`             | Page size              |
+| `sort`          | Query    | string  | No       | `timestamp,DESC` | Sort criteria          |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<LogEntry>` | Exception logs |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body             | Description            |
+| ------ | ---------------- | ---------------------- |
+| `200`  | `Page<LogEntry>` | Exception logs         |
+| `401`  | error            | JWT missing or invalid |
+| `403`  | error            | Not an admin           |
 
 **cURL**
 
@@ -366,22 +366,22 @@ Get anonymous logs.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `50` | Page size |
-| `sort` | Query | string | No | `timestamp,DESC` | Sort criteria |
+| Parameter       | Location | Type    | Required | Default          | Description            |
+| --------------- | -------- | ------- | -------- | ---------------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —                | `Bearer <jwt>` (Admin) |
+| `page`          | Query    | integer | No       | `0`              | Page number            |
+| `size`          | Query    | integer | No       | `50`             | Page size              |
+| `sort`          | Query    | string  | No       | `timestamp,DESC` | Sort criteria          |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<LogEntry>` | Anonymous request logs |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body             | Description            |
+| ------ | ---------------- | ---------------------- |
+| `200`  | `Page<LogEntry>` | Anonymous request logs |
+| `401`  | error            | JWT missing or invalid |
+| `403`  | error            | Not an admin           |
 
 **cURL**
 
@@ -416,22 +416,22 @@ Get authenticated logs.
 
 **What to send**
 
-| Parameter | Location | Type | Required | Default | Description |
-|-----------|----------|------|----------|---------|-------------|
-| `Authorization` | Header | string | **Yes** | — | `Bearer <jwt>` (Admin) |
-| `page` | Query | integer | No | `0` | Page number |
-| `size` | Query | integer | No | `50` | Page size |
-| `sort` | Query | string | No | `timestamp,DESC` | Sort criteria |
+| Parameter       | Location | Type    | Required | Default          | Description            |
+| --------------- | -------- | ------- | -------- | ---------------- | ---------------------- |
+| `Authorization` | Header   | string  | **Yes**  | —                | `Bearer <jwt>` (Admin) |
+| `page`          | Query    | integer | No       | `0`              | Page number            |
+| `size`          | Query    | integer | No       | `50`             | Page size              |
+| `sort`          | Query    | string  | No       | `timestamp,DESC` | Sort criteria          |
 
 No request body.
 
 **Response**
 
-| Status | Body | Description |
-|--------|------|-------------|
-| `200` | `Page<LogEntry>` | Authenticated request logs |
-| `401` | error | JWT missing or invalid |
-| `403` | error | Not an admin |
+| Status | Body             | Description                |
+| ------ | ---------------- | -------------------------- |
+| `200`  | `Page<LogEntry>` | Authenticated request logs |
+| `401`  | error            | JWT missing or invalid     |
+| `403`  | error            | Not an admin               |
 
 **cURL**
 

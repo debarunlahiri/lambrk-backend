@@ -1,5 +1,6 @@
 package com.lambrk.controller;
 
+import com.lambrk.config.UserPrincipal;
 import com.lambrk.dto.NotificationRequest;
 import com.lambrk.dto.NotificationResponse;
 import com.lambrk.service.NotificationService;
@@ -8,6 +9,7 @@ import io.micrometer.core.annotation.Timed;
 import io.micrometer.tracing.annotation.NewSpan;
 import io.micrometer.tracing.annotation.SpanTag;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,140 +17,139 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.lambrk.config.UserPrincipal;
-import java.util.UUID;
-
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {
 
-    private final NotificationService notificationService;
+  private final NotificationService notificationService;
 
-    public NotificationController(NotificationService notificationService) {
-        this.notificationService = notificationService;
-    }
+  public NotificationController(NotificationService notificationService) {
+    this.notificationService = notificationService;
+  }
 
-    @PostMapping
-    @NewSpan("create-notification")
-    @Counted(value = "notifications.created")
-    @Timed(value = "notifications.create.duration")
-    public ResponseEntity<NotificationResponse> createNotification(
-            @Valid @RequestBody NotificationRequest request,
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        
-        NotificationResponse response = notificationService.createNotification(request);
-        return ResponseEntity.ok(response);
-    }
+  @PostMapping
+  @NewSpan("create-notification")
+  @Counted(value = "notifications.created")
+  @Timed(value = "notifications.create.duration")
+  public ResponseEntity<NotificationResponse> createNotification(
+      @Valid @RequestBody NotificationRequest request,
+      @AuthenticationPrincipal UserPrincipal userDetails) {
 
-    @GetMapping
-    @NewSpan("get-notifications")
-    @Counted(value = "notifications.viewed")
-    @Timed(value = "notifications.get.duration")
-    public ResponseEntity<Page<NotificationResponse>> getUserNotifications(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        
-        UUID userId = getUserId(userDetails);
-        Pageable pageable = PageRequest.of(page, size);
-        Page<NotificationResponse> notifications = notificationService.getUserNotifications(userId, pageable);
-        return ResponseEntity.ok(notifications);
-    }
+    NotificationResponse response = notificationService.createNotification(request);
+    return ResponseEntity.ok(response);
+  }
 
-    @GetMapping("/unread")
-    @NewSpan("get-unread-notifications")
-    @Counted(value = "notifications.unread.viewed")
-    @Timed(value = "notifications.unread.duration")
-    public ResponseEntity<Page<NotificationResponse>> getUnreadNotifications(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        
-        UUID userId = getUserId(userDetails);
-        Pageable pageable = PageRequest.of(page, size);
-        Page<NotificationResponse> notifications = notificationService.getUnreadNotifications(userId, pageable);
-        return ResponseEntity.ok(notifications);
-    }
+  @GetMapping
+  @NewSpan("get-notifications")
+  @Counted(value = "notifications.viewed")
+  @Timed(value = "notifications.get.duration")
+  public ResponseEntity<Page<NotificationResponse>> getUserNotifications(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @AuthenticationPrincipal UserPrincipal userDetails) {
 
-    @PutMapping("/{notificationId}/read")
-    @NewSpan("mark-notification-read")
-    @Counted(value = "notifications.read")
-    @Timed(value = "notifications.read.duration")
-    public ResponseEntity<Void> markNotificationAsRead(
-            @PathVariable @SpanTag UUID notificationId,
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        
-        UUID userId = getUserId(userDetails);
-        notificationService.markNotificationAsRead(notificationId, userId);
-        return ResponseEntity.ok().build();
-    }
+    UUID userId = getUserId(userDetails);
+    Pageable pageable = PageRequest.of(page, size);
+    Page<NotificationResponse> notifications =
+        notificationService.getUserNotifications(userId, pageable);
+    return ResponseEntity.ok(notifications);
+  }
 
-    @PutMapping("/read-all")
-    @NewSpan("mark-all-notifications-read")
-    @Counted(value = "notifications.read.all")
-    @Timed(value = "notifications.read.all.duration")
-    public ResponseEntity<Void> markAllNotificationsAsRead(
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        
-        UUID userId = getUserId(userDetails);
-        notificationService.markAllNotificationsAsRead(userId);
-        return ResponseEntity.ok().build();
-    }
+  @GetMapping("/unread")
+  @NewSpan("get-unread-notifications")
+  @Counted(value = "notifications.unread.viewed")
+  @Timed(value = "notifications.unread.duration")
+  public ResponseEntity<Page<NotificationResponse>> getUnreadNotifications(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @AuthenticationPrincipal UserPrincipal userDetails) {
 
-    @DeleteMapping("/{notificationId}")
-    @NewSpan("delete-notification")
-    @Counted(value = "notifications.deleted")
-    @Timed(value = "notifications.delete.duration")
-    public ResponseEntity<Void> deleteNotification(
-            @PathVariable @SpanTag UUID notificationId,
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        
-        UUID userId = getUserId(userDetails);
-        notificationService.deleteNotification(notificationId, userId);
-        return ResponseEntity.noContent().build();
-    }
+    UUID userId = getUserId(userDetails);
+    Pageable pageable = PageRequest.of(page, size);
+    Page<NotificationResponse> notifications =
+        notificationService.getUnreadNotifications(userId, pageable);
+    return ResponseEntity.ok(notifications);
+  }
 
-    @DeleteMapping
-    @NewSpan("delete-all-notifications")
-    @Counted(value = "notifications.deleted.all")
-    @Timed(value = "notifications.delete.all.duration")
-    public ResponseEntity<Void> deleteAllNotifications(
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        
-        UUID userId = getUserId(userDetails);
-        notificationService.deleteAllNotifications(userId);
-        return ResponseEntity.noContent().build();
-    }
+  @PutMapping("/{notificationId}/read")
+  @NewSpan("mark-notification-read")
+  @Counted(value = "notifications.read")
+  @Timed(value = "notifications.read.duration")
+  public ResponseEntity<Void> markNotificationAsRead(
+      @PathVariable @SpanTag UUID notificationId,
+      @AuthenticationPrincipal UserPrincipal userDetails) {
 
-    @GetMapping("/count/unread")
-    @NewSpan("count-unread-notifications")
-    @Counted(value = "notifications.count.unread")
-    @Timed(value = "notifications.count.unread.duration")
-    public ResponseEntity<Long> getUnreadNotificationCount(
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        
-        UUID userId = getUserId(userDetails);
-        return ResponseEntity.ok(notificationService.getUnreadNotificationCount(userId));
-    }
+    UUID userId = getUserId(userDetails);
+    notificationService.markNotificationAsRead(notificationId, userId);
+    return ResponseEntity.ok().build();
+  }
 
-    @GetMapping("/type/{type}")
-    @NewSpan("get-notifications-by-type")
-    @Counted(value = "notifications.viewed.by-type")
-    @Timed(value = "notifications.by-type.duration")
-    public ResponseEntity<Page<NotificationResponse>> getNotificationsByType(
-            @PathVariable @SpanTag NotificationRequest.NotificationType type,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserPrincipal userDetails) {
-        
-        // This would need to be implemented in NotificationService
-        // For now, return empty page
-        Pageable pageable = PageRequest.of(page, size);
-        Page<NotificationResponse> notifications = Page.empty(pageable);
-        return ResponseEntity.ok(notifications);
-    }
+  @PutMapping("/read-all")
+  @NewSpan("mark-all-notifications-read")
+  @Counted(value = "notifications.read.all")
+  @Timed(value = "notifications.read.all.duration")
+  public ResponseEntity<Void> markAllNotificationsAsRead(
+      @AuthenticationPrincipal UserPrincipal userDetails) {
 
-    private UUID getUserId(UserPrincipal userPrincipal) {
-        return userPrincipal != null ? userPrincipal.getUserId() : null;
-    }
+    UUID userId = getUserId(userDetails);
+    notificationService.markAllNotificationsAsRead(userId);
+    return ResponseEntity.ok().build();
+  }
+
+  @DeleteMapping("/{notificationId}")
+  @NewSpan("delete-notification")
+  @Counted(value = "notifications.deleted")
+  @Timed(value = "notifications.delete.duration")
+  public ResponseEntity<Void> deleteNotification(
+      @PathVariable @SpanTag UUID notificationId,
+      @AuthenticationPrincipal UserPrincipal userDetails) {
+
+    UUID userId = getUserId(userDetails);
+    notificationService.deleteNotification(notificationId, userId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @DeleteMapping
+  @NewSpan("delete-all-notifications")
+  @Counted(value = "notifications.deleted.all")
+  @Timed(value = "notifications.delete.all.duration")
+  public ResponseEntity<Void> deleteAllNotifications(
+      @AuthenticationPrincipal UserPrincipal userDetails) {
+
+    UUID userId = getUserId(userDetails);
+    notificationService.deleteAllNotifications(userId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/count/unread")
+  @NewSpan("count-unread-notifications")
+  @Counted(value = "notifications.count.unread")
+  @Timed(value = "notifications.count.unread.duration")
+  public ResponseEntity<Long> getUnreadNotificationCount(
+      @AuthenticationPrincipal UserPrincipal userDetails) {
+
+    UUID userId = getUserId(userDetails);
+    return ResponseEntity.ok(notificationService.getUnreadNotificationCount(userId));
+  }
+
+  @GetMapping("/type/{type}")
+  @NewSpan("get-notifications-by-type")
+  @Counted(value = "notifications.viewed.by-type")
+  @Timed(value = "notifications.by-type.duration")
+  public ResponseEntity<Page<NotificationResponse>> getNotificationsByType(
+      @PathVariable @SpanTag NotificationRequest.NotificationType type,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @AuthenticationPrincipal UserPrincipal userDetails) {
+
+    // This would need to be implemented in NotificationService
+    // For now, return empty page
+    Pageable pageable = PageRequest.of(page, size);
+    Page<NotificationResponse> notifications = Page.empty(pageable);
+    return ResponseEntity.ok(notifications);
+  }
+
+  private UUID getUserId(UserPrincipal userPrincipal) {
+    return userPrincipal != null ? userPrincipal.getUserId() : null;
+  }
 }
