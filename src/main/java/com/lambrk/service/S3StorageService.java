@@ -39,18 +39,21 @@ public class S3StorageService {
     private final String bucketName;
     private final int presignedUrlExpirySeconds;
     private final boolean s3Enabled;
+    private final String cdnBaseUrl;
 
     public S3StorageService(
             S3Client s3Client,
             S3Presigner s3Presigner,
             String bucketName,
             @Value("${aws.s3.presigned-url-expiry:3600}") int presignedUrlExpirySeconds,
-            @Value("${aws.s3.enabled:true}") boolean s3Enabled) {
+            @Value("${aws.s3.enabled:true}") boolean s3Enabled,
+            @Value("${aws.s3.cdn-base-url:}") String cdnBaseUrl) {
         this.s3Client = s3Client;
         this.s3Presigner = s3Presigner;
         this.bucketName = bucketName;
         this.presignedUrlExpirySeconds = presignedUrlExpirySeconds;
         this.s3Enabled = s3Enabled;
+        this.cdnBaseUrl = cdnBaseUrl;
     }
 
     private void ensureS3Enabled() {
@@ -167,6 +170,10 @@ public class S3StorageService {
     }
 
     public String getPublicUrl(String key) {
+        if (cdnBaseUrl != null && !cdnBaseUrl.isBlank()) {
+            String base = cdnBaseUrl.endsWith("/") ? cdnBaseUrl.substring(0, cdnBaseUrl.length() - 1) : cdnBaseUrl;
+            return base + "/" + key;
+        }
         return String.format(URL_FORMAT, bucketName, s3Client.serviceClientConfiguration().region().id(), key);
     }
 

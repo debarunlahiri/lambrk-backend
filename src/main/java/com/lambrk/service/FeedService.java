@@ -382,7 +382,7 @@ public class FeedService {
             suggestedUser.getUsername(),
             suggestedUser.getDisplayName(),
             suggestedUser.getBio(),
-            suggestedUser.getAvatarUrl(),
+            com.lambrk.util.CdnUrlResolver.resolve(suggestedUser.getAvatarUrl()),
             suggestedUser.getKarma(),
             suggestedUser.isVerified(),
             userType,
@@ -415,7 +415,7 @@ public class FeedService {
             post.getAuthor().getId(),
             post.getAuthor().getUsername(),
             post.getAuthor().getDisplayName(),
-            post.getAuthor().getAvatarUrl(),
+            com.lambrk.util.CdnUrlResolver.resolve(post.getAuthor().getAvatarUrl()),
             post.getAuthor().getKarma(),
             post.getAuthor().isVerified(),
             determineUserType(post.getAuthor())
@@ -425,7 +425,7 @@ public class FeedService {
             post.getCommunity().getId(),
             post.getCommunity().getName(),
             post.getCommunity().getTitle(),
-            post.getCommunity().getIconImageUrl(),
+            com.lambrk.util.CdnUrlResolver.resolve(post.getCommunity().getIconImageUrl()),
             isSubscribed
         );
         
@@ -446,7 +446,7 @@ public class FeedService {
             post.getContent(),
             post.getUrl(),
             post.getPostType(),
-            post.getThumbnailUrl(),
+            com.lambrk.util.CdnUrlResolver.resolve(post.getThumbnailUrl()),
             post.getFlairText(),
             post.isSpoiler(),
             post.isOver18(),

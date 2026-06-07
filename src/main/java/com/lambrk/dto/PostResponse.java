@@ -74,7 +74,7 @@ public record PostResponse(
             post.getContent(),
             post.getUrl(),
             post.getPostType(),
-            post.getThumbnailUrl(),
+            com.lambrk.util.CdnUrlResolver.resolve(post.getThumbnailUrl()),
             post.getFlairText(),
             post.getFlairCssClass(),
             post.isSpoiler(),

@@ -17,8 +17,8 @@ public record MediaResponse(
     public static MediaResponse from(FileUpload file) {
         return new MediaResponse(
             file.getId(),
-            file.getFileUrl(),
-            file.getThumbnailUrl(),
+            com.lambrk.util.CdnUrlResolver.resolve(file.getFileUrl()),
+            com.lambrk.util.CdnUrlResolver.resolve(file.getThumbnailUrl()),
             file.getType().name(),
             file.getMimeType(),
             file.getFileSize(),

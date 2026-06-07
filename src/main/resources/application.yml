@@ -24,8 +24,8 @@ spring:
       enabled: true
   servlet:
     multipart:
-      max-file-size: 5MB
-      max-request-size: 5MB
+      max-file-size: 60MB
+      max-request-size: 60MB
   profiles:
     active: prod
   datasource:
@@ -128,6 +128,7 @@ aws:
     bucket: ${AWS_S3_BUCKET:lm-sm-001}
     endpoint: ${AWS_S3_ENDPOINT:} # Leave empty for production AWS, set for MinIO/local
     presigned-url-expiry: 3600 # 1 hour
+    cdn-base-url: ${AWS_S3_CDN_BASE_URL:https://d2l1t2x4807mjw.cloudfront.net}
   access-key: ${AWS_ACCESS_KEY_ID:}
   secret-key: ${AWS_SECRET_ACCESS_KEY:}
 
@@ -148,7 +149,7 @@ app:
     sensitive-headers: authorization,cookie,x-api-key
   upload:
     directory: uploads
-    max-file-size: 5242880 # 5MB
+    max-file-size: 62914560 # 60MB
     allowed-types: image/jpeg,image/png,image/gif,video/mp4,image/webp
   free-tier:
     enabled: true

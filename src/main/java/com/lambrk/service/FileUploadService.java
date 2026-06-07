@@ -72,7 +72,7 @@ public class FileUploadService {
             S3StorageService s3StorageService,
             FreeTierLimitService freeTierLimitService,
             @Value("${app.upload.directory:uploads}") String uploadDirectory,
-            @Value("${app.upload.max-file-size:10485760}") long maxFileSize,
+            @Value("${app.upload.max-file-size:62914560}") long maxFileSize,
             @Value("${app.upload.allowed-types:image/jpeg,image/png,image/gif,video/mp4}") List<String> allowedTypes,
             @Value("${aws.s3.enabled:true}") boolean s3Enabled) {
         this.fileUploadRepository = fileUploadRepository;
@@ -173,20 +173,16 @@ public class FileUploadService {
                 checksum = calculateChecksum(filePath);
             }
 
-            String s3Url = s3Enabled
-                ? s3StorageService.getPublicUrl(uniqueFilename)
-                : getFileUrl(uniqueFilename);
-
-            String thumbnailUrl = thumbKey != null
-                ? s3StorageService.getPublicUrl(thumbKey)
-                : getThumbnailUrl(uniqueFilename);
+            // Store just the S3 key; full URL is resolved at fetch time
+            String fileUrlKey = s3Enabled ? uniqueFilename : getFileUrl(uniqueFilename);
+            String thumbUrlKey = s3Enabled ? thumbKey : (thumbKey != null ? thumbKey : getThumbnailUrl(uniqueFilename));
 
             FileUpload fileUpload = new FileUpload(
                 FileUpload.FileUploadType.valueOf(request.type().name()),
                 uniqueFilename,
                 originalFilename,
-                s3Url,
-                thumbnailUrl,
+                fileUrlKey,
+                thumbUrlKey,
                 file.getSize(),
                 file.getContentType(),
                 request.description(),
@@ -203,7 +199,7 @@ public class FileUploadService {
             freeTierLimitService.recordUpload(user.getId(), file.getSize());
             customMetrics.recordFileUpload(request.type().name());
 
-            return FileUploadResponse.from(saved);
+            return toResponse(saved);
 
         } catch (IOException e) {
             throw new RuntimeException(ERROR_UPLOAD_FAILED, e);
@@ -220,20 +216,20 @@ public class FileUploadService {
             throw new RuntimeException(String.format(ERROR_ACCESS_DENIED, fileId));
         }
         
-        return FileUploadResponse.from(fileUpload);
+        return toResponse(fileUpload);
     }
 
     @Cacheable(value = "fileUploads", key = "#userId + '-' + #page")
     public Page<FileUploadResponse> getUserFiles(UUID userId, Pageable pageable) {
         Page<FileUpload> files = fileUploadRepository.findByUploadedByOrderByCreatedAtDesc(userId, pageable);
-        return files.map(FileUploadResponse::from);
+        return files.map(f -> toResponse(f));
     }
 
     @Cacheable(value = "fileUploads", key = "#type + '-' + #page")
     public Page<FileUploadResponse> getFilesByType(FileUploadRequest.FileType type, Pageable pageable) {
         FileUpload.FileUploadType entityType = FileUpload.FileUploadType.valueOf(type.name());
         Page<FileUpload> files = fileUploadRepository.findByTypeAndIsPublicOrderByCreatedAtDesc(entityType, true, pageable);
-        return files.map(FileUploadResponse::from);
+        return files.map(f -> toResponse(f));
     }
 
     @CacheEvict(value = "fileUploads", allEntries = true)
@@ -356,6 +352,33 @@ public class FileUploadService {
 
     private String getThumbnailUrl(String filename) {
         return THUMBNAIL_URL_PREFIX + filename;
+    }
+
+    /**
+     * Resolves a stored URL value to a full public URL.
+     * Backward-compatible: if the stored value is already a full URL, returns it as-is.
+     * Otherwise prepends the appropriate base URL (CDN or S3).
+     */
+    private String resolveUrl(String storedValue) {
+        if (storedValue == null || storedValue.isBlank()) {
+            return null;
+        }
+        // Backward compat: already a full URL
+        if (storedValue.startsWith("http://") || storedValue.startsWith("https://")) {
+            return storedValue;
+        }
+        // Local storage path
+        if (!s3Enabled) {
+            return getFileUrl(storedValue);
+        }
+        // S3/CDN: prepend base URL
+        return s3StorageService.getPublicUrl(storedValue);
+    }
+
+    private FileUploadResponse toResponse(FileUpload fileUpload) {
+        String resolvedFileUrl = resolveUrl(fileUpload.getFileUrl());
+        String resolvedThumbUrl = resolveUrl(fileUpload.getThumbnailUrl());
+        return FileUploadResponse.from(fileUpload, resolvedFileUrl, resolvedThumbUrl);
     }
 
     private String calculateChecksum(byte[] fileBytes) {

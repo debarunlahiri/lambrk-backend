@@ -38,12 +38,16 @@ public record FileUploadResponse(
 ) {
     
     public static FileUploadResponse from(FileUpload fileUpload) {
+        return from(fileUpload, fileUpload.getFileUrl(), fileUpload.getThumbnailUrl());
+    }
+
+    public static FileUploadResponse from(FileUpload fileUpload, String resolvedFileUrl, String resolvedThumbnailUrl) {
         return new FileUploadResponse(
             fileUpload.getId(),
             fileUpload.getFileName(),
             fileUpload.getOriginalFileName(),
-            fileUpload.getFileUrl(),
-            fileUpload.getThumbnailUrl(),
+            resolvedFileUrl,
+            resolvedThumbnailUrl,
             fileUpload.getType(),
             fileUpload.getFileSize(),
             fileUpload.getMimeType(),

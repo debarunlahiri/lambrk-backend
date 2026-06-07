@@ -36,17 +36,20 @@ public class PostService {
     private final CommunityRepository communityRepository;
     private final VoteRepository voteRepository;
     private final FileUploadRepository fileUploadRepository;
+    private final S3StorageService s3StorageService;
     private final KafkaEventService kafkaEventService;
 
     public PostService(PostRepository postRepository, UserRepository userRepository,
                       CommunityRepository communityRepository, VoteRepository voteRepository,
                       FileUploadRepository fileUploadRepository,
+                      S3StorageService s3StorageService,
                       KafkaEventService kafkaEventService) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.communityRepository = communityRepository;
         this.voteRepository = voteRepository;
         this.fileUploadRepository = fileUploadRepository;
+        this.s3StorageService = s3StorageService;
         this.kafkaEventService = kafkaEventService;
     }
 
@@ -266,6 +269,34 @@ public class PostService {
 
         if (!post.getAuthor().getId().equals(currentUserId)) {
             throw new RuntimeException("You can only delete your own posts");
+        }
+
+        // Delete media files from S3 before removing the post
+        if (post.getMedia() != null) {
+            for (com.lambrk.domain.FileUpload media : post.getMedia()) {
+                try {
+                    s3StorageService.deleteFile(media.getFileName());
+                    if (media.getThumbnailUrl() != null && !media.getThumbnailUrl().isBlank()) {
+                        String thumbKey = media.getThumbnailUrl();
+                        // If thumbnailUrl is a full URL, extract just the key
+                        if (thumbKey.startsWith("http")) {
+                            int idx = thumbKey.indexOf(".amazonaws.com/");
+                            if (idx != -1) {
+                                thumbKey = thumbKey.substring(idx + 16);
+                            } else {
+                                idx = thumbKey.indexOf(".cloudfront.net/");
+                                if (idx != -1) {
+                                    thumbKey = thumbKey.substring(idx + 17);
+                                }
+                            }
+                        }
+                        s3StorageService.deleteFile(thumbKey);
+                    }
+                } catch (Exception e) {
+                    // Log but don't fail the post delete if S3 cleanup fails
+                    System.err.println("Failed to delete S3 file for post " + postId + ": " + e.getMessage());
+                }
+            }
         }
 
         postRepository.delete(post);
